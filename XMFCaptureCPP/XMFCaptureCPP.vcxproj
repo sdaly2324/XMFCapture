@@ -211,6 +211,7 @@
     <ClCompile Include="XMFFormat.cpp" />
     <ClCompile Include="XMFPreview.cpp" />
     <ClCompile Include="XMFUtilities.cpp" />
+    <ClCompile Include="XOSMFSinkWriterCallback.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

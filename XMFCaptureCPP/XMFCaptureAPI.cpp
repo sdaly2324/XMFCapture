@@ -328,7 +328,7 @@ HRESULT XMFCaptureAPIRep::StartCapture(HWND hwnd)
 		if (m_XMFCaptureEngine)
 		{
 			hr = m_XMFCaptureEngine->StartRecord(m_OutputPath->c_str());
-			//hr = StartPreview(hwnd); // causes Some component is already listening to events on this event generator.
+			//hr = StartPreview(hwnd); // causes error "Some component is already listening to events on this event generator"
 			hr = m_XMFCaptureEngine->StartPreview();
 		}
 	}
