@@ -305,26 +305,13 @@ HRESULT XMFCaptureAPIRep::StartCapture(HWND hwnd)
 	{
 		hr = m_CurrentVideoDevice->StartCapture();
 	}
-
 	if (SUCCEEDED_Xb(hr) && m_CurrentAudioDevice)
 	{
 		hr = m_CurrentAudioDevice->StartCapture();
 	}
-
-	CComPtr<IUnknown> pVideoDevice = NULL;
-	if (SUCCEEDED_Xb(hr) && m_CurrentVideoDevice)
-	{
-		hr = m_CurrentVideoDevice->GetIMFActivate(pVideoDevice);
-	}
-
-	CComPtr<IUnknown> pAudioDevice = NULL;
-	if (SUCCEEDED_Xb(hr) && m_CurrentAudioDevice)
-	{
-		hr = m_CurrentAudioDevice->GetIMFActivate(pAudioDevice);
-	}
 	if (SUCCEEDED_Xb(hr))
 	{
-		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngine>(hwnd, pVideoDevice, pAudioDevice);
+		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngine>(hwnd, m_CurrentVideoDevice, m_CurrentAudioDevice);
 		if (m_XMFCaptureEngine)
 		{
 			hr = m_XMFCaptureEngine->StartRecord(m_OutputPath->c_str());
@@ -332,7 +319,6 @@ HRESULT XMFCaptureAPIRep::StartCapture(HWND hwnd)
 			hr = m_XMFCaptureEngine->StartPreview();
 		}
 	}
-
 	return hr;
 }
 

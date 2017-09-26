@@ -9,7 +9,7 @@ class XOSMFAVSourceReaderRep
 {
 public:
 	friend class XOSMFSourceReaderCallback;
-	XOSMFAVSourceReaderRep(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource, bool hasAudio, bool hasVideo, CComPtr<IMFAttributes> pMFAttributes);
+	XOSMFAVSourceReaderRep(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource, CComPtr<IMFAttributes> pMFAttributes);
 	virtual ~XOSMFAVSourceReaderRep();
 
 	HRESULT Start();
@@ -47,7 +47,7 @@ private:
 #endif
 };
 
-XOSMFAVSourceReader::XOSMFAVSourceReader(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource, bool hasAudio, bool hasVideo)
+XOSMFAVSourceReader::XOSMFAVSourceReader(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource)
 {
 	HRESULT hr = S_OK;
 
@@ -63,10 +63,10 @@ XOSMFAVSourceReader::XOSMFAVSourceReader(XOSMFSinkWriter* pXOSMFSinkWriter, CCom
 		hr = pMFAttributes->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, new XOSMFSourceReaderCallback(this));
 	}
 
-	m_pRep = new XOSMFAVSourceReaderRep(pXOSMFSinkWriter, pVASource, hasAudio, hasVideo, pMFAttributes);
+	m_pRep = new XOSMFAVSourceReaderRep(pXOSMFSinkWriter, pVASource, pMFAttributes);
 }
 
-XOSMFAVSourceReaderRep::XOSMFAVSourceReaderRep(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource, bool hasAudio, bool hasVideo, CComPtr<IMFAttributes> pMFAttributes) :
+XOSMFAVSourceReaderRep::XOSMFAVSourceReaderRep(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource, CComPtr<IMFAttributes> pMFAttributes) :
 	m_pVASource(pVASource),
 	m_pXOSMFSinkWriter(pXOSMFSinkWriter),
 	m_pVASourceReader(NULL),
@@ -89,12 +89,12 @@ XOSMFAVSourceReaderRep::XOSMFAVSourceReaderRep(XOSMFSinkWriter* pXOSMFSinkWriter
 		hr = MFCreateSourceReaderFromMediaSource(m_pVASource, pMFAttributes, &m_pVASourceReader);
 	}
 
-	if (SUCCEEDED_XOSb(hr) && hasVideo)
+	if (SUCCEEDED_XOSb(hr))
 	{
 		hr = ConfigureVASourceReaderVideo();
 	}
 
-	if (SUCCEEDED_XOSb(hr) && hasAudio)
+	if (SUCCEEDED_XOSb(hr))
 	{
 		hr = ConfigureVASourceReaderAudio();
 	}

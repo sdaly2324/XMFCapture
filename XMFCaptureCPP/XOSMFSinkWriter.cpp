@@ -1,6 +1,5 @@
 #include "XOSMFSinkWriter.h"
 #include "XOSMFSinkWriterCallback.h"
-#include "XOSMFSinkMediaTypes.h"
 #include "XOSMFUtilities.h"
 
 class XOSMFSinkWriterRep
@@ -9,14 +8,13 @@ public:
 	XOSMFSinkWriterRep(LPCWSTR fullFilePath);
 	~XOSMFSinkWriterRep();
 
-	HRESULT ConfigureAudioEncoder(CComPtr<IMFMediaType> pAudioReaderInputMediaType, DWORD* pdwSinkStreamIndex);
-	HRESULT ConfigureVideoEncoder(CComPtr<IMFMediaType> pVideoReaderInputMediaType, DWORD* pdwSinkStreamIndex);
 	HRESULT WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSample, bool* bStopRequested);
 	HRESULT AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD* pdwStreamIndex);
 	HRESULT SetInputMediaType(DWORD dwStreamIndex, CComPtr<IMFMediaType> pInputMediaType, CComPtr<IMFAttributes> pEncodingParameters);
 	HRESULT BeginWriting();
 	HRESULT EndWriting();
 	HRESULT SignalAllStopped();
+	HRESULT GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats);
 
 private:
 	XOSMFSinkWriterRep();
@@ -192,61 +190,26 @@ HRESULT XOSMFSinkWriter::SignalAllStopped()
 HRESULT XOSMFSinkWriterRep::SignalAllStopped()
 {
 	SetEvent(m_hEventAllStopped);
-
 	return S_OK;
 }
 
-HRESULT XOSMFSinkWriter::ConfigureAudioEncoder(CComPtr<IMFMediaType> pAudioReaderInputMediaType, DWORD* pdwSinkStreamIndex)
+HRESULT XOSMFSinkWriter::GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats)
 {
 	if (m_pRep)
 	{
-		return m_pRep->ConfigureAudioEncoder(pAudioReaderInputMediaType, pdwSinkStreamIndex);
+		return m_pRep->GetStatistics(dwStreamIndex, pStats);
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFSinkWriterRep::ConfigureAudioEncoder(CComPtr<IMFMediaType> pAudioReaderInputMediaType, DWORD* pdwSinkStreamIndex)
+HRESULT XOSMFSinkWriterRep::GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats)
 {
-	HRESULT hr = S_OK;
-
-	XOSMFAudioSinkMediaType aSinkMT;
-	aSinkMT.ConfigFromSource(pAudioReaderInputMediaType);
-
-	// Add the stream
-	if (SUCCEEDED_XOSb(hr))
+	if (m_pSinkWriter)
 	{
-		hr = AddStream(aSinkMT.GetMediaType(), pdwSinkStreamIndex);
-
-		WCHAR mess[1024];
-		swprintf_s(mess, 1024, L"stream(%d)", *pdwSinkStreamIndex);
-		DumpAttr(aSinkMT.GetMediaType(), L"Audio Encoder", mess);
-	}
-
-	return hr;
-}
-
-HRESULT XOSMFSinkWriter::ConfigureVideoEncoder(CComPtr<IMFMediaType> pVideoReaderInputMediaType, DWORD* pdwSinkStreamIndex)
-{
-	if (m_pRep)
-	{
-		return m_pRep->ConfigureVideoEncoder(pVideoReaderInputMediaType, pdwSinkStreamIndex);
+		CComCritSecLock<CComCriticalSection> lock(m_protectSinkWriter);
+		if (m_pSinkWriter)
+		{
+			return m_pSinkWriter->GetStatistics(dwStreamIndex, pStats);
+		}
 	}
 	return E_FAIL;
-}
-HRESULT XOSMFSinkWriterRep::ConfigureVideoEncoder(CComPtr<IMFMediaType> pVideoReaderInputMediaType, DWORD* pdwSinkStreamIndex)
-{
-	HRESULT hr = S_OK;
-
-	XOSMFVideoSinkMediaType vSinkMT;
-	vSinkMT.ConfigFromSource(pVideoReaderInputMediaType);
-
-	if (SUCCEEDED_XOSb(hr))
-	{
-		hr = AddStream(vSinkMT.GetMediaType(), pdwSinkStreamIndex);
-
-		WCHAR mess[1024];
-		swprintf_s(mess, 1024, L"stream(%d)", *pdwSinkStreamIndex);
-		DumpAttr(vSinkMT.GetMediaType(), L"Video Encoder", mess);
-	}
-
-	return hr;
 }

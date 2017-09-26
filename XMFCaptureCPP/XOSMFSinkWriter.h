@@ -21,14 +21,13 @@ public:
 	XOSMFSinkWriter(LPCWSTR fullFilePath);
 	~XOSMFSinkWriter();
 
-	HRESULT ConfigureAudioEncoder(CComPtr<IMFMediaType> pAudioReaderInputMediaType, DWORD* pdwSinkStreamIndex);
-	HRESULT ConfigureVideoEncoder(CComPtr<IMFMediaType> pVideoReaderInputMediaType, DWORD* pdwSinkStreamIndex);
 	HRESULT WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSample, bool* bStopRequested);
 	HRESULT AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD* pdwStreamIndex);
 	HRESULT SetInputMediaType(DWORD dwStreamIndex, CComPtr<IMFMediaType> pInputMediaType, CComPtr<IMFAttributes> pEncodingParameters);
 	HRESULT BeginWriting();
 	HRESULT EndWriting();
 	HRESULT SignalAllStopped();
+	HRESULT GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats);
 
 private:
 	XOSMFSinkWriter();

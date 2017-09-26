@@ -1,11 +1,13 @@
+#include <memory>
 #include <atlcomcli.h>
 
+class XMFCaptureDevice;
 class XMFCaptureEngineRep;
 struct IMFActivate;
 class XMFCaptureEngine
 {
 public:
-	XMFCaptureEngine(HWND hwnd, CComPtr<IUnknown> pVideoDevice, CComPtr<IUnknown> pAudioDevice);
+	XMFCaptureEngine(HWND hwnd, std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice);
 	virtual ~XMFCaptureEngine();
 
 	HRESULT StartPreview();

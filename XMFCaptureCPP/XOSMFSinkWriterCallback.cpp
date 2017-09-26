@@ -22,7 +22,7 @@ HRESULT XOSMFSinkWriterCallback::OnFinalize(HRESULT hrStatus)
 HRESULT XOSMFSinkWriterCallback::OnMarker(DWORD dwStreamIndex, LPVOID pvContext)
 {
 	WCHAR mess[1024];
-	swprintf_s(mess, 1024, L"TSFileWriter::OnMarker stream(%d) context(0x%x)\n", dwStreamIndex, (unsigned int)pvContext);
+	swprintf_s(mess, 1024, L"TSFileWriter::OnMarker stream(%d) context(0x%I64x)\n", dwStreamIndex, (unsigned long long)pvContext);
 	OutputDebugStringW(mess);
 
 	return S_OK;

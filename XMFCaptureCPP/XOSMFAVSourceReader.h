@@ -15,7 +15,7 @@ class XOSMFAVSourceReader
 {
 public:
 	friend class XOSMFSourceReaderCallback;
-	XOSMFAVSourceReader(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource, bool hasAudio, bool hasVideo);
+	XOSMFAVSourceReader(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource);
 	virtual ~XOSMFAVSourceReader();
 
 	HRESULT Start();
