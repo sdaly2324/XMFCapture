@@ -311,7 +311,8 @@ HRESULT XMFCaptureAPIRep::StartCapture(HWND hwnd)
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
-		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngine>(hwnd, m_CurrentVideoDevice, m_CurrentAudioDevice);
+		bool useOld = true;
+		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngine>(hwnd, m_CurrentVideoDevice, m_CurrentAudioDevice, useOld);
 		if (m_XMFCaptureEngine)
 		{
 			hr = m_XMFCaptureEngine->StartRecord(m_OutputPath->c_str());

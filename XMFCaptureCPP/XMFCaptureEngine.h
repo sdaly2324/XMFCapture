@@ -7,7 +7,7 @@ struct IMFActivate;
 class XMFCaptureEngine
 {
 public:
-	XMFCaptureEngine(HWND hwnd, std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice);
+	XMFCaptureEngine(HWND hwnd, std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice, bool useOld);
 	virtual ~XMFCaptureEngine();
 
 	HRESULT StartPreview();
