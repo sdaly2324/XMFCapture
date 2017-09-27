@@ -57,8 +57,9 @@ FONT 9, "Segoe UI", 400, 0, 0x0
 BEGIN
     COMBOBOX        IDC_VIDEO_AND_AUDIO_DEVICE_LIST,55,7,181,48,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Device Pair",IDC_STATIC,13,10,34,8
-    PUSHBUTTON      "Use IMFCapturePreviewSink",IDC_CAPTURE,73,62,118,14
-    PUSHBUTTON      "Use m_pIMFMediaSession",IDC_VIEW,79,34,103,14
+    PUSHBUTTON      "Use IMFCaptureEngine",IDC_CAPTURE_USING_IMFCaptureEngine,17,60,93,14
+    PUSHBUTTON      "Use IMFCaptureEngine Preview",IDC_VIEW,62,31,112,14
+    PUSHBUTTON      "Use IMFSinkWriter",IDC_CAPTURE_USING_IMFSinkWriter,138,61,83,14
 END
 
 
@@ -79,6 +80,17 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_DIALOG1 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////

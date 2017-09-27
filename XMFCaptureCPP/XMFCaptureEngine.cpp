@@ -41,7 +41,6 @@ public:
 	HRESULT	get_FPSForCapture(long* pVal) const;
 
 	// new
-	CComPtr<IMFCaptureSink> GetCaptureSinkNEW();
 	CComPtr<IMFCaptureSink> GetPreviewSinkNEW();
 	CComPtr<IMFCaptureSource> GetCaptureSourceNEW();
 
@@ -73,6 +72,7 @@ private:
 	CComPtr<IMFCaptureEngine>			m_pEngineNEW;
 	HANDLE								m_hEventNEW;
 	CComPtr<IMFSinkWriter>				m_pVideoSinkWriterNEW;
+	CComPtr<IMFCaptureSink> GetCaptureSinkNEW();
 
 	// old
 	CComPtr<IMFMediaSource>	m_pAggregatSourceOLD;

@@ -28,6 +28,10 @@ XMFCaptureAPI*	g_CaptureAPI = XMFCaptureAPI::GetInstance();
 HDEVNOTIFY		g_hdevnotify = NULL;
 HWND			g_hwnd = NULL;
 
+bool IMFCaptureEngine = false;
+bool IMFCaptureEnginePreview = false;
+bool IMFSinkWriter = false;
+
 const UINT32 TARGET_BIT_RATE = 240 * 1000;
 
 const WCHAR CLASS_NAME [] = L"MFCapture Window Class";
@@ -43,7 +47,7 @@ void    OnCloseDialog();
 
 void    UpdateUI(HWND hDlg);
 
-void    StartCapture(HWND hDlg, HWND hwnd);
+void    StartCapture(HWND hDlg, HWND hwnd, bool useOld);
 void    StopCapture(HWND hDlg);
 
 void    StartPreview(HWND hDlg, HWND hwnd);
@@ -158,14 +162,30 @@ INT_PTR CALLBACK DialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case IDC_CAPTURE:
+		case IDC_CAPTURE_USING_IMFCaptureEngine:
 			if (g_CaptureAPI->IsCapturing())
 			{
 				StopCapture(hDlg);
+				IMFCaptureEngine = false;
 			}
 			else
 			{
-				StartCapture(hDlg, g_hwnd);
+				IMFCaptureEngine = true;
+				StartCapture(hDlg, g_hwnd, false);
+				ShowWindow(g_hwnd, SW_SHOW);
+			}
+			UpdateUI(hDlg);
+			return TRUE;
+		case IDC_CAPTURE_USING_IMFSinkWriter:
+			if (g_CaptureAPI->IsCapturing())
+			{
+				StopCapture(hDlg);
+				IMFSinkWriter = false;
+			}
+			else
+			{
+				IMFSinkWriter = true;
+				StartCapture(hDlg, g_hwnd, true);
 				ShowWindow(g_hwnd, SW_SHOW);
 			}
 			UpdateUI(hDlg);
@@ -175,11 +195,13 @@ INT_PTR CALLBACK DialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				ShowWindow(g_hwnd, SW_HIDE);
 				StopPreview(hDlg);
+				IMFCaptureEnginePreview = false;
 			}
 			else
 			{
 				StartPreview(hDlg, g_hwnd);
 				ShowWindow(g_hwnd, SW_SHOW);
+				IMFCaptureEnginePreview = true;
 			}
 			UpdateWindow(g_hwnd);
 			UpdateUI(hDlg);
@@ -271,7 +293,7 @@ void OnCloseDialog()
 }
 
 
-void StartCapture(HWND hDlg, HWND hwnd)
+void StartCapture(HWND hDlg, HWND hwnd, bool useOld)
 {
 	HRESULT hr = S_OK;
 
@@ -286,7 +308,7 @@ void StartCapture(HWND hDlg, HWND hwnd)
 	{
 		std::shared_ptr<std::wstring> outputPath(new std::wstring(L"C:\\capture.ts"));
 		g_CaptureAPI->SetOutputPath(outputPath);
-		hr = g_CaptureAPI->StartCapture(hwnd);
+		hr = g_CaptureAPI->StartCapture(hwnd, useOld);
 	}
 
 	if (FAILED(hr))
@@ -436,34 +458,42 @@ HRESULT UpdateDeviceList(HWND hDlg)
 // 
 // Updates the dialog UI for the current state.
 //-----------------------------------------------------------------------------
-
 void UpdateUI(HWND hDlg)
 {
 	bool bEnable = gDevices.size() > 0;     // Are there any capture devices?
 	bool bCapturing = g_CaptureAPI->IsCapturing();     // Is video capture in progress now?
 
-	HWND hButton = GetDlgItem(hDlg, IDC_CAPTURE);
-
-	if (bCapturing)
+	HWND hButton = GetDlgItem(hDlg, IDC_CAPTURE_USING_IMFCaptureEngine);
+	if (bCapturing && IMFCaptureEngine == true)
 	{
-		SetWindowText(hButton, L"Stop IMFCapturePreviewSink");
+		SetWindowText(hButton, L"Stop IMFCaptureEngine");
 	}
 	else
 	{
-		SetWindowText(hButton, L"Use IMFCapturePreviewSink");
+		SetWindowText(hButton, L"Use IMFCaptureEngine");
+	}
+
+	hButton = GetDlgItem(hDlg, IDC_CAPTURE_USING_IMFSinkWriter);
+	if (bCapturing && IMFSinkWriter == true)
+	{
+		SetWindowText(hButton, L"Stop IMFSinkWriter");
+	}
+	else
+	{
+		SetWindowText(hButton, L"Use IMFSinkWriter");
 	}
 
 	hButton = GetDlgItem(hDlg, IDC_VIEW);
-	if (IsWindowVisible(g_hwnd))
+	if (IsWindowVisible(g_hwnd) && IMFCaptureEnginePreview == true)
 	{
-		SetWindowText(hButton, L"Stop m_pIMFMediaSession");
+		SetWindowText(hButton, L"Stop IMFCaptureEngine Preview");
 	}
 	else
 	{
-		SetWindowText(hButton, L"Use m_pIMFMediaSession");
+		SetWindowText(hButton, L"Use IMFCaptureEngine Preview");
 	}
 
-	EnableDialogControl(hDlg, IDC_CAPTURE, bCapturing || bEnable);
+	EnableDialogControl(hDlg, IDC_CAPTURE_USING_IMFCaptureEngine, bCapturing || bEnable);
 	EnableDialogControl(hDlg, IDC_VIDEO_AND_AUDIO_DEVICE_LIST, !bCapturing && bEnable);
 }
 
