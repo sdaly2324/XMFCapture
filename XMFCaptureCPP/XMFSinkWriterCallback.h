@@ -7,11 +7,11 @@
 #include <mfreadwrite.h>
 #include <atlbase.h>
 
-class XOSMFSinkWriterCallback : public IMFSinkWriterCallback
+class XMFSinkWriterCallback : public IMFSinkWriterCallback
 {
 public:
-	XOSMFSinkWriterCallback();
-	virtual ~XOSMFSinkWriterCallback();
+	XMFSinkWriterCallback();
+	virtual ~XMFSinkWriterCallback();
 
 	// IMFSinkWriterCallback methods
 	STDMETHODIMP OnFinalize(HRESULT hrStatus);

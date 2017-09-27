@@ -1,16 +1,16 @@
-#include "XOSMFAVSourceReader.h"
-
-#include "XOSMFSourceReaderCallback.h"
-#include "XOSMFUtilities.h"
-#include "XOSMFSinkWriter.h"
+#include "stdafx.h"
+#include "XMFAVSourceReader.h"
+#include "XMFSourceReaderCallback.h"
+#include "XMFUtilities.h"
+#include "XMFSinkWriter.h"
 #include <atlbase.h>
 
-class XOSMFAVSourceReaderRep
+class XMFAVSourceReaderRep
 {
 public:
-	friend class XOSMFSourceReaderCallback;
-	XOSMFAVSourceReaderRep(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource, CComPtr<IMFAttributes> pMFAttributes);
-	virtual ~XOSMFAVSourceReaderRep();
+	friend class XMFSourceReaderCallback;
+	XMFAVSourceReaderRep(XMFSinkWriter* pXMFSinkWriter, CComPtr<IMFMediaSource> pVASource, CComPtr<IMFAttributes> pMFAttributes);
+	virtual ~XMFAVSourceReaderRep();
 
 	HRESULT Start();
 	HRESULT GetVideoInputMediaType(CComPtr<IMFMediaType>& pVideoReaderInputMediaTypeCurrent);
@@ -22,7 +22,7 @@ public:
 	HRESULT OnReadSample(HRESULT hrStatus, DWORD dwStreamIndex, DWORD dwStreamFlags, LONGLONG llTimeStamp, CComPtr<IMFSample> pMFSample);
 	HRESULT OnFlush(DWORD dwStreamIndex);
 private:
-	XOSMFAVSourceReaderRep();
+	XMFAVSourceReaderRep();
 
 	HRESULT ConfigureVASourceReaderVideo();
 	HRESULT ConfigureVASourceReaderAudio();
@@ -31,7 +31,7 @@ private:
 	CComPtr<IMFSourceReader>			m_pVASourceReader;
 	CComPtr<IMFPresentationDescriptor>	m_pMFPresentationDescriptor;
 
-	XOSMFSinkWriter*		m_pXOSMFSinkWriter;
+	XMFSinkWriter*		m_pXMFSinkWriter;
 
 	bool			m_bFirstSample;
 	LONGLONG		m_llBaseTime;
@@ -47,28 +47,28 @@ private:
 #endif
 };
 
-XOSMFAVSourceReader::XOSMFAVSourceReader(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource)
+XMFAVSourceReader::XMFAVSourceReader(XMFSinkWriter* pXMFSinkWriter, CComPtr<IMFMediaSource> pVASource)
 {
 	HRESULT hr = S_OK;
 
 	CComPtr<IMFAttributes> pMFAttributes = NULL;
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = MFCreateAttributes(&pMFAttributes, 0);
 	}
 
-	if (SUCCEEDED_XOSb(hr) && pMFAttributes)
+	if (SUCCEEDED_Xb(hr) && pMFAttributes)
 	{
 		// for some reason SetUnknown does not count towards the IMFAttributes count
-		hr = pMFAttributes->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, new XOSMFSourceReaderCallback(this));
+		hr = pMFAttributes->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, new XMFSourceReaderCallback(this));
 	}
 
-	m_pRep = new XOSMFAVSourceReaderRep(pXOSMFSinkWriter, pVASource, pMFAttributes);
+	m_pRep = new XMFAVSourceReaderRep(pXMFSinkWriter, pVASource, pMFAttributes);
 }
 
-XOSMFAVSourceReaderRep::XOSMFAVSourceReaderRep(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource, CComPtr<IMFAttributes> pMFAttributes) :
+XMFAVSourceReaderRep::XMFAVSourceReaderRep(XMFSinkWriter* pXMFSinkWriter, CComPtr<IMFMediaSource> pVASource, CComPtr<IMFAttributes> pMFAttributes) :
 	m_pVASource(pVASource),
-	m_pXOSMFSinkWriter(pXOSMFSinkWriter),
+	m_pXMFSinkWriter(pXMFSinkWriter),
 	m_pVASourceReader(NULL),
 	m_pMFPresentationDescriptor(NULL),
 	m_bFirstSample(false),
@@ -84,36 +84,36 @@ XOSMFAVSourceReaderRep::XOSMFAVSourceReaderRep(XOSMFSinkWriter* pXOSMFSinkWriter
 {
 	HRESULT hr = S_OK;
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = MFCreateSourceReaderFromMediaSource(m_pVASource, pMFAttributes, &m_pVASourceReader);
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = ConfigureVASourceReaderVideo();
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = ConfigureVASourceReaderAudio();
 	}
 }
 
-XOSMFAVSourceReader::~XOSMFAVSourceReader()
+XMFAVSourceReader::~XMFAVSourceReader()
 {
 	if (m_pRep)
 	{
 		delete m_pRep;
 	}
 }
-XOSMFAVSourceReaderRep::~XOSMFAVSourceReaderRep()
+XMFAVSourceReaderRep::~XMFAVSourceReaderRep()
 {
-	if (m_pXOSMFSinkWriter)
+	if (m_pXMFSinkWriter)
 	{
-		delete m_pXOSMFSinkWriter;
+		delete m_pXMFSinkWriter;
 	}
-	m_pXOSMFSinkWriter = NULL;
+	m_pXMFSinkWriter = NULL;
 
 	if (m_pVASource)
 	{
@@ -135,7 +135,7 @@ XOSMFAVSourceReaderRep::~XOSMFAVSourceReaderRep()
 	m_pVASourceReader = NULL;
 }
 
-HRESULT XOSMFAVSourceReader::OnFlush(DWORD dwStreamIndex)
+HRESULT XMFAVSourceReader::OnFlush(DWORD dwStreamIndex)
 {
 	if (m_pRep)
 	{
@@ -143,20 +143,20 @@ HRESULT XOSMFAVSourceReader::OnFlush(DWORD dwStreamIndex)
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFAVSourceReaderRep::OnFlush(DWORD dwStreamIndex)
+HRESULT XMFAVSourceReaderRep::OnFlush(DWORD dwStreamIndex)
 {
 	WCHAR mess[1024];
-	swprintf_s(mess, 1024, L"XOSMFAVSourceReaderRep::OnFlush stream(%d)\n", dwStreamIndex);
+	swprintf_s(mess, 1024, L"XMFAVSourceReaderRep::OnFlush stream(%d)\n", dwStreamIndex);
 	OutputDebugStringW(mess);
 
-	if (m_pXOSMFSinkWriter)
+	if (m_pXMFSinkWriter)
 	{
-		return m_pXOSMFSinkWriter->SignalAllStopped();
+		return m_pXMFSinkWriter->SignalAllStopped();
 	}
 	return E_FAIL;
 }
 
-HRESULT XOSMFAVSourceReader::OnReadSample(HRESULT hrStatus, DWORD dwStreamIndex, DWORD dwStreamFlags, LONGLONG llTimeStamp, CComPtr<IMFSample> pMFSample)
+HRESULT XMFAVSourceReader::OnReadSample(HRESULT hrStatus, DWORD dwStreamIndex, DWORD dwStreamFlags, LONGLONG llTimeStamp, CComPtr<IMFSample> pMFSample)
 {
 	if (m_pRep)
 	{
@@ -164,7 +164,7 @@ HRESULT XOSMFAVSourceReader::OnReadSample(HRESULT hrStatus, DWORD dwStreamIndex,
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFAVSourceReaderRep::OnReadSample(HRESULT hrStatus, DWORD dwStreamIndex, DWORD dwStreamFlags, LONGLONG llTimeStamp, CComPtr<IMFSample> pMFSample)
+HRESULT XMFAVSourceReaderRep::OnReadSample(HRESULT hrStatus, DWORD dwStreamIndex, DWORD dwStreamFlags, LONGLONG llTimeStamp, CComPtr<IMFSample> pMFSample)
 {
 #ifdef DEBUG_TIMMING
 
@@ -228,12 +228,12 @@ HRESULT XOSMFAVSourceReaderRep::OnReadSample(HRESULT hrStatus, DWORD dwStreamInd
 
 		hr = pMFSample->SetSampleTime(llTimeStamp);
 
-		if (SUCCEEDED_XOSb(hr))
+		if (SUCCEEDED_Xb(hr))
 		{
-			if (m_pXOSMFSinkWriter)
+			if (m_pXMFSinkWriter)
 			{
 				bool bStopRequested;
-				hr = m_pXOSMFSinkWriter->WriteSample(dwStreamIndex, pMFSample, &bStopRequested);
+				hr = m_pXMFSinkWriter->WriteSample(dwStreamIndex, pMFSample, &bStopRequested);
 				if (bStopRequested)
 				{
 					m_bCapturePumpIsRunning = false;
@@ -243,11 +243,11 @@ HRESULT XOSMFAVSourceReaderRep::OnReadSample(HRESULT hrStatus, DWORD dwStreamInd
 			}
 			else
 			{
-				OutputDebugStringW(L"NO m_pXOSMFSinkWriter!!\n");
+				OutputDebugStringW(L"NO m_pXMFSinkWriter!!\n");
 			}
 		}
 
-		if (SUCCEEDED_XOSb(hr))
+		if (SUCCEEDED_Xb(hr))
 		{
 #ifdef DEBUG_TIMMING
 
@@ -294,7 +294,7 @@ HRESULT XOSMFAVSourceReaderRep::OnReadSample(HRESULT hrStatus, DWORD dwStreamInd
 	return hr;
 }
 
-bool XOSMFAVSourceReader::Capturing()
+bool XMFAVSourceReader::Capturing()
 {
 	if (m_pRep)
 	{
@@ -302,12 +302,12 @@ bool XOSMFAVSourceReader::Capturing()
 	}
 	return false;
 }
-bool XOSMFAVSourceReaderRep::Capturing()
+bool XMFAVSourceReaderRep::Capturing()
 {
 	return m_bCapturePumpIsRunning;
 }
 
-HRESULT XOSMFAVSourceReader::Start()
+HRESULT XMFAVSourceReader::Start()
 {
 	if (m_pRep)
 	{
@@ -315,7 +315,7 @@ HRESULT XOSMFAVSourceReader::Start()
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFAVSourceReaderRep::Start()
+HRESULT XMFAVSourceReaderRep::Start()
 {
 	m_bFirstSample = true;
 	m_llBaseTime = 0;
@@ -335,7 +335,7 @@ HRESULT XOSMFAVSourceReaderRep::Start()
 	return m_pVASourceReader->ReadSample((DWORD) MF_SOURCE_READER_ANY_STREAM, 0, NULL, NULL, NULL, NULL);
 }
 
-HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderVideo()
+HRESULT XMFAVSourceReaderRep::ConfigureVASourceReaderVideo()
 {
 	// The list of acceptable types.
 	GUID subtypes [] = { MEDIASUBTYPE_HDYC, MFVideoFormat_v210, MFVideoFormat_NV12, MFVideoFormat_YUY2, MFVideoFormat_UYVY, MFVideoFormat_RGB32, MFVideoFormat_RGB24, MFVideoFormat_IYUV };
@@ -347,7 +347,7 @@ HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderVideo()
 
 	// TODO: Write a comprehensive native format selector
 	CComPtr<IMFMediaType> pVideoReaderInputMediaTypeNative = NULL;
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		//DWORD formatWeWant = 12;	// BM is 12 for 720p 5994 HDYC
 		//DWORD formatWeWant = 18;	// BM is 18 for 1080i 5994 HDYC
@@ -356,12 +356,12 @@ HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderVideo()
 		hr = m_pVASourceReader->GetNativeMediaType((DWORD) MF_SOURCE_READER_FIRST_VIDEO_STREAM, formatWeWant, &pVideoReaderInputMediaTypeNative);
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = pVideoReaderInputMediaTypeNative->GetGUID(MF_MT_SUBTYPE, &subtype);
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		for (UINT32 i = 0; i < ARRAYSIZE(subtypes); i++)
 		{
@@ -382,7 +382,7 @@ HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderVideo()
 			{
 				hr = pVideoReaderInputMediaTypeNative->SetGUID(MF_MT_SUBTYPE, subtypes[i]);
 
-				if (SUCCEEDED_XOSb(hr))
+				if (SUCCEEDED_Xb(hr))
 				{
 					hr = m_pVASourceReader->SetCurrentMediaType((DWORD) MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, pVideoReaderInputMediaTypeNative);
 				}
@@ -391,7 +391,7 @@ HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderVideo()
 					break;
 				}
 
-				if (SUCCEEDED_XOSb(hr))
+				if (SUCCEEDED_Xb(hr))
 				{
 					break;
 				}
@@ -399,7 +399,7 @@ HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderVideo()
 		}
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = m_pVASourceReader->SetStreamSelection((DWORD) MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
 	}
@@ -407,24 +407,24 @@ HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderVideo()
 	return hr;
 }
 
-HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderAudio()
+HRESULT XMFAVSourceReaderRep::ConfigureVASourceReaderAudio()
 {
 	HRESULT hr = S_OK;
 
 	// TODO: Write a comprehensive native format selector
 	CComPtr<IMFMediaType> pAudioReaderInputMediaTypeNative = NULL;
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		DWORD formatWeWant = 0;		// 2 channels 48k 16 bit PCM
 		hr = m_pVASourceReader->GetNativeMediaType((DWORD) MF_SOURCE_READER_FIRST_AUDIO_STREAM, formatWeWant, &pAudioReaderInputMediaTypeNative);
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = m_pVASourceReader->SetCurrentMediaType((DWORD) MF_SOURCE_READER_FIRST_AUDIO_STREAM, NULL, pAudioReaderInputMediaTypeNative);
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = m_pVASourceReader->SetStreamSelection((DWORD) MF_SOURCE_READER_FIRST_AUDIO_STREAM, TRUE);
 	}
@@ -432,7 +432,7 @@ HRESULT XOSMFAVSourceReaderRep::ConfigureVASourceReaderAudio()
 	return hr;
 }
 
-HRESULT XOSMFAVSourceReader::GetVideoInputMediaType(CComPtr<IMFMediaType>& pVideoInputMediaType)
+HRESULT XMFAVSourceReader::GetVideoInputMediaType(CComPtr<IMFMediaType>& pVideoInputMediaType)
 {
 	if (m_pRep)
 	{
@@ -440,7 +440,7 @@ HRESULT XOSMFAVSourceReader::GetVideoInputMediaType(CComPtr<IMFMediaType>& pVide
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFAVSourceReaderRep::GetVideoInputMediaType(CComPtr<IMFMediaType>& pVideoInputMediaType)
+HRESULT XMFAVSourceReaderRep::GetVideoInputMediaType(CComPtr<IMFMediaType>& pVideoInputMediaType)
 {
 	if (m_pVASourceReader)
 	{
@@ -449,7 +449,7 @@ HRESULT XOSMFAVSourceReaderRep::GetVideoInputMediaType(CComPtr<IMFMediaType>& pV
 	return E_FAIL;
 }
 
-HRESULT XOSMFAVSourceReader::GetAudioInputMediaType(CComPtr<IMFMediaType>& pAudioInputMediaType)
+HRESULT XMFAVSourceReader::GetAudioInputMediaType(CComPtr<IMFMediaType>& pAudioInputMediaType)
 {
 	if (m_pRep)
 	{
@@ -457,7 +457,7 @@ HRESULT XOSMFAVSourceReader::GetAudioInputMediaType(CComPtr<IMFMediaType>& pAudi
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFAVSourceReaderRep::GetAudioInputMediaType(CComPtr<IMFMediaType>& pAudioInputMediaType)
+HRESULT XMFAVSourceReaderRep::GetAudioInputMediaType(CComPtr<IMFMediaType>& pAudioInputMediaType)
 {
 	if (m_pVASourceReader)
 	{
@@ -466,7 +466,7 @@ HRESULT XOSMFAVSourceReaderRep::GetAudioInputMediaType(CComPtr<IMFMediaType>& pA
 	return E_FAIL;
 }
 
-HRESULT XOSMFAVSourceReader::GetPresentationDescriptor(CComPtr<IMFPresentationDescriptor>& pVideoInputPresentationDescriptor)
+HRESULT XMFAVSourceReader::GetPresentationDescriptor(CComPtr<IMFPresentationDescriptor>& pVideoInputPresentationDescriptor)
 {
 	if (m_pRep)
 	{
@@ -474,7 +474,7 @@ HRESULT XOSMFAVSourceReader::GetPresentationDescriptor(CComPtr<IMFPresentationDe
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFAVSourceReaderRep::GetPresentationDescriptor(CComPtr<IMFPresentationDescriptor>& pVideoInputPresentationDescriptor)
+HRESULT XMFAVSourceReaderRep::GetPresentationDescriptor(CComPtr<IMFPresentationDescriptor>& pVideoInputPresentationDescriptor)
 {
 	if (m_pVASource)
 	{
@@ -483,7 +483,7 @@ HRESULT XOSMFAVSourceReaderRep::GetPresentationDescriptor(CComPtr<IMFPresentatio
 	return E_FAIL;
 }
 
-HRESULT XOSMFAVSourceReader::GetMFMediaSource(CComPtr<IMFMediaSource>& pMFMediaSource)
+HRESULT XMFAVSourceReader::GetMFMediaSource(CComPtr<IMFMediaSource>& pMFMediaSource)
 {
 	if (m_pRep)
 	{
@@ -491,7 +491,7 @@ HRESULT XOSMFAVSourceReader::GetMFMediaSource(CComPtr<IMFMediaSource>& pMFMediaS
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFAVSourceReaderRep::GetMFMediaSource(CComPtr<IMFMediaSource>& pMFMediaSource)
+HRESULT XMFAVSourceReaderRep::GetMFMediaSource(CComPtr<IMFMediaSource>& pMFMediaSource)
 {
 	if (m_pVASourceReader)
 	{

@@ -245,7 +245,7 @@ void XMFCaptureAPIRep::SetCurrentDevice(XOSString deviceName)
 			if (m_CurrentVideoDevice == NULL && m_CurrentAudioDevice == NULL)
 			{
 				wchar_t  mess[1024];
-				swprintf_s(mess, 1024, L"XOSMFCaptureAPIRep::SetCurrentDevice Failed to get devices with name(%s)\n", deviceName->c_str());
+				swprintf_s(mess, 1024, L"XMFCaptureAPIRep::SetCurrentDevice Failed to get devices with name(%s)\n", deviceName->c_str());
 				OutputDebugStringW(mess);
 			}
 		}
@@ -316,7 +316,7 @@ HRESULT XMFCaptureAPIRep::StartCapture(HWND hwnd)
 		{
 			hr = m_XMFCaptureEngine->StartRecord(m_OutputPath->c_str());
 			//hr = StartPreview(hwnd); // causes error "Some component is already listening to events on this event generator"
-			hr = m_XMFCaptureEngine->StartPreview();
+			//hr = m_XMFCaptureEngine->StartPreview();
 		}
 	}
 	return hr;

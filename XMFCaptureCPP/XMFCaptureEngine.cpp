@@ -3,8 +3,8 @@
 #include "XMFCaptureEngine.h"
 #include "XMFUtilities.h"
 #include "XMFCaptureDevice.h"
-#include "XOSMFAVSourceReader.h"
-#include "XOSMFSinkWriter.h"
+#include "XMFAVSourceReader.h"
+#include "XMFSinkWriter.h"
 
 #include <windows.h>
 #include <memory>
@@ -15,8 +15,8 @@
 #include <codecapi.h>
 
 // old
-#include "XOSMFSinkWriterCallback.h"	
-#include "XOSMFSourceReaderCallback.h"
+#include "XMFSinkWriterCallback.h"	
+#include "XMFSourceReaderCallback.h"
 
 #define IDS_ERR_INITIALIZE              104
 #define IDS_ERR_PREVIEW                 105
@@ -45,7 +45,7 @@ public:
 	CComPtr<IMFCaptureSource> GetCaptureSourceNEW();
 
 	// old
-	XOSMFSinkWriter* GetSinkWriterOLD(LPCWSTR fullFilePath);
+	XMFSinkWriter* GetSinkWriterOLD(LPCWSTR fullFilePath);
 
 private:
 	// new
@@ -54,7 +54,7 @@ private:
 
 	// old
 	CComPtr<IMFMediaSource>	m_pAggregatSourceOLD;
-	XOSMFAVSourceReader* m_pXOSMFAVSourceReaderOLD;
+	XMFAVSourceReader* m_pXMFAVSourceReaderOLD;
 	CComPtr<IMFMediaSource> GetAggregateMediaSourceOLD(CComPtr<IMFMediaSource> pAudioSource, CComPtr<IMFMediaSource> pVideoSource);
 };
 
@@ -62,7 +62,7 @@ CaptureEngineWrapper::CaptureEngineWrapper(IMFCaptureEngineOnEventCallback *pEve
 	m_pEngineNEW(NULL),
 	m_hEventNEW(hEvent),
 	m_pAggregatSourceOLD(NULL),
-	m_pXOSMFAVSourceReaderOLD(NULL)
+	m_pXMFAVSourceReaderOLD(NULL)
 {
 	HRESULT hr = S_OK;
 	CComPtr<IMFCaptureEngineClassFactory> pFactory = NULL;
@@ -150,14 +150,18 @@ CComPtr<IMFCaptureSink> CaptureEngineWrapper::GetPreviewSinkNEW()
 	return NULL;
 }
 
-XOSMFSinkWriter* CaptureEngineWrapper::GetSinkWriterOLD(LPCWSTR fullFilePath)
+XMFSinkWriter* CaptureEngineWrapper::GetSinkWriterOLD(LPCWSTR fullFilePath)
 {
-	XOSMFSinkWriter* pXOSMFSinkWriter = new XOSMFSinkWriter(fullFilePath);
-	if (pXOSMFSinkWriter)
+	XMFSinkWriter* pXMFSinkWriter = new XMFSinkWriter(fullFilePath);
+	if (pXMFSinkWriter)
 	{
-		m_pXOSMFAVSourceReaderOLD = new XOSMFAVSourceReader(pXOSMFSinkWriter, m_pAggregatSourceOLD);
+		if (m_pXMFAVSourceReaderOLD)
+		{
+			delete m_pXMFAVSourceReaderOLD;
+		}
+		m_pXMFAVSourceReaderOLD = new XMFAVSourceReader(pXMFSinkWriter, m_pAggregatSourceOLD);
 	}
-	return pXOSMFSinkWriter;
+	return pXMFSinkWriter;
 }
 
 CComPtr<IMFCaptureSource> CaptureEngineWrapper::GetCaptureSourceNEW()
@@ -177,20 +181,45 @@ CComPtr<IMFCaptureSource> CaptureEngineWrapper::GetCaptureSourceNEW()
 
 HRESULT CaptureEngineWrapper::StartRecord()
 {
-	HRESULT hr = m_pEngineNEW->StartRecord();
-	if (SUCCEEDED_Xb(hr))
+	HRESULT hr = S_OK;
+	if (m_pEngineNEW)
 	{
-		WaitForSingleObject(m_hEventNEW, INFINITE);
+		hr = m_pEngineNEW->StartRecord();
+		if (SUCCEEDED_Xb(hr))
+		{
+			WaitForSingleObject(m_hEventNEW, INFINITE);
+		}
+	}
+	else if (m_pXMFAVSourceReaderOLD)
+	{
+		hr = m_pXMFAVSourceReaderOLD->Start();
+	}
+	else
+	{
+		hr = E_FAIL;
 	}
 	return hr;
 }
 
 HRESULT CaptureEngineWrapper::StopRecord()
 {
-	HRESULT hr = m_pEngineNEW->StopRecord(TRUE, TRUE);
-	if (SUCCEEDED_Xb(hr))
+	HRESULT hr = S_OK;
+	if (m_pEngineNEW)
 	{
-		WaitForSingleObject(m_hEventNEW, INFINITE);
+		hr = m_pEngineNEW->StopRecord(TRUE, TRUE);
+		if (SUCCEEDED_Xb(hr))
+		{
+			WaitForSingleObject(m_hEventNEW, INFINITE);
+		}
+	}
+	else if (m_pXMFAVSourceReaderOLD)
+	{
+		delete m_pXMFAVSourceReaderOLD;
+		m_pXMFAVSourceReaderOLD = NULL;
+	}
+	else
+	{
+		hr = E_FAIL;
 	}
 	return hr;
 }
@@ -243,9 +272,9 @@ CComPtr<IMFMediaType> CaptureEngineWrapper::GetAudioMTypeFromSource()
 	CComPtr<IMFMediaType> retVal = NULL;
 	if (UseOld)
 	{
-		if (m_pXOSMFAVSourceReaderOLD)
+		if (m_pXMFAVSourceReaderOLD)
 		{
-			hr = m_pXOSMFAVSourceReaderOLD->GetAudioInputMediaType(retVal);
+			hr = m_pXMFAVSourceReaderOLD->GetAudioInputMediaType(retVal);
 			if (SUCCEEDED_Xb(hr))
 			{
 				return retVal;
@@ -272,9 +301,9 @@ CComPtr<IMFMediaType> CaptureEngineWrapper::GetVideoMTypeFromSource()
 	CComPtr<IMFMediaType> retVal = NULL;
 	if (UseOld)
 	{
-		if (m_pXOSMFAVSourceReaderOLD)
+		if (m_pXMFAVSourceReaderOLD)
 		{
-			hr = m_pXOSMFAVSourceReaderOLD->GetVideoInputMediaType(retVal);
+			hr = m_pXMFAVSourceReaderOLD->GetVideoInputMediaType(retVal);
 			if (SUCCEEDED_Xb(hr))
 			{
 				return retVal;
@@ -374,7 +403,7 @@ private:
 	
 	CComPtr<IMFCapturePreviewSink>		m_pPreview;
 	CComPtr<IMFSinkWriter>				m_pVideoSinkWriterNEW;
-	XOSMFSinkWriter*					m_pSinkWriterOLD;
+	XMFSinkWriter*					m_pXMFSinkWriterOLD;
 
 	HWND								m_hwndPreview;
 	HANDLE								m_hEvent;
@@ -398,7 +427,7 @@ XMFCaptureEngineRep::XMFCaptureEngineRep(HWND hwnd, std::shared_ptr<XMFCaptureDe
 	m_pCaptureEngineWrapper(NULL),
 	m_pPreview(NULL),
 	m_pVideoSinkWriterNEW(NULL),
-	m_pSinkWriterOLD(NULL),
+	m_pXMFSinkWriterOLD(NULL),
 	m_hEvent(NULL),
 	m_hwndPreview(hwnd),
 	m_bRecording(false),
@@ -479,8 +508,8 @@ HRESULT XMFCaptureEngineRep::StartRecord(PCWSTR pszDestinationFile)
 	CComPtr<IMFCaptureSource> pCaptureSourceNEW = NULL;
 	if (UseOld)
 	{
-		m_pSinkWriterOLD = m_pCaptureEngineWrapper->GetSinkWriterOLD(pszDestinationFile);
-		if (m_pSinkWriterOLD == NULL)
+		m_pXMFSinkWriterOLD = m_pCaptureEngineWrapper->GetSinkWriterOLD(pszDestinationFile);
+		if (m_pXMFSinkWriterOLD == NULL)
 		{
 			hr = E_FAIL;
 		}
@@ -511,6 +540,37 @@ HRESULT XMFCaptureEngineRep::StartRecord(PCWSTR pszDestinationFile)
 		}
 	}
 
+	// VIDEO MUST GO FIRST!!
+	CComPtr<IMFMediaType> pVideoOutputMediaType;
+	if (SUCCEEDED_Xb(hr))
+	{
+		pVideoOutputMediaType = GetVideoEncodingMediaType(m_pCaptureEngineWrapper->GetVideoMTypeFromSource());
+	}
+	if (pVideoOutputMediaType)
+	{
+		if (pCaptureRecordSinkNEW)
+		{
+			hr = pCaptureRecordSinkNEW->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_RECORD, pVideoOutputMediaType, NULL, &m_dwVideoSinkStreamIndex);
+		}
+		else if (m_pXMFSinkWriterOLD)
+		{
+			hr = m_pXMFSinkWriterOLD->AddStream(pVideoOutputMediaType, &m_dwVideoSinkStreamIndex);
+			if (SUCCEEDED_Xb(hr))
+			{
+				hr = m_pXMFSinkWriterOLD->SetInputMediaType(m_dwVideoSinkStreamIndex, m_pCaptureEngineWrapper->GetVideoMTypeFromSource(), NULL);
+			}
+		}
+		else
+		{
+			hr = E_FAIL;
+		}
+	}
+	else
+	{
+		hr = E_FAIL;
+	}
+
+	// AUDIO MUST GO SECOND!!
 	CComPtr<IMFMediaType> pAudioOutputMediaType;
 	if (SUCCEEDED_Xb(hr))
 	{
@@ -527,9 +587,13 @@ HRESULT XMFCaptureEngineRep::StartRecord(PCWSTR pszDestinationFile)
 				hr = S_OK;
 			}
 		}
-		else if (m_pSinkWriterOLD)
+		else if (m_pXMFSinkWriterOLD)
 		{
-			hr = m_pSinkWriterOLD->AddStream(pAudioOutputMediaType, &m_dwAudioSinkStreamIndex);
+			hr = m_pXMFSinkWriterOLD->AddStream(pAudioOutputMediaType, &m_dwAudioSinkStreamIndex);
+			if (SUCCEEDED_Xb(hr))
+			{
+				hr = m_pXMFSinkWriterOLD->SetInputMediaType(m_dwAudioSinkStreamIndex, m_pCaptureEngineWrapper->GetAudioMTypeFromSource(), NULL);
+			}
 		}
 		else
 		{
@@ -541,31 +605,13 @@ HRESULT XMFCaptureEngineRep::StartRecord(PCWSTR pszDestinationFile)
 		hr = E_FAIL;
 	}
 
-	CComPtr<IMFMediaType> pVideoOutputMediaType;
 	if (SUCCEEDED_Xb(hr))
 	{
-		pVideoOutputMediaType = GetVideoEncodingMediaType(m_pCaptureEngineWrapper->GetVideoMTypeFromSource());
-	}
-	if (pVideoOutputMediaType)
-	{
-		if (pCaptureRecordSinkNEW)
+		if (m_pXMFSinkWriterOLD)
 		{
-			hr = pCaptureRecordSinkNEW->AddStream((DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_RECORD, pVideoOutputMediaType, NULL, &m_dwVideoSinkStreamIndex);
-		}
-		else if (m_pSinkWriterOLD)
-		{
-			hr = m_pSinkWriterOLD->AddStream(pVideoOutputMediaType, &m_dwVideoSinkStreamIndex);
-		}
-		else
-		{
-			hr = E_FAIL;
+			hr = m_pXMFSinkWriterOLD->BeginWriting();
 		}
 	}
-	else
-	{
-		hr = E_FAIL;
-	}
-
 	if (SUCCEEDED_Xb(hr))
 	{
 		hr = m_pCaptureEngineWrapper->StartRecord();
@@ -595,9 +641,17 @@ HRESULT XMFCaptureEngine::StopRecord()
 HRESULT XMFCaptureEngineRep::StopRecord()
 {
 	HRESULT hr = S_OK;
+
 	if (m_bRecording)
 	{
-		hr = m_pCaptureEngineWrapper->StopRecord();
+		if (m_pXMFSinkWriterOLD)
+		{
+			hr = m_pXMFSinkWriterOLD->EndWriting();
+		}
+		if (SUCCEEDED_Xb(hr))
+		{
+			hr = m_pCaptureEngineWrapper->StopRecord();
+		}
 	}
 	return hr;
 }
@@ -666,11 +720,13 @@ CComPtr<IMFMediaType> XMFCaptureEngineRep::GetVideoEncodingMediaType(CComPtr<IMF
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
-		hr = pOutputMediaType->SetUINT32(MF_MT_VIDEO_PROFILE, 100);
+		//hr = pOutputMediaType->SetUINT32(MF_MT_VIDEO_PROFILE, 100);
+		hr = pOutputMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_High);
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
-		hr = pOutputMediaType->SetUINT32(MF_MT_VIDEO_LEVEL, 41);
+		//hr = pOutputMediaType->SetUINT32(MF_MT_VIDEO_LEVEL, 41);
+		hr = pOutputMediaType->SetUINT32(MF_MT_MPEG2_LEVEL, eAVEncH264VLevel4_1);
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
@@ -869,9 +925,9 @@ HRESULT XMFCaptureEngineRep::get_FramesCaptured(unsigned long* pVal) const
 	{
 		hr = m_pVideoSinkWriterNEW->GetStatistics(m_dwVideoSinkStreamIndex, &stats);
 	}
-	else if (SUCCEEDED_Xb(hr) && m_pSinkWriterOLD)
+	else if (SUCCEEDED_Xb(hr) && m_pXMFSinkWriterOLD)
 	{
-		m_pSinkWriterOLD->GetStatistics(m_dwVideoSinkStreamIndex, &stats);
+		m_pXMFSinkWriterOLD->GetStatistics(m_dwVideoSinkStreamIndex, &stats);
 	}
 	else
 	{
@@ -907,9 +963,9 @@ HRESULT	XMFCaptureEngineRep::get_FPSForCapture(long* pVal) const
 	{
 		hr = m_pVideoSinkWriterNEW->GetStatistics(m_dwVideoSinkStreamIndex, &stats);
 	}
-	else if (SUCCEEDED_Xb(hr) && m_pSinkWriterOLD)
+	else if (SUCCEEDED_Xb(hr) && m_pXMFSinkWriterOLD)
 	{
-		m_pSinkWriterOLD->GetStatistics(m_dwVideoSinkStreamIndex, &stats);
+		m_pXMFSinkWriterOLD->GetStatistics(m_dwVideoSinkStreamIndex, &stats);
 	}
 	else
 	{

@@ -99,7 +99,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;XOSMFCAPTURECPP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;XMFCAPTURECPP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)Common</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -122,7 +122,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;_USRDLL;XOSMFCAPTURECPP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;_USRDLL;XMFCAPTURECPP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)Common</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -147,7 +147,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XOSMFCAPTURECPP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XMFCAPTURECPP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)Common</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
@@ -174,7 +174,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;XOSMFCAPTURECPP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;XMFCAPTURECPP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)Common</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
@@ -202,6 +202,10 @@
     <ClInclude Include="XMFFormat.h" />
     <ClInclude Include="XMFPreview.h" />
     <ClInclude Include="XMFUtilities.h" />
+    <ClInclude Include="XMFAVSourceReader.h" />
+    <ClInclude Include="XMFSinkWriter.h" />
+    <ClInclude Include="XMFSinkWriterCallback.h" />
+    <ClInclude Include="XMFSourceReaderCallback.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\stdafx.cpp" />
@@ -213,10 +217,10 @@
     <ClCompile Include="XMFFormat.cpp" />
     <ClCompile Include="XMFPreview.cpp" />
     <ClCompile Include="XMFUtilities.cpp" />
-    <ClCompile Include="XOSMFAVSourceReader.cpp" />
-    <ClCompile Include="XOSMFSinkWriter.cpp" />
-    <ClCompile Include="XOSMFSinkWriterCallback.cpp" />
-    <ClCompile Include="XOSMFSourceReaderCallback.cpp" />
+    <ClCompile Include="XMFAVSourceReader.cpp" />
+    <ClCompile Include="XMFSinkWriter.cpp" />
+    <ClCompile Include="XMFSinkWriterCallback.cpp" />
+    <ClCompile Include="XMFSourceReaderCallback.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

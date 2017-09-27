@@ -1,12 +1,13 @@
-#include "XOSMFSinkWriter.h"
-#include "XOSMFSinkWriterCallback.h"
-#include "XOSMFUtilities.h"
+#include "stdafx.h"
+#include "XMFSinkWriter.h"
+#include "XMFSinkWriterCallback.h"
+#include "XMFUtilities.h"
 
-class XOSMFSinkWriterRep
+class XMFSinkWriterRep
 {
 public:
-	XOSMFSinkWriterRep(LPCWSTR fullFilePath);
-	~XOSMFSinkWriterRep();
+	XMFSinkWriterRep(LPCWSTR fullFilePath);
+	~XMFSinkWriterRep();
 
 	HRESULT WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSample, bool* bStopRequested);
 	HRESULT AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD* pdwStreamIndex);
@@ -17,7 +18,7 @@ public:
 	HRESULT GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats);
 
 private:
-	XOSMFSinkWriterRep();
+	XMFSinkWriterRep();
 
 	CComPtr<IMFSinkWriter> m_pSinkWriter;
 	CComAutoCriticalSection m_protectSinkWriter;
@@ -26,11 +27,11 @@ private:
 	HANDLE m_hEventAllStopped;
 };
 
-XOSMFSinkWriter::XOSMFSinkWriter(LPCWSTR fullFilePath)
+XMFSinkWriter::XMFSinkWriter(LPCWSTR fullFilePath)
 {
-	m_pRep = new XOSMFSinkWriterRep(fullFilePath);
+	m_pRep = new XMFSinkWriterRep(fullFilePath);
 }
-XOSMFSinkWriterRep::XOSMFSinkWriterRep(LPCWSTR fullFilePath) :
+XMFSinkWriterRep::XMFSinkWriterRep(LPCWSTR fullFilePath) :
 m_pSinkWriter(NULL),
 m_bStopRequested(false)
 {
@@ -39,39 +40,39 @@ m_bStopRequested(false)
 	// make sure we ask for hardware transforms (Intel quick sync)
 	CComPtr<IMFAttributes> pAttributes = NULL;
 	HRESULT hr = MFCreateAttributes(&pAttributes, 1);
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		hr = pAttributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE);
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		// for some reason SetUnknown does not count towards the IMFAttributes count
-		hr = pAttributes->SetUnknown(MF_SINK_WRITER_ASYNC_CALLBACK, new XOSMFSinkWriterCallback());
+		hr = pAttributes->SetUnknown(MF_SINK_WRITER_ASYNC_CALLBACK, new XMFSinkWriterCallback());
 	}
 
-	if (SUCCEEDED_XOSb(hr))
+	if (SUCCEEDED_Xb(hr))
 	{
 		CComCritSecLock<CComCriticalSection> lock(m_protectSinkWriter);
 		hr = MFCreateSinkWriterFromURL(fullFilePath, NULL, pAttributes, &m_pSinkWriter);
 	}
 
-	SUCCEEDED_XOSv(hr);
+	SUCCEEDED_Xv(hr);
 }
 
-XOSMFSinkWriter::~XOSMFSinkWriter()
+XMFSinkWriter::~XMFSinkWriter()
 {
 	if (m_pRep)
 	{
 		delete m_pRep;
 	}
 }
-XOSMFSinkWriterRep::~XOSMFSinkWriterRep()
+XMFSinkWriterRep::~XMFSinkWriterRep()
 {
 	CComCritSecLock<CComCriticalSection> lock(m_protectSinkWriter);
 }
 
-HRESULT XOSMFSinkWriter::WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSample, bool* bStopRequested)
+HRESULT XMFSinkWriter::WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSample, bool* bStopRequested)
 {
 	if (m_pRep)
 	{
@@ -79,7 +80,7 @@ HRESULT XOSMFSinkWriter::WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSa
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFSinkWriterRep::WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSample, bool* bStopRequested)
+HRESULT XMFSinkWriterRep::WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSample, bool* bStopRequested)
 {
 	if (m_pSinkWriter)
 	{
@@ -87,19 +88,16 @@ HRESULT XOSMFSinkWriterRep::WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> 
 		{
 			*bStopRequested = m_bStopRequested;
 		}
-		
 		CComCritSecLock<CComCriticalSection> lock(m_protectSinkWriter);
-
 		if (m_pSinkWriter)
 		{
 			return m_pSinkWriter->WriteSample(dwStreamIndex, pSample);
 		}
 	}
-
 	return E_FAIL;
 }
 
-HRESULT XOSMFSinkWriter::AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD* pdwStreamIndex)
+HRESULT XMFSinkWriter::AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD* pdwStreamIndex)
 {
 	if (m_pRep)
 	{
@@ -107,7 +105,7 @@ HRESULT XOSMFSinkWriter::AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFSinkWriterRep::AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD* pdwStreamIndex)
+HRESULT XMFSinkWriterRep::AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD* pdwStreamIndex)
 {
 	if (m_pSinkWriter)
 	{
@@ -117,7 +115,7 @@ HRESULT XOSMFSinkWriterRep::AddStream(CComPtr<IMFMediaType> pTargetMediaType, DW
 	return E_FAIL;
 }
 
-HRESULT XOSMFSinkWriter::SetInputMediaType(DWORD dwStreamIndex, CComPtr<IMFMediaType> pInputMediaType, CComPtr<IMFAttributes> pEncodingParameters)
+HRESULT XMFSinkWriter::SetInputMediaType(DWORD dwStreamIndex, CComPtr<IMFMediaType> pInputMediaType, CComPtr<IMFAttributes> pEncodingParameters)
 {
 	if (m_pRep)
 	{
@@ -125,7 +123,7 @@ HRESULT XOSMFSinkWriter::SetInputMediaType(DWORD dwStreamIndex, CComPtr<IMFMedia
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFSinkWriterRep::SetInputMediaType(DWORD dwStreamIndex, CComPtr<IMFMediaType> pInputMediaType, CComPtr<IMFAttributes> pEncodingParameters)
+HRESULT XMFSinkWriterRep::SetInputMediaType(DWORD dwStreamIndex, CComPtr<IMFMediaType> pInputMediaType, CComPtr<IMFAttributes> pEncodingParameters)
 {
 	if (m_pSinkWriter)
 	{
@@ -135,7 +133,7 @@ HRESULT XOSMFSinkWriterRep::SetInputMediaType(DWORD dwStreamIndex, CComPtr<IMFMe
 	return E_FAIL;
 }
 
-HRESULT XOSMFSinkWriter::BeginWriting()
+HRESULT XMFSinkWriter::BeginWriting()
 {
 	if (m_pRep)
 	{
@@ -143,7 +141,7 @@ HRESULT XOSMFSinkWriter::BeginWriting()
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFSinkWriterRep::BeginWriting()
+HRESULT XMFSinkWriterRep::BeginWriting()
 {
 	if (m_pSinkWriter)
 	{
@@ -153,7 +151,7 @@ HRESULT XOSMFSinkWriterRep::BeginWriting()
 	return E_FAIL;
 }
 
-HRESULT XOSMFSinkWriter::EndWriting()
+HRESULT XMFSinkWriter::EndWriting()
 {
 	if (m_pRep)
 	{
@@ -161,7 +159,7 @@ HRESULT XOSMFSinkWriter::EndWriting()
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFSinkWriterRep::EndWriting()
+HRESULT XMFSinkWriterRep::EndWriting()
 {
 	if (m_pSinkWriter)
 	{
@@ -179,7 +177,7 @@ HRESULT XOSMFSinkWriterRep::EndWriting()
 	return E_FAIL;
 }
 
-HRESULT XOSMFSinkWriter::SignalAllStopped()
+HRESULT XMFSinkWriter::SignalAllStopped()
 {
 	if (m_pRep)
 	{
@@ -187,13 +185,13 @@ HRESULT XOSMFSinkWriter::SignalAllStopped()
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFSinkWriterRep::SignalAllStopped()
+HRESULT XMFSinkWriterRep::SignalAllStopped()
 {
 	SetEvent(m_hEventAllStopped);
 	return S_OK;
 }
 
-HRESULT XOSMFSinkWriter::GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats)
+HRESULT XMFSinkWriter::GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats)
 {
 	if (m_pRep)
 	{
@@ -201,7 +199,7 @@ HRESULT XOSMFSinkWriter::GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATI
 	}
 	return E_FAIL;
 }
-HRESULT XOSMFSinkWriterRep::GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats)
+HRESULT XMFSinkWriterRep::GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats)
 {
 	if (m_pSinkWriter)
 	{

@@ -9,14 +9,14 @@
 
 #define DEBUG_TIMMING
 
-class XOSMFAVSourceReaderRep;
-class XOSMFSinkWriter;
-class XOSMFAVSourceReader
+class XMFAVSourceReaderRep;
+class XMFSinkWriter;
+class XMFAVSourceReader
 {
 public:
-	friend class XOSMFSourceReaderCallback;
-	XOSMFAVSourceReader(XOSMFSinkWriter* pXOSMFSinkWriter, CComPtr<IMFMediaSource> pVASource);
-	virtual ~XOSMFAVSourceReader();
+	friend class XMFSourceReaderCallback;
+	XMFAVSourceReader(XMFSinkWriter* pXMFSinkWriter, CComPtr<IMFMediaSource> pVASource);
+	virtual ~XMFAVSourceReader();
 
 	HRESULT Start();
 	HRESULT GetVideoInputMediaType(CComPtr<IMFMediaType>& pVideoReaderInputMediaTypeCurrent);
@@ -29,7 +29,7 @@ protected:
 	HRESULT OnReadSample(HRESULT hrStatus, DWORD dwStreamIndex, DWORD dwStreamFlags, LONGLONG llTimeStamp, CComPtr<IMFSample> pMFSample);
 	HRESULT OnFlush(DWORD dwStreamIndex);
 private:
-	XOSMFAVSourceReader();
+	XMFAVSourceReader();
 
-	XOSMFAVSourceReaderRep* m_pRep;
+	XMFAVSourceReaderRep* m_pRep;
 };

@@ -35,6 +35,18 @@
     <ClInclude Include="XMFPreview.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="XMFAVSourceReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XMFSinkWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XMFSinkWriterCallback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XMFSourceReaderCallback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XMFAttrToStrHelper.cpp">
@@ -64,16 +76,16 @@
     <ClCompile Include="..\Common\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XOSMFSinkWriterCallback.cpp">
+    <ClCompile Include="XMFAVSourceReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XOSMFSourceReaderCallback.cpp">
+    <ClCompile Include="XMFSinkWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XOSMFAVSourceReader.cpp">
+    <ClCompile Include="XMFSinkWriterCallback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XOSMFSinkWriter.cpp">
+    <ClCompile Include="XMFSourceReaderCallback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

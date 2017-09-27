@@ -7,12 +7,12 @@
 #include <mfreadwrite.h>
 #include <atlbase.h>
 
-class XOSMFAVSourceReader;
-class XOSMFSourceReaderCallback : public IMFSourceReaderCallback
+class XMFAVSourceReader;
+class XMFSourceReaderCallback : public IMFSourceReaderCallback
 {
 public:
-	XOSMFSourceReaderCallback(XOSMFAVSourceReader* pXOSMFAVSourceReader);
-	~XOSMFSourceReaderCallback();
+	XMFSourceReaderCallback(XMFAVSourceReader* pXMFAVSourceReader);
+	~XMFSourceReaderCallback();
 
 	// IUnknown methods
 	STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
@@ -26,5 +26,5 @@ public:
 
 private:
 	long m_nRefCount;
-	XOSMFAVSourceReader* m_pXOSMFAVSourceReader;
+	XMFAVSourceReader* m_pXMFAVSourceReader;
 };

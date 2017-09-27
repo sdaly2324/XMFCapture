@@ -7,7 +7,7 @@
 
 #include "XMFUtilities.h"
 
-#ifdef XOSMFCAPTURECPP_EXPORTS
+#ifdef XMFCAPTURECPP_EXPORTS
 #define XMFCAPTURECPP_API __declspec(dllexport)
 #else
 #define XMFCAPTURECPP_API __declspec(dllimport)

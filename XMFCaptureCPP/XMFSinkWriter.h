@@ -7,19 +7,19 @@
 #include <mfreadwrite.h>
 #include <atlbase.h>
 
-class XOSMFSinkWriterRep;
+class XMFSinkWriterRep;
 
-#ifdef XOSMFCAPTURECPP_EXPORTS
-#define XOSMFCAPTURECPP_API __declspec(dllexport)
+#ifdef XMFCAPTURECPP_EXPORTS
+#define XMFCAPTURECPP_API __declspec(dllexport)
 #else
-#define XOSMFCAPTURECPP_API __declspec(dllimport)
+#define XMFCAPTURECPP_API __declspec(dllimport)
 #endif
 
-class XOSMFCAPTURECPP_API XOSMFSinkWriter
+class XMFCAPTURECPP_API XMFSinkWriter
 {
 public:
-	XOSMFSinkWriter(LPCWSTR fullFilePath);
-	~XOSMFSinkWriter();
+	XMFSinkWriter(LPCWSTR fullFilePath);
+	~XMFSinkWriter();
 
 	HRESULT WriteSample(DWORD dwStreamIndex, CComPtr<IMFSample> pSample, bool* bStopRequested);
 	HRESULT AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWORD* pdwStreamIndex);
@@ -30,7 +30,7 @@ public:
 	HRESULT GetStatistics(DWORD dwStreamIndex, MF_SINK_WRITER_STATISTICS *pStats);
 
 private:
-	XOSMFSinkWriter();
+	XMFSinkWriter();
 
-	XOSMFSinkWriterRep* m_pRep;
+	XMFSinkWriterRep* m_pRep;
 };
