@@ -37,7 +37,7 @@ public:
 	bool			IsCapturing();
 	HRESULT			CheckDeviceLost(DEV_BROADCAST_HDR* pHdr, bool* pbDeviceLost);
 
-	HRESULT			StartCapture(HWND hwnd, bool useOld);
+	HRESULT			StartCapture(bool useOld);
 	HRESULT			StopCapture();
 
 	HRESULT			StartPreview(HWND hwnd);
@@ -284,18 +284,18 @@ XOSString XMFCaptureAPIRep::GetCurrentDevice()
 	return m_CurrentDeviceName;
 }
 
-HRESULT XMFCaptureAPI::StartCapture(HWND hwnd, bool useOld)
+HRESULT XMFCaptureAPI::StartCapture(bool useOld)
 {
 	LogBeginAPICall(__FUNCTION__);
 
 	if (m_RepPtr)
 	{
-		return m_RepPtr->StartCapture(hwnd, useOld);
+		return m_RepPtr->StartCapture(useOld);
 	}
 
 	return E_FAIL;
 }
-HRESULT XMFCaptureAPIRep::StartCapture(HWND hwnd, bool useOld)
+HRESULT XMFCaptureAPIRep::StartCapture(bool useOld)
 {
 	HRESULT hr = S_OK;
 	m_IsCapturing = true;
@@ -311,7 +311,7 @@ HRESULT XMFCaptureAPIRep::StartCapture(HWND hwnd, bool useOld)
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
-		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngine>(hwnd, m_CurrentVideoDevice, m_CurrentAudioDevice, useOld);
+		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngine>(m_CurrentVideoDevice, m_CurrentAudioDevice, useOld);
 		if (m_XMFCaptureEngine)
 		{
 			hr = m_XMFCaptureEngine->StartRecord(m_OutputPath->c_str());

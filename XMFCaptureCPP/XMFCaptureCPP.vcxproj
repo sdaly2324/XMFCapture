@@ -199,6 +199,7 @@
     <ClInclude Include="XMFCaptureAPI.h" />
     <ClInclude Include="XMFCaptureDeviceManager.h" />
     <ClInclude Include="XMFCaptureDevice.h" />
+    <ClInclude Include="XMFCaptureEngineWrapper.h" />
     <ClInclude Include="XMFFormat.h" />
     <ClInclude Include="XMFPreview.h" />
     <ClInclude Include="XMFUtilities.h" />
@@ -214,6 +215,7 @@
     <ClCompile Include="XMFCaptureAPI.cpp" />
     <ClCompile Include="XMFCaptureDeviceManager.cpp" />
     <ClCompile Include="XMFCaptureDevice.cpp" />
+    <ClCompile Include="XMFCaptureEngineWrapper.cpp" />
     <ClCompile Include="XMFFormat.cpp" />
     <ClCompile Include="XMFPreview.cpp" />
     <ClCompile Include="XMFUtilities.cpp" />
