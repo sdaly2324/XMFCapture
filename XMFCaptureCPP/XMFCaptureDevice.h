@@ -41,5 +41,5 @@ public:
 private:
 	XMFCaptureDevice();
 
-	XMFCaptureDeviceRep* m_RepPtr;
+	XMFCaptureDeviceRep* m_pRep;
 };

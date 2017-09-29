@@ -42,7 +42,7 @@ private:
 
 XMFPreview::XMFPreview()
 {
-	m_RepPtr = new XMFPreviewRep();
+	m_pRep = new XMFPreviewRep();
 }
 XMFPreviewRep::XMFPreviewRep():
 m_pIMFMediaSession(NULL),
@@ -53,10 +53,10 @@ m_nRefCount(1)
 
 XMFPreview::~XMFPreview()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		delete m_RepPtr;
-		m_RepPtr = NULL;
+		delete m_pRep;
+		m_pRep = NULL;
 	}
 }
 XMFPreviewRep::~XMFPreviewRep()
@@ -65,9 +65,9 @@ XMFPreviewRep::~XMFPreviewRep()
 
 HRESULT	XMFPreview::StartPreview(HWND hWindowForVideo, std::shared_ptr<XMFCaptureDevice> pXMFCaptureDeviceVideo, std::shared_ptr<XMFCaptureDevice> pXMFCaptureDeviceAudio)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StartPreview(hWindowForVideo, pXMFCaptureDeviceVideo, pXMFCaptureDeviceAudio);
+		return m_pRep->StartPreview(hWindowForVideo, pXMFCaptureDeviceVideo, pXMFCaptureDeviceAudio);
 	}
 
 	return E_FAIL;
@@ -93,9 +93,9 @@ HRESULT XMFPreviewRep::StartPreview(HWND hWindowForVideo, std::shared_ptr<XMFCap
 
 HRESULT	XMFPreview::StopPreview()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StopPreview();
+		return m_pRep->StopPreview();
 	}
 
 	return E_FAIL;
@@ -113,9 +113,9 @@ HRESULT XMFPreviewRep::StopPreview()
 
 void XMFPreview::SetVideoDisplaySize(long width, long height)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->SetVideoDisplaySize(width, height);
+		m_pRep->SetVideoDisplaySize(width, height);
 	}
 }
 void XMFPreviewRep::SetVideoDisplaySize(long width, long height)

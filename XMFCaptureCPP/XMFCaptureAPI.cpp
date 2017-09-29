@@ -75,11 +75,11 @@ XMFCaptureAPI* XMFCaptureAPI::GetInstance()
 	return gInstance;
 }
 
-XMFCaptureAPI::XMFCaptureAPI() : m_RepPtr(0)
+XMFCaptureAPI::XMFCaptureAPI() : m_pRep(0)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	m_RepPtr = new XMFCaptureAPIRep();
+	m_pRep = new XMFCaptureAPIRep();
 }
 XMFCaptureAPIRep::XMFCaptureAPIRep() :
 m_pXMFCaptureDeviceManager(NULL),
@@ -101,10 +101,10 @@ XMFCaptureAPI::~XMFCaptureAPI()
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		delete m_RepPtr;
-		m_RepPtr = NULL;
+		delete m_pRep;
+		m_pRep = NULL;
 	}
 
 	SUCCEEDED_Xv(MFShutdown());
@@ -117,9 +117,9 @@ HRESULT XMFCaptureAPI::CheckDeviceLost(DEV_BROADCAST_HDR* pHdr, bool* pbDeviceLo
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->CheckDeviceLost(pHdr, pbDeviceLost);
+		return m_pRep->CheckDeviceLost(pHdr, pbDeviceLost);
 	}
 
 	return E_FAIL;
@@ -153,9 +153,9 @@ bool XMFCaptureAPI::IsCapturing()
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->IsCapturing();
+		return m_pRep->IsCapturing();
 	}
 
 	return false;
@@ -169,9 +169,9 @@ void XMFCaptureAPI::SetOutputPath(XOSString outputPath)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->SetOutputPath(outputPath);
+		m_pRep->SetOutputPath(outputPath);
 	}
 }
 void XMFCaptureAPIRep::SetOutputPath(XOSString outputPath)
@@ -183,9 +183,9 @@ HRESULT XMFCaptureAPI::ReEnumerateDevices()
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->ReEnumerateDevices();
+		return m_pRep->ReEnumerateDevices();
 	}
 
 	return E_FAIL;
@@ -204,9 +204,9 @@ XOSStringList XMFCaptureAPI::GetDevicePairNamesList()
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetDevicePairNamesList();
+		return m_pRep->GetDevicePairNamesList();
 	}
 
 	XOSStringList emptyList;
@@ -228,9 +228,9 @@ void XMFCaptureAPI::SetCurrentDevice(XOSString deviceName)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->SetCurrentDevice(deviceName);
+		m_pRep->SetCurrentDevice(deviceName);
 	}
 }
 void XMFCaptureAPIRep::SetCurrentDevice(XOSString deviceName)
@@ -256,9 +256,9 @@ XOSString XMFCaptureAPI::GetCurrentDevice()
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetCurrentDevice();
+		return m_pRep->GetCurrentDevice();
 	}
 
 	XOSString retVal(new std::wstring(L""));
@@ -288,9 +288,9 @@ HRESULT XMFCaptureAPI::StartCapture(bool useOld)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StartCapture(useOld);
+		return m_pRep->StartCapture(useOld);
 	}
 
 	return E_FAIL;
@@ -326,9 +326,9 @@ HRESULT	XMFCaptureAPI::StartPreview(HWND hwnd)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StartPreview(hwnd);
+		return m_pRep->StartPreview(hwnd);
 	}
 
 	return E_FAIL;
@@ -360,9 +360,9 @@ HRESULT	XMFCaptureAPI::StopPreview()
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StopPreview();
+		return m_pRep->StopPreview();
 	}
 
 	return E_FAIL;
@@ -386,9 +386,9 @@ HRESULT	XMFCaptureAPI::IsPreviewRunning()
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->IsPreviewRunning();
+		return m_pRep->IsPreviewRunning();
 	}
 
 	return E_FAIL;
@@ -406,9 +406,9 @@ HRESULT XMFCaptureAPI::StopCapture()
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StopCapture();
+		return m_pRep->StopCapture();
 	}
 
 	return E_FAIL;
@@ -449,9 +449,9 @@ HRESULT	XMFCaptureAPI::get_FramesCaptured(unsigned long* pVal)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->get_FramesCaptured(pVal);
+		return m_pRep->get_FramesCaptured(pVal);
 	}
 	return E_FAIL;
 }
@@ -476,9 +476,9 @@ HRESULT XMFCaptureAPI::get_FPSForCapture(long* pVal)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->get_FPSForCapture(pVal);
+		return m_pRep->get_FPSForCapture(pVal);
 	}
 	return E_FAIL;
 }
@@ -503,9 +503,9 @@ HRESULT XMFCaptureAPI::get_PreviewIsOn(bool* pVal)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->get_PreviewIsOn(pVal);
+		return m_pRep->get_PreviewIsOn(pVal);
 	}
 	return E_FAIL;
 }
@@ -523,9 +523,9 @@ void XMFCaptureAPI::SetVideoDisplaySize(long width, long height)
 {
 	LogBeginAPICall(__FUNCTION__);
 
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->SetVideoDisplaySize(width, height);
+		m_pRep->SetVideoDisplaySize(width, height);
 	}
 }
 void XMFCaptureAPIRep::SetVideoDisplaySize(long width, long height)

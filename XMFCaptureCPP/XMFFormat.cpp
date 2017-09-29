@@ -29,7 +29,7 @@ private:
 
 XMFFormat::XMFFormat(CComPtr<IMFActivate> deviceThatOwnsThisList, DWORD streamID, DWORD m_FormatIndex)
 {
-	m_RepPtr = new XMFFormatRep(deviceThatOwnsThisList, streamID, m_FormatIndex);
+	m_pRep = new XMFFormatRep(deviceThatOwnsThisList, streamID, m_FormatIndex);
 }
 XMFFormatRep::XMFFormatRep(CComPtr<IMFActivate> deviceThatOwnsThisList, DWORD streamID, DWORD m_FormatIndex) :
 m_pDeviceThatOwnsThisList(deviceThatOwnsThisList),
@@ -41,10 +41,10 @@ m_FormatIndex(m_FormatIndex)
 
 XMFFormat::~XMFFormat()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		delete m_RepPtr;
-		m_RepPtr = NULL;
+		delete m_pRep;
+		m_pRep = NULL;
 	}
 }
 XMFFormatRep::~XMFFormatRep()
@@ -54,9 +54,9 @@ XMFFormatRep::~XMFFormatRep()
 
 void XMFFormat::AddAtribute(GUID attr, std::wstring val)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->AddAtribute(attr, val);
+		m_pRep->AddAtribute(attr, val);
 	}
 }
 void XMFFormatRep::AddAtribute(GUID attr, std::wstring val)
@@ -66,9 +66,9 @@ void XMFFormatRep::AddAtribute(GUID attr, std::wstring val)
 
 DWORD XMFFormat::GetStreamID()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetStreamID();
+		return m_pRep->GetStreamID();
 	}
 	return 0;
 }
@@ -79,9 +79,9 @@ DWORD XMFFormatRep::GetStreamID()
 
 DWORD XMFFormat::GetFormatIndex()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetFormatIndex();
+		return m_pRep->GetFormatIndex();
 	}
 	return 0;
 }
@@ -92,9 +92,9 @@ DWORD XMFFormatRep::GetFormatIndex()
 
 bool XMFFormat::operator==(const XMFFormat& obj)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->operator==(*(obj.m_RepPtr));
+		return m_pRep->operator==(*(obj.m_pRep));
 	}
 	return false;
 }
@@ -112,9 +112,9 @@ bool XMFFormatRep::operator==(const XMFFormatRep& obj)
 
 bool XMFFormat::CantainsAllAttributes(const XMFFormat& givenFormat)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->CantainsAllAttributes(*(givenFormat.m_RepPtr));
+		return m_pRep->CantainsAllAttributes(*(givenFormat.m_pRep));
 	}
 	return false;
 }

@@ -26,6 +26,6 @@ public:
 	void					SetVideoDisplaySize(long width, long height);
 
 private:
-	XMFPreviewRep* m_RepPtr;
+	XMFPreviewRep* m_pRep;
 };
 

@@ -33,7 +33,7 @@ private:
 };
 XMFCaptureEngine::XMFCaptureEngine(std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice, bool useOld)
 {
-	m_RepPtr = new XMFCaptureEngineRep(pAudioDevice, pVideoDevice, useOld);
+	m_pRep = new XMFCaptureEngineRep(pAudioDevice, pVideoDevice, useOld);
 }
 XMFCaptureEngineRep::XMFCaptureEngineRep(std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice, bool useOld)
 {
@@ -41,10 +41,10 @@ XMFCaptureEngineRep::XMFCaptureEngineRep(std::shared_ptr<XMFCaptureDevice> pAudi
 }
 XMFCaptureEngine::~XMFCaptureEngine()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		delete m_RepPtr;
-		m_RepPtr = NULL;
+		delete m_pRep;
+		m_pRep = NULL;
 	}
 }
 XMFCaptureEngineRep::~XMFCaptureEngineRep()
@@ -52,9 +52,9 @@ XMFCaptureEngineRep::~XMFCaptureEngineRep()
 }
 HRESULT XMFCaptureEngine::StartRecord(PCWSTR pszDestinationFile)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StartRecord(pszDestinationFile);
+		return m_pRep->StartRecord(pszDestinationFile);
 	}
 	return E_FAIL;
 }
@@ -74,9 +74,9 @@ HRESULT XMFCaptureEngineRep::StartRecord(PCWSTR pszDestinationFile)
 }
 HRESULT XMFCaptureEngine::StopRecord()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StopRecord();
+		return m_pRep->StopRecord();
 	}
 	return E_FAIL;
 }
@@ -86,9 +86,9 @@ HRESULT XMFCaptureEngineRep::StopRecord()
 }
 bool XMFCaptureEngine::IsPreviewing() const
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->IsPreviewing();
+		return m_pRep->IsPreviewing();
 	}
 	return false;
 }
@@ -98,9 +98,9 @@ bool XMFCaptureEngineRep::IsPreviewing() const
 }
 bool XMFCaptureEngine::IsRecording() const
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->IsRecording();
+		return m_pRep->IsRecording();
 	}
 	return false;
 }
@@ -110,9 +110,9 @@ bool XMFCaptureEngineRep::IsRecording() const
 }
 HRESULT XMFCaptureEngine::get_FramesCaptured(unsigned long* pVal) const
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->get_FramesCaptured(pVal);
+		return m_pRep->get_FramesCaptured(pVal);
 	}
 	return E_FAIL;
 }
@@ -126,9 +126,9 @@ HRESULT XMFCaptureEngineRep::get_FramesCaptured(unsigned long* pVal) const
 }
 HRESULT	XMFCaptureEngine::get_FPSForCapture(long* pVal) const
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->get_FPSForCapture(pVal);
+		return m_pRep->get_FPSForCapture(pVal);
 	}
 	return E_FAIL;
 }
@@ -142,9 +142,9 @@ HRESULT	XMFCaptureEngineRep::get_FPSForCapture(long* pVal) const
 }
 HRESULT XMFCaptureEngine::StartPreview(HWND hwnd)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StartPreview(hwnd);
+		return m_pRep->StartPreview(hwnd);
 	}
 	return E_FAIL;
 }
@@ -164,9 +164,9 @@ HRESULT XMFCaptureEngineRep::StartPreview(HWND hwnd)
 
 HRESULT XMFCaptureEngine::StopPreview()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StopPreview();
+		return m_pRep->StopPreview();
 	}
 	return E_FAIL;
 }

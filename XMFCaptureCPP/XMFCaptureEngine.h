@@ -26,5 +26,5 @@ public:
 private:
 	XMFCaptureEngine();
 
-	XMFCaptureEngineRep* m_RepPtr;
+	XMFCaptureEngineRep* m_pRep;
 };

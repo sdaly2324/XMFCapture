@@ -45,6 +45,6 @@ public:
 
 private:
 	XMFCaptureAPI();
-	XMFCaptureAPIRep* m_RepPtr;
+	XMFCaptureAPIRep* m_pRep;
 };
 

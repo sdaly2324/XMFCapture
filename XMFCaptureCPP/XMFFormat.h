@@ -24,5 +24,5 @@ public:
 	bool CantainsAllAttributes(const XMFFormat& obj);
 
 private:
-	XMFFormatRep* m_RepPtr;
+	XMFFormatRep* m_pRep;
 };

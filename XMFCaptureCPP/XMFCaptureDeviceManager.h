@@ -31,6 +31,6 @@ public:
 	XOSString GetDevcePairNameWithPreFix(std::pair < DEVICE_PAIR > &devPair);
 
 private:
-	XMFCaptureDeviceManagerRep* m_RepPtr;
+	XMFCaptureDeviceManagerRep* m_pRep;
 };
 

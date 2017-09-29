@@ -69,7 +69,7 @@ private:
 
 XMFCaptureDevice::XMFCaptureDevice(CComPtr<IMFActivate> pMFActivate, GUID type)
 {
-	m_RepPtr = new XMFCaptureDeviceRep(pMFActivate, type);
+	m_pRep = new XMFCaptureDeviceRep(pMFActivate, type);
 }
 XMFCaptureDeviceRep::XMFCaptureDeviceRep(CComPtr<IMFActivate> pMFActivate, GUID type) :
 m_DumpAtributes(false),
@@ -120,10 +120,10 @@ m_Capturing(false)
 
 XMFCaptureDevice::~XMFCaptureDevice()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		delete m_RepPtr;
-		m_RepPtr = NULL;
+		delete m_pRep;
+		m_pRep = NULL;
 	}
 }
 XMFCaptureDeviceRep::~XMFCaptureDeviceRep()
@@ -327,9 +327,9 @@ HRESULT XMFCaptureDeviceRep::QueryDeviceAttributes()
 
 WCHAR* XMFCaptureDevice::GetDeviceName()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetDeviceName();
+		return m_pRep->GetDeviceName();
 	}
 	return NULL;
 }
@@ -340,9 +340,9 @@ WCHAR* XMFCaptureDeviceRep::GetDeviceName()
 
 bool XMFCaptureDevice::SupportsAudio()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->SupportsAudio();
+		return m_pRep->SupportsAudio();
 	}
 	return false;
 }
@@ -357,9 +357,9 @@ bool XMFCaptureDeviceRep::SupportsAudio()
 
 bool XMFCaptureDevice::SupportsVideo()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->SupportsVideo();
+		return m_pRep->SupportsVideo();
 	}
 	return false;
 }
@@ -374,9 +374,9 @@ bool XMFCaptureDeviceRep::SupportsVideo()
 
 bool XMFCaptureDevice::SupportsAudioAndVideo()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->SupportsAudioAndVideo();
+		return m_pRep->SupportsAudioAndVideo();
 	}
 	return false;
 }
@@ -391,9 +391,9 @@ bool XMFCaptureDeviceRep::SupportsAudioAndVideo()
 
 bool XMFCaptureDevice::operator==(const XMFCaptureDevice& obj)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->operator==(*(obj.m_RepPtr));
+		return m_pRep->operator==(*(obj.m_pRep));
 	}
 	return false;
 }
@@ -408,9 +408,9 @@ bool XMFCaptureDeviceRep::operator==(const XMFCaptureDeviceRep& obj)
 
 HRESULT XMFCaptureDevice::StartCapture()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->StartCapture();
+		return m_pRep->StartCapture();
 	}
 	return E_FAIL;
 }
@@ -423,9 +423,9 @@ HRESULT XMFCaptureDeviceRep::StartCapture()
 
 void XMFCaptureDevice::StopCapture()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->StopCapture();
+		m_pRep->StopCapture();
 	}
 }
 void XMFCaptureDeviceRep::StopCapture()
@@ -437,9 +437,9 @@ void XMFCaptureDeviceRep::StopCapture()
 
 HRESULT XMFCaptureDevice::CheckDeviceLost(DEV_BROADCAST_HDR* pHdr, bool* pbDeviceLost)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->CheckDeviceLost(pHdr, pbDeviceLost);
+		return m_pRep->CheckDeviceLost(pHdr, pbDeviceLost);
 	}
 	return E_FAIL;
 }
@@ -474,9 +474,9 @@ HRESULT XMFCaptureDeviceRep::CheckDeviceLost(DEV_BROADCAST_HDR* pHdr, bool* pbDe
 
 HRESULT XMFCaptureDevice::GetIMFMediaSource(CComPtr<IMFMediaSource>& pMFMediaSource)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetIMFMediaSource(pMFMediaSource);
+		return m_pRep->GetIMFMediaSource(pMFMediaSource);
 	}
 	return E_FAIL;
 }
@@ -491,9 +491,9 @@ HRESULT XMFCaptureDeviceRep::GetIMFMediaSource(CComPtr<IMFMediaSource>& pMFMedia
 
 HRESULT XMFCaptureDevice::GetIMFActivate(CComPtr<IUnknown>& pIMFActivate)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetIMFActivate(pIMFActivate);
+		return m_pRep->GetIMFActivate(pIMFActivate);
 	}
 	return E_FAIL;
 }
@@ -505,9 +505,9 @@ HRESULT XMFCaptureDeviceRep::GetIMFActivate(CComPtr<IUnknown>& pIMFActivate)
 
 bool XMFCaptureDevice::SupportsAnyOfTheseFormats(std::vector<std::shared_ptr<XMFFormat>> validFormats)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->SupportsAnyOfTheseFormats(validFormats);
+		return m_pRep->SupportsAnyOfTheseFormats(validFormats);
 	}
 	return false;
 }

@@ -59,7 +59,7 @@ private:
 
 XMFCaptureDeviceManager::XMFCaptureDeviceManager()
 {
-	m_RepPtr = new XMFCaptureDeviceManagerRep();
+	m_pRep = new XMFCaptureDeviceManagerRep();
 }
 XMFCaptureDeviceManagerRep::XMFCaptureDeviceManagerRep() :
 m_SelectedDevicesPair(NULL, NULL)
@@ -77,10 +77,10 @@ m_SelectedDevicesPair(NULL, NULL)
 
 XMFCaptureDeviceManager::~XMFCaptureDeviceManager()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		delete m_RepPtr;
-		m_RepPtr = NULL;
+		delete m_pRep;
+		m_pRep = NULL;
 	}
 }
 XMFCaptureDeviceManagerRep::~XMFCaptureDeviceManagerRep()
@@ -90,9 +90,9 @@ XMFCaptureDeviceManagerRep::~XMFCaptureDeviceManagerRep()
 
 void XMFCaptureDeviceManager::Clear()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->Clear();
+		m_pRep->Clear();
 	}
 }
 void XMFCaptureDeviceManagerRep::Clear()
@@ -106,9 +106,9 @@ void XMFCaptureDeviceManagerRep::Clear()
 
 HRESULT XMFCaptureDeviceManager::ReEnumerateDevices()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->ReEnumerateDevices();
+		return m_pRep->ReEnumerateDevices();
 	}
 	return E_FAIL;
 }
@@ -272,9 +272,9 @@ HRESULT XMFCaptureDeviceManagerRep::EnumerateDeviceType(bool audio)
 
 bool XMFCaptureDeviceManager::AnyVideoOnlyDevices() const
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->AnyVideoOnlyDevices();
+		return m_pRep->AnyVideoOnlyDevices();
 	}
 	return false;
 }
@@ -289,9 +289,9 @@ bool XMFCaptureDeviceManagerRep::AnyVideoOnlyDevices() const
 
 bool XMFCaptureDeviceManager::AnyAudioOnlyDevices() const
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->AnyAudioOnlyDevices();
+		return m_pRep->AnyAudioOnlyDevices();
 	}
 	return false;
 }
@@ -306,9 +306,9 @@ bool XMFCaptureDeviceManagerRep::AnyAudioOnlyDevices() const
 
 bool XMFCaptureDeviceManager::AnyVideoAndAudioDevices() const
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->AnyVideoAndAudioDevices();
+		return m_pRep->AnyVideoAndAudioDevices();
 	}
 	return false;
 }
@@ -360,9 +360,9 @@ XOSString GetDevceNameWithPreFix(std::shared_ptr<XMFCaptureDevice> devicePtr, bo
 
 XOSString XMFCaptureDeviceManager::GetDevcePairNameWithPreFix(std::pair < DEVICE_PAIR > &devPair)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetDevcePairNameWithPreFix(devPair);
+		return m_pRep->GetDevcePairNameWithPreFix(devPair);
 	}
 
 	XOSString reVal(new std::wstring(L""));
@@ -406,9 +406,9 @@ XOSString XMFCaptureDeviceManagerRep::GetDevcePairNameWithPreFix(std::pair < DEV
 
 XOSStringList XMFCaptureDeviceManager::GetDevicePairNamesList()
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		return m_RepPtr->GetDevicePairNamesList();
+		return m_pRep->GetDevicePairNamesList();
 	}
 	XOSStringList emptyList;
 	return emptyList;
@@ -425,9 +425,9 @@ XOSStringList XMFCaptureDeviceManagerRep::GetDevicePairNamesList()
 
 void XMFCaptureDeviceManager::GetDefaultDevices(std::shared_ptr<XMFCaptureDevice>* videoDevice, std::shared_ptr<XMFCaptureDevice>* audioDevice)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->GetDefaultDevices(videoDevice, audioDevice);
+		m_pRep->GetDefaultDevices(videoDevice, audioDevice);
 	}	
 }
 void XMFCaptureDeviceManagerRep::GetDefaultDevices(std::shared_ptr<XMFCaptureDevice>* videoDevice, std::shared_ptr<XMFCaptureDevice>* audioDevice)
@@ -441,9 +441,9 @@ void XMFCaptureDeviceManagerRep::GetDefaultDevices(std::shared_ptr<XMFCaptureDev
 
 void XMFCaptureDeviceManager::GetDeviceByName(XOSString deviceName, std::shared_ptr<XMFCaptureDevice>* videoDevice, std::shared_ptr<XMFCaptureDevice>* audioDevice)
 {
-	if (m_RepPtr)
+	if (m_pRep)
 	{
-		m_RepPtr->GetDeviceByName(deviceName, videoDevice, audioDevice);
+		m_pRep->GetDeviceByName(deviceName, videoDevice, audioDevice);
 	}
 }
 void XMFCaptureDeviceManagerRep::GetDeviceByName(XOSString deviceName, std::shared_ptr<XMFCaptureDevice>* videoDevice, std::shared_ptr<XMFCaptureDevice>* audioDevice)

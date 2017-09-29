@@ -50,6 +50,15 @@
     <ClInclude Include="XMFCaptureEngineWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IXMFCaptureEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XMFCaptureUsingIMFSinkWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XMFCaptureUsingIMFCaptureEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XMFAttrToStrHelper.cpp">
@@ -92,6 +101,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XMFCaptureEngineWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XMFCaptureUsingIMFSinkWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XMFCaptureUsingIMFCaptureEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
