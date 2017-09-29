@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "XMFCaptureEngineWrapper.h"
 
+#include <Mferror.h>
+
 #include "XMFCaptureUsingIMFSinkWriter.h"
 #include "XMFCaptureUsingIMFCaptureEngine.h"
 
@@ -122,6 +124,11 @@ HRESULT XMFCaptureEngineWrapper::StartRecord(PCWSTR pszDestinationFile)
 HRESULT XMFCaptureEngineWrapperRep::StartRecord(PCWSTR pszDestinationFile)
 {
 	HRESULT hr = S_OK;
+	PWSTR pszExt = PathFindExtension(pszDestinationFile);
+	if (!(_wcsicmp(pszExt, L".mp4") == 0 || _wcsicmp(pszExt, L".ts") == 0))
+	{
+		return MF_E_INVALIDMEDIATYPE;
+	}
 	if (SUCCEEDED_Xb(hr))
 	{
 		hr = SetupWriter(pszDestinationFile);

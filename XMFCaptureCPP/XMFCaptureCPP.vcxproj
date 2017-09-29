@@ -195,7 +195,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="IXMFCaptureEngine.h" />
-    <ClInclude Include="XMFCaptureEngine.h" />
     <ClInclude Include="XMFAttrToStrHelper.h" />
     <ClInclude Include="XMFCaptureAPI.h" />
     <ClInclude Include="XMFCaptureDeviceManager.h" />
@@ -213,7 +212,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\stdafx.cpp" />
-    <ClCompile Include="XMFCaptureEngine.cpp" />
     <ClCompile Include="XMFAttrToStrHelper.cpp" />
     <ClCompile Include="XMFCaptureAPI.cpp" />
     <ClCompile Include="XMFCaptureDeviceManager.cpp" />

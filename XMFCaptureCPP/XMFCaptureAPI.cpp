@@ -4,7 +4,7 @@
 #include "XMFPreview.h"
 #include "XMFCaptureDeviceManager.h"
 #include "XMFCaptureDevice.h"
-#include "XMFCaptureEngine.h"
+#include "XMFCaptureEngineWrapper.h"
 
 #include <wmcodecdsp.h>
 
@@ -59,7 +59,7 @@ private:
 	std::shared_ptr<XMFCaptureDeviceManager>	m_pXMFCaptureDeviceManager;
 	std::shared_ptr<XMFCaptureDevice>			m_CurrentVideoDevice;
 	std::shared_ptr<XMFCaptureDevice>			m_CurrentAudioDevice;
-	std::shared_ptr<XMFCaptureEngine>			m_XMFCaptureEngine;
+	std::shared_ptr<XMFCaptureEngineWrapper>	m_XMFCaptureEngine;
 	std::shared_ptr<XMFPreview>					m_XMFPreview;
 };
 
@@ -311,7 +311,7 @@ HRESULT XMFCaptureAPIRep::StartCapture(bool useOld)
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
-		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngine>(m_CurrentVideoDevice, m_CurrentAudioDevice, useOld);
+		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngineWrapper>(m_CurrentVideoDevice, m_CurrentAudioDevice, useOld);
 		if (m_XMFCaptureEngine)
 		{
 			hr = m_XMFCaptureEngine->StartRecord(m_OutputPath->c_str());
