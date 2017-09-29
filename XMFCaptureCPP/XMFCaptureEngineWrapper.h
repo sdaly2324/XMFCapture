@@ -11,17 +11,17 @@ struct IMFCaptureSource;
 class XMFCaptureEngineWrapper
 {
 public:
-	XMFCaptureEngineWrapper(IMFCaptureEngineOnEventCallback *pEventCallback, std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice, HANDLE hEvent, bool useOld);
+	XMFCaptureEngineWrapper(std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice, bool useOld);
 	~XMFCaptureEngineWrapper();
 
-	HRESULT SetupWriter(PCWSTR pszDestinationFile);
-
-	HRESULT StartRecord();
+	HRESULT StartRecord(PCWSTR pszDestinationFile);
 	HRESULT StopRecord();
 
 	HRESULT StartPreview(HWND hwnd);
 	HRESULT StopPreview();
 	
+	bool IsPreviewing() const;
+	bool IsRecording() const;
 	HRESULT get_FramesCaptured(unsigned long* pVal) const;
 	HRESULT	get_FPSForCapture(long* pVal) const;
 
