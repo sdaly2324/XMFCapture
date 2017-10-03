@@ -284,12 +284,12 @@ CComPtr<IMFMediaType> XMFCaptureEngineWrapperRep::GetVideoEncodingMediaType(CCom
 	if (SUCCEEDED_Xb(hr))
 	{
 		hr = pOutputMediaType->SetUINT32(MF_MT_VIDEO_PROFILE, 100);
-		//hr = pOutputMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_High);
+		//hr = pOutputMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_High); // BOTH WORK
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
 		hr = pOutputMediaType->SetUINT32(MF_MT_VIDEO_LEVEL, 41);
-		//hr = pOutputMediaType->SetUINT32(MF_MT_MPEG2_LEVEL, eAVEncH264VLevel4_1);
+		//hr = pOutputMediaType->SetUINT32(MF_MT_MPEG2_LEVEL, eAVEncH264VLevel4_1); // BOTH WORK
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
