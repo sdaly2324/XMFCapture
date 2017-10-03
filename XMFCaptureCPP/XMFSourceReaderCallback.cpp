@@ -51,7 +51,7 @@ HRESULT XMFSourceReaderCallback::QueryInterface(REFIID riid, void** ppv)
 {
 	static const QITAB qit [] =
 	{
-		{ &__uuidof(IMFSourceReaderCallback), ((INT) (INT_PTR) (static_cast<IMFSourceReaderCallback*>((XMFSourceReaderCallback*) 8)) - 8) },
+		QITABENT(XMFSourceReaderCallback, IMFSourceReaderCallback),
 		{ 0 },
 	};
 	return QISearch(this, qit, riid, ppv);

@@ -32,7 +32,7 @@ HRESULT XMFSinkWriterCallback::QueryInterface(REFIID riid, void** ppv)
 {
 	static const QITAB qit [] =
 	{
-		{ &__uuidof(IMFSourceReaderCallback), ((INT) (INT_PTR) (static_cast<IMFSinkWriterCallback*>((XMFSinkWriterCallback*) 8)) - 8) },
+		QITABENT(XMFSinkWriterCallback, IMFSinkWriterCallback),
 		{ 0 },
 	};
 	return QISearch(this, qit, riid, ppv);
