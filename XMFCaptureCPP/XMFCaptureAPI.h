@@ -31,7 +31,7 @@ public:
 	bool			IsCapturing();
 	HRESULT			CheckDeviceLost(DEV_BROADCAST_HDR* pHdr, bool* pbDeviceLost);
 
-	HRESULT			StartCapture(bool useOld);
+	HRESULT			StartCapture(HWND hwnd, bool useOld);
 	HRESULT			StopCapture();
 
 	HRESULT			StartPreview(HWND hwnd);

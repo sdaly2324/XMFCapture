@@ -47,7 +47,7 @@ void    OnCloseDialog();
 
 void    UpdateUI(HWND hDlg);
 
-void    StartCapture(HWND hDlg, bool useOld);
+void    StartCapture(HWND hDlg, HWND hwnd, bool useOld);
 void    StopCapture(HWND hDlg);
 
 void    StartPreview(HWND hDlg, HWND hwnd);
@@ -171,8 +171,8 @@ INT_PTR CALLBACK DialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			else
 			{
 				IMFCaptureEngine = true;
-				StartCapture(hDlg, false);
-				//ShowWindow(g_hwnd, SW_SHOW);
+				StartCapture(hDlg, g_hwnd, false);
+				ShowWindow(g_hwnd, SW_SHOW);
 			}
 			UpdateUI(hDlg);
 			return TRUE;
@@ -185,7 +185,7 @@ INT_PTR CALLBACK DialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			else
 			{
 				IMFSinkWriter = true;
-				StartCapture(hDlg, true);
+				StartCapture(hDlg, NULL, true);
 				//ShowWindow(g_hwnd, SW_SHOW);
 			}
 			UpdateUI(hDlg);
@@ -293,7 +293,7 @@ void OnCloseDialog()
 }
 
 
-void StartCapture(HWND hDlg, bool useOld)
+void StartCapture(HWND hDlg, HWND hwnd, bool useOld)
 {
 	HRESULT hr = S_OK;
 
@@ -308,7 +308,7 @@ void StartCapture(HWND hDlg, bool useOld)
 	{
 		std::shared_ptr<std::wstring> outputPath(new std::wstring(L"C:\\capture.ts"));
 		g_CaptureAPI->SetOutputPath(outputPath);
-		hr = g_CaptureAPI->StartCapture(useOld);
+		hr = g_CaptureAPI->StartCapture(hwnd, useOld);
 	}
 
 	if (FAILED(hr))

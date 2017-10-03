@@ -20,7 +20,7 @@ public:
 	HRESULT AddVideoStream(CComPtr<IMFMediaType> pVideoOutputMediaType);
 	HRESULT AddAudioStream(CComPtr<IMFMediaType> pAudioOutputMediaType);
 
-	HRESULT StartRecord();
+	HRESULT StartRecord(HWND hwnd);
 	HRESULT StopRecord();
 
 	HRESULT StartPreview(HWND hwnd);
@@ -256,15 +256,15 @@ HRESULT XMFCaptureUsingIMFSinkWriterRep::OnSample(IMFSample *pSample)
 	}
 	return hr;
 }
-HRESULT XMFCaptureUsingIMFSinkWriter::StartRecord()
+HRESULT XMFCaptureUsingIMFSinkWriter::StartRecord(HWND hwnd)
 {
 	if (m_pRep)
 	{
-		return m_pRep->StartRecord();
+		return m_pRep->StartRecord(hwnd);
 	}
 	return E_FAIL;
 }
-HRESULT XMFCaptureUsingIMFSinkWriterRep::StartRecord()
+HRESULT XMFCaptureUsingIMFSinkWriterRep::StartRecord(HWND /*hwnd*/)
 {
 	HRESULT hr = S_OK;
 	if (m_bRecording == true)

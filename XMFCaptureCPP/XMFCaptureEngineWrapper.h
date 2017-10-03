@@ -14,7 +14,7 @@ public:
 	XMFCaptureEngineWrapper(std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice, bool useOld);
 	~XMFCaptureEngineWrapper();
 
-	HRESULT StartRecord(PCWSTR pszDestinationFile);
+	HRESULT StartRecord(PCWSTR pszDestinationFile, HWND hwnd);
 	HRESULT StopRecord();
 
 	HRESULT StartPreview(HWND hwnd);

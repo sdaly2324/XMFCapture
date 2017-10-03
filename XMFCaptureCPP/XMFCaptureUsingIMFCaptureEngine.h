@@ -17,7 +17,7 @@ public:
 	HRESULT AddVideoStream(CComPtr<IMFMediaType> pVideoOutputMediaType);
 	HRESULT AddAudioStream(CComPtr<IMFMediaType> pAudioOutputMediaType);
 
-	HRESULT StartRecord();
+	HRESULT StartRecord(HWND hwnd);
 	HRESULT StopRecord();
 
 	HRESULT StartPreview(HWND hwnd);

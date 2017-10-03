@@ -37,7 +37,7 @@ public:
 	bool			IsCapturing();
 	HRESULT			CheckDeviceLost(DEV_BROADCAST_HDR* pHdr, bool* pbDeviceLost);
 
-	HRESULT			StartCapture(bool useOld);
+	HRESULT			StartCapture(HWND hwnd, bool useOld);
 	HRESULT			StopCapture();
 
 	HRESULT			StartPreview(HWND hwnd);
@@ -284,18 +284,18 @@ XOSString XMFCaptureAPIRep::GetCurrentDevice()
 	return m_CurrentDeviceName;
 }
 
-HRESULT XMFCaptureAPI::StartCapture(bool useOld)
+HRESULT XMFCaptureAPI::StartCapture(HWND hwnd, bool useOld)
 {
 	LogBeginAPICall(__FUNCTION__);
 
 	if (m_pRep)
 	{
-		return m_pRep->StartCapture(useOld);
+		return m_pRep->StartCapture(hwnd, useOld);
 	}
 
 	return E_FAIL;
 }
-HRESULT XMFCaptureAPIRep::StartCapture(bool useOld)
+HRESULT XMFCaptureAPIRep::StartCapture(HWND hwnd, bool useOld)
 {
 	HRESULT hr = S_OK;
 	m_IsCapturing = true;
@@ -314,7 +314,7 @@ HRESULT XMFCaptureAPIRep::StartCapture(bool useOld)
 		m_XMFCaptureEngine = std::make_shared<XMFCaptureEngineWrapper>(m_CurrentVideoDevice, m_CurrentAudioDevice, useOld);
 		if (m_XMFCaptureEngine)
 		{
-			hr = m_XMFCaptureEngine->StartRecord(m_OutputPath->c_str());
+			hr = m_XMFCaptureEngine->StartRecord(m_OutputPath->c_str(), hwnd);
 			//hr = StartPreview(hwnd); // causes error "Some component is already listening to events on this event generator"
 			//hr = m_XMFCaptureEngine->StartPreview();
 		}

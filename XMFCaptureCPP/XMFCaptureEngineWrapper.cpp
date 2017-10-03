@@ -13,7 +13,7 @@ public:
 	XMFCaptureEngineWrapperRep(std::shared_ptr<XMFCaptureDevice> pAudioDevice, std::shared_ptr<XMFCaptureDevice> pVideoDevice, bool useOld);
 	~XMFCaptureEngineWrapperRep();
 
-	HRESULT StartRecord(PCWSTR pszDestinationFile);
+	HRESULT StartRecord(PCWSTR pszDestinationFile, HWND hwnd);
 	HRESULT StopRecord();
 	
 	HRESULT StartPreview(HWND hwnd);
@@ -114,15 +114,15 @@ HRESULT XMFCaptureEngineWrapperRep::SetupWriter(PCWSTR pszDestinationFile)
 	}
 	return hr;
 }
-HRESULT XMFCaptureEngineWrapper::StartRecord(PCWSTR pszDestinationFile)
+HRESULT XMFCaptureEngineWrapper::StartRecord(PCWSTR pszDestinationFile, HWND hwnd)
 {
 	if (m_pRep)
 	{
-		return m_pRep->StartRecord(pszDestinationFile);
+		return m_pRep->StartRecord(pszDestinationFile, hwnd);
 	}
 	return E_FAIL;
 }
-HRESULT XMFCaptureEngineWrapperRep::StartRecord(PCWSTR pszDestinationFile)
+HRESULT XMFCaptureEngineWrapperRep::StartRecord(PCWSTR pszDestinationFile, HWND hwnd)
 {
 	HRESULT hr = S_OK;
 	PWSTR pszExt = PathFindExtension(pszDestinationFile);
@@ -136,7 +136,7 @@ HRESULT XMFCaptureEngineWrapperRep::StartRecord(PCWSTR pszDestinationFile)
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
-		hr = m_pIXMFCaptureEngine->StartRecord();
+		hr = m_pIXMFCaptureEngine->StartRecord(hwnd);
 	}
 	return hr;
 }

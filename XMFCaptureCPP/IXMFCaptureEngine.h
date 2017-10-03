@@ -13,7 +13,7 @@ public:
 	virtual HRESULT AddVideoStream(CComPtr<IMFMediaType> pVideoOutputMediaType) = 0;
 	virtual HRESULT AddAudioStream(CComPtr<IMFMediaType> pAudioOutputMediaType) = 0;
 
-	virtual HRESULT StartRecord() = 0;
+	virtual HRESULT StartRecord(HWND hwnd) = 0;
 	virtual HRESULT StopRecord() = 0;
 
 	virtual HRESULT StartPreview(HWND hwnd) = 0;

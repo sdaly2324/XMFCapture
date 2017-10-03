@@ -16,7 +16,7 @@ public:
 	HRESULT AddVideoStream(CComPtr<IMFMediaType> pVideoOutputMediaType);
 	HRESULT AddAudioStream(CComPtr<IMFMediaType> pAudioOutputMediaType);
 
-	HRESULT StartRecord();
+	HRESULT StartRecord(HWND hwnd);
 	HRESULT StopRecord();
 
 	HRESULT StartPreview(HWND hwnd);
@@ -290,15 +290,15 @@ HRESULT XMFCaptureUsingIMFCaptureEngineRep::AddAudioStream(CComPtr<IMFMediaType>
 	}
 	return E_FAIL;
 }
-HRESULT XMFCaptureUsingIMFCaptureEngine::StartRecord()
+HRESULT XMFCaptureUsingIMFCaptureEngine::StartRecord(HWND hwnd)
 {
 	if (m_pRep)
 	{
-		return m_pRep->StartRecord();
+		return m_pRep->StartRecord(hwnd);
 	}
 	return E_FAIL;
 }
-HRESULT XMFCaptureUsingIMFCaptureEngineRep::StartRecord()
+HRESULT XMFCaptureUsingIMFCaptureEngineRep::StartRecord(HWND hwnd)
 {
 	HRESULT hr = S_OK;
 	if (m_bRecording == true)
@@ -308,6 +308,10 @@ HRESULT XMFCaptureUsingIMFCaptureEngineRep::StartRecord()
 	if (SUCCEEDED_Xb(hr))
 	{
 		hr = m_pIMFCaptureEngine->StartRecord();
+	}
+	if (SUCCEEDED_Xb(hr) && hwnd != NULL && hwnd != INVALID_HANDLE_VALUE)
+	{
+		hr = StartPreview(hwnd);
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
