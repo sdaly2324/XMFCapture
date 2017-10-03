@@ -43,7 +43,6 @@ private:
 
 	void AddXMFMediaType(GUID mediaType, std::wstring mediaTypeName);
 	std::shared_ptr<XMFFormat> AddXMFFormat(std::shared_ptr<XMFFormat> p_NewFormat);
-	HRESULT SetConnectionString();
 
 	// DEBUG
 	bool						m_DumpAtributes;
