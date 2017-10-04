@@ -293,8 +293,7 @@ CComPtr<IMFMediaType> XMFCaptureEngineWrapperRep::GetVideoEncodingMediaType(CCom
 	}
 	if (SUCCEEDED_Xb(hr))
 	{
-		hr = pOutputMediaType->SetUINT32(MF_MT_MAX_KEYFRAME_SPACING, 30); // ???????????? NOT WORKING!!!!!!!!!!!!!!!!!
-		//hr = pOutputMediaType->SetUINT32(CODECAPI_AVEncMPVGOPSize, 30);	// ???????????? NOT WORKING!!!!!!!!!!!!!!!!!
+		hr = pOutputMediaType->SetUINT32(MF_MT_MAX_KEYFRAME_SPACING, 30); // FIXED IN XMFSinkWriterRep::BeginWriting // DOES NOT WORK WITH IMFCaptureEngine
 	}
 	UINT32 uiEncodingBitrate = 0;
 	if (SUCCEEDED_Xb(hr))

@@ -3,6 +3,9 @@
 #include "XMFSinkWriterCallback.h"
 #include "XMFUtilities.h"
 
+#include <strmif.h>
+#include <codecapi.h>
+
 class XMFSinkWriterRep
 {
 public:
@@ -20,20 +23,20 @@ public:
 private:
 	XMFSinkWriterRep();
 
-	CComPtr<IMFSinkWriter> m_pSinkWriter;
+	CComPtr<IMFSinkWriter> m_pSinkWriter = NULL;
 	CComAutoCriticalSection m_protectSinkWriter;
 
-	bool m_bStopRequested;
-	HANDLE m_hEventAllStopped;
+	bool m_bStopRequested = false;
+	HANDLE m_hEventAllStopped = INVALID_HANDLE_VALUE;
+	UINT32 m_GOPSize = 0;
+	DWORD m_VideoStreamIndex = 0;
 };
 
 XMFSinkWriter::XMFSinkWriter(LPCWSTR fullFilePath)
 {
 	m_pRep = new XMFSinkWriterRep(fullFilePath);
 }
-XMFSinkWriterRep::XMFSinkWriterRep(LPCWSTR fullFilePath) :
-m_pSinkWriter(NULL),
-m_bStopRequested(false)
+XMFSinkWriterRep::XMFSinkWriterRep(LPCWSTR fullFilePath)
 {
 	m_hEventAllStopped = ::CreateEvent(NULL, false, false, L"TSFileWriter m_hEventAllStopped");
 
@@ -110,7 +113,18 @@ HRESULT XMFSinkWriterRep::AddStream(CComPtr<IMFMediaType> pTargetMediaType, DWOR
 	if (m_pSinkWriter)
 	{
 		CComCritSecLock<CComCriticalSection> lock(m_protectSinkWriter);
-		return m_pSinkWriter->AddStream(pTargetMediaType, pdwStreamIndex);
+		HRESULT hr = m_pSinkWriter->AddStream(pTargetMediaType, pdwStreamIndex);
+		if (SUCCEEDED_Xb(hr))
+		{
+			UINT32 GOPSize = 0;
+			HRESULT temp = pTargetMediaType->GetUINT32(MF_MT_MAX_KEYFRAME_SPACING, &GOPSize);
+			if (SUCCEEDED_Xb(temp))
+			{
+				m_GOPSize = GOPSize;
+				m_VideoStreamIndex = *pdwStreamIndex;
+			}
+		}
+		return hr;
 	}
 	return E_FAIL;
 }
@@ -146,7 +160,39 @@ HRESULT XMFSinkWriterRep::BeginWriting()
 	if (m_pSinkWriter)
 	{
 		CComCritSecLock<CComCriticalSection> lock(m_protectSinkWriter);
-		return m_pSinkWriter->BeginWriting();
+		HRESULT hr = S_OK;
+		if (m_GOPSize > 0)
+		{
+			// HACK BECAUSE setting the IMFMediaType with this attribute MF_MT_MAX_KEYFRAME_SPACING set to 30
+			// does not work when we call IMFSinkWriter::AddAddStream, it has to happen later
+			CComPtr<IMFTransform> videoDecoder = NULL;
+			if (SUCCEEDED_Xb(hr))
+			{
+				hr = m_pSinkWriter->GetServiceForStream(m_VideoStreamIndex, GUID_NULL, IID_IMFTransform, (LPVOID*)&videoDecoder);
+			}
+			CComPtr<ICodecAPI> codecApi;
+			if (SUCCEEDED_Xb(hr))
+			{
+				hr = videoDecoder->QueryInterface(&codecApi);
+			}
+			VARIANT GOPSize;
+			VariantInit(&GOPSize);
+			if (SUCCEEDED_Xb(hr))
+			{
+				hr = codecApi->GetValue(&CODECAPI_AVEncMPVGOPSize, &GOPSize);
+			}
+			if (SUCCEEDED_Xb(hr))
+			{
+				GOPSize.intVal = m_GOPSize;
+				hr = codecApi->SetValue(&CODECAPI_AVEncMPVGOPSize, &GOPSize);
+			}
+			VariantClear(&GOPSize);
+		}
+		if (SUCCEEDED_Xb(hr))
+		{
+			hr = m_pSinkWriter->BeginWriting();
+		}
+		return hr;
 	}
 	return E_FAIL;
 }
