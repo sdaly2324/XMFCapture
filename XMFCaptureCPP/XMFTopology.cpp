@@ -10,8 +10,6 @@ public:
 	XMFTopologyRep(XMFAVSourceReader* pXMFAVSourceReader, HWND hwndVideo, XMFSinkWriter* pXMFSinkWriter);
 	~XMFTopologyRep();
 
-	HRESULT Stop();
-
 private:
 	XMFTopologyRep();
 
