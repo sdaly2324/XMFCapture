@@ -205,6 +205,7 @@
     <ClInclude Include="XMFCaptureUsingIMFSinkWriter.h" />
     <ClInclude Include="XMFFormat.h" />
     <ClInclude Include="XMFPreview.h" />
+    <ClInclude Include="XMFTopology.h" />
     <ClInclude Include="XMFUtilities.h" />
     <ClInclude Include="XMFAVSourceReader.h" />
     <ClInclude Include="XMFSinkWriter.h" />
@@ -222,6 +223,7 @@
     <ClCompile Include="XMFCaptureUsingIMFSinkWriter.cpp" />
     <ClCompile Include="XMFFormat.cpp" />
     <ClCompile Include="XMFPreview.cpp" />
+    <ClCompile Include="XMFTopology.cpp" />
     <ClCompile Include="XMFUtilities.cpp" />
     <ClCompile Include="XMFAVSourceReader.cpp" />
     <ClCompile Include="XMFSinkWriter.cpp" />
