@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "XMFSinkWriter.h"
 #include "XMFSinkWriterCallback.h"
 #include "XMFUtilities.h"

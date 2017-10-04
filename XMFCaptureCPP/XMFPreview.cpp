@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "XMFPreview.h"
 #include "XMFCaptureDevice.h"
 #include <evr.h>

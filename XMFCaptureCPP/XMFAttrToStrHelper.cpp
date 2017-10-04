@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "XMFAttrToStrHelper.h"
 #include <map>
 #include <mfapi.h>

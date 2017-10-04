@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "XMFCaptureDeviceManager.h"
 #include "XMFUtilities.h"
 #include "XMFCaptureDevice.h"

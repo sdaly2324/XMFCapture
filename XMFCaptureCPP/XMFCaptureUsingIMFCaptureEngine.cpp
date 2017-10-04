@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "XMFCaptureUsingIMFCaptureEngine.h"
 
 #include <mfcaptureengine.h>

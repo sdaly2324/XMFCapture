@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "XMFCaptureUsingIMFSinkWriter.h"
 
 #include <Mferror.h>

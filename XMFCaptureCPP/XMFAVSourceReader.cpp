@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "XMFAVSourceReader.h"
 #include "XMFSourceReaderCallback.h"
 #include "XMFUtilities.h"

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "XMFTopology.h"
 
 #include "XMFUtilities.h"

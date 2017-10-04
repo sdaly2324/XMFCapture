@@ -213,7 +213,6 @@
     <ClInclude Include="XMFSourceReaderCallback.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\stdafx.cpp" />
     <ClCompile Include="XMFAttrToStrHelper.cpp" />
     <ClCompile Include="XMFCaptureAPI.cpp" />
     <ClCompile Include="XMFCaptureDeviceManager.cpp" />

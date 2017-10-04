@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "XMFCaptureDevice.h"
 #include "XMFFormat.h"
 #include "XMFAttrToStrHelper.h"
