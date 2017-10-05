@@ -14,6 +14,7 @@ public:
 	HRESULT GetLastHRESULT();
 
 	IMFAttributes*	CreateVideoDeviceAttributes();
+	IMFAttributes*	CreateAudioDeviceAttributes();
 	IMFAttributes*	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
 
 private:
@@ -53,6 +54,21 @@ IMFAttributes* AttributesFactoryRep::CreateVideoDeviceAttributes()
 	if (LastHR_OK())
 	{
 		PrintIfErrAndSave(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID));
+	}
+	return retVal;
+}
+
+IMFAttributes* AttributesFactory::CreateAudioDeviceAttributes()
+{
+	return m_pRep->CreateAudioDeviceAttributes();
+}
+IMFAttributes* AttributesFactoryRep::CreateAudioDeviceAttributes()
+{
+	IMFAttributes* retVal = NULL;
+	PrintIfErrAndSave(MFCreateAttributes(&retVal, 1));
+	if (LastHR_OK())
+	{
+		PrintIfErrAndSave(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_AUDCAP_GUID));
 	}
 	return retVal;
 }

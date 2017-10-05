@@ -11,14 +11,15 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace MediaFoundationTesing
 {		
-	TEST_CLASS(MediaFoundationTESTs)
+	TEST_CLASS(MediaFoundationCaptureTESTs)
 	{
 	private:
+		std::wstring myVideoDeviceName = L"XI100DUSB-SDI Video";							//<-------------------Video device to test-----------------------------
+		std::wstring myAudioDeviceName = L"Digital Audio Interface (XI100DUSB-SDI Audio)";	//<-------------------Audio device to test-----------------------------
 		AttributesFactory* myAttributesFactory;
 		MediaFoundationTDD* myMFTDD = NULL;
-		std::wstring myDeviceName = L"XI100DUSB-SDI Video";
 	public:
-		MediaFoundationTESTs::MediaFoundationTESTs()
+		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
 			myAttributesFactory = new AttributesFactory();
 			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
@@ -43,27 +44,49 @@ namespace MediaFoundationTesing
 
 		TEST_METHOD(CreateVideoOnlyMediaSourceTEST)
 		{
+			// video
 			IMFAttributes* myVideoDeviceAttributes = myAttributesFactory->CreateVideoDeviceAttributes();
 			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myVideoDeviceAttributes, NULL);
 
-			Devices* myDevices = new Devices(myVideoDeviceAttributes);
-			Assert::AreEqual(myDevices->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myDevices->GetDevices(), NULL);
-			Assert::IsTrue(myDevices->GetNumDevices() > 0);
+			Devices* myVideoDevices = new Devices(myVideoDeviceAttributes);
+			Assert::AreEqual(myVideoDevices->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)myVideoDevices->GetDevices(), NULL);
+			Assert::IsTrue(myVideoDevices->GetNumDevices() > 0);
 
-			std::vector<std::wstring> myDeviceNames = myDevices->GetDeviceNames();
-			bool found_XI100DUSB_SDI_Video = false;
-			if (std::find(myDeviceNames.begin(), myDeviceNames.end(), myDeviceName) != myDeviceNames.end())
+			std::vector<std::wstring> myVideoDeviceNames = myVideoDevices->GetDeviceNames();
+			bool foundVideoDevice = false;
+			if (std::find(myVideoDeviceNames.begin(), myVideoDeviceNames.end(), myVideoDeviceName) != myVideoDeviceNames.end())
 			{
-				found_XI100DUSB_SDI_Video = true;
+				foundVideoDevice = true;
 			}
-			Assert::IsTrue(found_XI100DUSB_SDI_Video);
-			IMFActivate* myDevice = myDevices->GetDeviceByName(myDeviceName);
-			Assert::AreNotEqual((int)myDevice, NULL);
+			Assert::IsTrue(foundVideoDevice);
+			IMFActivate* myVideoDevice = myVideoDevices->GetDeviceByName(myVideoDeviceName);
+			Assert::AreNotEqual((int)myVideoDevice, NULL);
 
+			// audio
+			IMFAttributes* myAudioDeviceAttributes = myAttributesFactory->CreateAudioDeviceAttributes();
+			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)myAudioDeviceAttributes, NULL);
+
+			Devices* myAudioDevices = new Devices(myAudioDeviceAttributes);
+			Assert::AreEqual(myAudioDevices->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)myAudioDevices->GetDevices(), NULL);
+			Assert::IsTrue(myAudioDevices->GetNumDevices() > 0);
+
+			std::vector<std::wstring> myAudioDeviceNames = myAudioDevices->GetDeviceNames();
+			bool foundAudioDevice = false;
+			if (std::find(myAudioDeviceNames.begin(), myAudioDeviceNames.end(), myAudioDeviceName) != myAudioDeviceNames.end())
+			{
+				foundAudioDevice = true;
+			}
+			Assert::IsTrue(foundAudioDevice);
+			IMFActivate* myAudioDevice = myAudioDevices->GetDeviceByName(myAudioDeviceName);
+			Assert::AreNotEqual((int)myVideoDevice, NULL);
+
+			// setup
 			Assert::AreEqual((int)myMFTDD->GetMediaSource(), NULL);
-			myMFTDD->CreateMediaSource(myDevice);
+			myMFTDD->CreateMediaSource(myVideoDevice);
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myMFTDD->GetMediaSource(), NULL);
 
@@ -77,7 +100,7 @@ namespace MediaFoundationTesing
 			Assert::AreNotEqual((int)myMFTDD->GetSourceReader(), NULL);
 
 			delete myAttributesFactory;
-			delete myDevices;
+			delete myVideoDevices;
 		}
 	};
 }

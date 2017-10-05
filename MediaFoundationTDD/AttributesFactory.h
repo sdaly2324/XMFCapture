@@ -18,6 +18,7 @@ public:
 	HRESULT GetLastHRESULT();
 
 	IMFAttributes*	CreateVideoDeviceAttributes();
+	IMFAttributes*	CreateAudioDeviceAttributes();
 	IMFAttributes*	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
 
 private:
