@@ -9,16 +9,20 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include <comutil.h>
 #include <algorithm> 
 
-namespace MediaFoundation
+namespace MediaFoundationTesing
 {		
-	TEST_CLASS(MediaFoundation)
+	TEST_CLASS(MediaFoundationTESTs)
 	{
 	private:
+		AttributesFactory* myAttributesFactory;
 		MediaFoundationTDD* myMFTDD = NULL;
 		std::wstring myDeviceName = L"XI100DUSB-SDI Video";
 	public:
-		MediaFoundation::MediaFoundation()
+		MediaFoundationTESTs::MediaFoundationTESTs()
 		{
+			myAttributesFactory = new AttributesFactory();
+			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
+
 			myMFTDD = new MediaFoundationTDD();
 			Assert::AreNotEqual(NULL, (int)myMFTDD);
 		}
@@ -39,9 +43,6 @@ namespace MediaFoundation
 
 		TEST_METHOD(CreateVideoOnlyMediaSourceTEST)
 		{
-			AttributesFactory* myAttributesFactory = new AttributesFactory();
-
-			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
 			IMFAttributes* myVideoDeviceAttributes = myAttributesFactory->CreateVideoDeviceAttributes();
 			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myVideoDeviceAttributes, NULL);
