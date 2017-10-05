@@ -45,23 +45,8 @@ namespace MediaFoundationTesing
 		TEST_METHOD(CreateVideoOnlyMediaSourceTEST)
 		{
 			// video
-			IMFAttributes* myVideoDeviceAttributes = myAttributesFactory->CreateVideoDeviceAttributes();
-			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myVideoDeviceAttributes, NULL);
-
-			Devices* myVideoDevices = new Devices(myVideoDeviceAttributes);
-			Assert::AreEqual(myVideoDevices->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myVideoDevices->GetDevices(), NULL);
-			Assert::IsTrue(myVideoDevices->GetNumDevices() > 0);
-
-			std::vector<std::wstring> myVideoDeviceNames = myVideoDevices->GetDeviceNames();
-			bool foundVideoDevice = false;
-			if (std::find(myVideoDeviceNames.begin(), myVideoDeviceNames.end(), myVideoDeviceName) != myVideoDeviceNames.end())
-			{
-				foundVideoDevice = true;
-			}
-			Assert::IsTrue(foundVideoDevice);
-			IMFActivate* myVideoDevice = myVideoDevices->GetDeviceByName(myVideoDeviceName);
+			IMFActivate* myVideoDevice = myMFTDD->CreateVideoOnlyDevice(myVideoDeviceName);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myVideoDevice, NULL);
 
 			// audio
@@ -100,7 +85,6 @@ namespace MediaFoundationTesing
 			Assert::AreNotEqual((int)myMFTDD->GetSourceReader(), NULL);
 
 			delete myAttributesFactory;
-			delete myVideoDevices;
 		}
 	};
 }

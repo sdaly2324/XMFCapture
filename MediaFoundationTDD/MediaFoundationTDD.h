@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <string>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -37,6 +38,8 @@ public:
 
 	void				CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes);
 	IMFSourceReader*	GetSourceReader();
+
+	IMFActivate*		CreateVideoOnlyDevice(std::wstring videoDeviceName);
 
 private:
 	MediaFoundationTDDRep* m_pRep = 0;

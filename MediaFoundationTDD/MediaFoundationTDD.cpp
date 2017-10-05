@@ -1,8 +1,12 @@
 #include "MediaFoundationTDD.h"
 #include "IMFWrapper.h"
+#include "AttributesFactory.h"
+#include "Devices.h"
+
 #include <mfidl.h>
 #include <mfapi.h>
 #include <mfreadwrite.h>
+#include <vector>
 
 class MediaFoundationTDDRep : public IMFWrapper
 {
@@ -23,6 +27,8 @@ public:
 
 	void				CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes);
 	IMFSourceReader*	GetSourceReader();
+
+	IMFActivate*		CreateVideoOnlyDevice(std::wstring videoDeviceName);
 
 private:
 	IMFMediaSession*	mMediaSessionPtr	= NULL;
@@ -126,4 +132,44 @@ IMFSourceReader* MediaFoundationTDD::GetSourceReader()
 IMFSourceReader* MediaFoundationTDDRep::GetSourceReader()
 {
 	return mSourceReaderPtr;
+}
+
+IMFActivate* MediaFoundationTDD::CreateVideoOnlyDevice(std::wstring videoDeviceName)
+{
+	return m_pRep->CreateVideoOnlyDevice(videoDeviceName);
+}
+IMFActivate* MediaFoundationTDDRep::CreateVideoOnlyDevice(std::wstring videoDeviceName)
+{
+	IMFActivate* retVal = NULL;
+	AttributesFactory* myAttributesFactory = new AttributesFactory();
+	IMFAttributes* myVideoDeviceAttributes = myAttributesFactory->CreateVideoDeviceAttributes();
+	if (!myVideoDeviceAttributes || myAttributesFactory->GetLastHRESULT() != S_OK)
+	{
+		delete myAttributesFactory;
+		return NULL;
+	}
+
+	Devices* myVideoDevices = new Devices(myVideoDeviceAttributes);
+	if (!myVideoDevices ||
+		myVideoDevices->GetLastHRESULT() != S_OK ||
+		myVideoDevices->GetNumDevices() <= 0)
+	{
+		delete myVideoDevices;
+		delete myAttributesFactory;
+		return NULL;
+	}
+
+	std::vector<std::wstring> myVideoDeviceNames = myVideoDevices->GetDeviceNames();
+	bool foundVideoDevice = false;
+	if (std::find(myVideoDeviceNames.begin(), myVideoDeviceNames.end(), videoDeviceName) != myVideoDeviceNames.end())
+	{
+		foundVideoDevice = true;
+	}
+	if (foundVideoDevice)
+	{
+		retVal = myVideoDevices->GetDeviceByName(videoDeviceName);
+	}
+	delete myVideoDevices;
+	delete myAttributesFactory;
+	return retVal;
 }
