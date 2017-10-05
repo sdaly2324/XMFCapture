@@ -7,13 +7,13 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Attributes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="IMFWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Devices.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AttributesFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -24,13 +24,13 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Attributes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IMFWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Devices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AttributesFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include "MediaFoundationTDD.h"
-#include "Attributes.h"
+#include "AttributesFactory.h"
 #include "Devices.h"
 
 #include <comutil.h>
@@ -39,12 +39,14 @@ namespace MediaFoundation
 
 		TEST_METHOD(CreateVideoOnlyMediaSourceTEST)
 		{
-			Attributes* myAttributes = new Attributes();
-			Assert::AreEqual((int)myAttributes->GetAttributes(), NULL);
-			myAttributes->CreateVideoDeviceAttributes();
-			Assert::AreNotEqual((int)myAttributes->GetAttributes(), NULL);
+			AttributesFactory* myAttributesFactory = new AttributesFactory();
 
-			Devices* myDevices = new Devices(myAttributes->GetAttributes());
+			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
+			IMFAttributes* myVideoDeviceAttributes = myAttributesFactory->CreateVideoDeviceAttributes();
+			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)myVideoDeviceAttributes, NULL);
+
+			Devices* myDevices = new Devices(myVideoDeviceAttributes);
 			Assert::AreEqual(myDevices->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myDevices->GetDevices(), NULL);
 			Assert::IsTrue(myDevices->GetNumDevices() > 0);
@@ -64,15 +66,17 @@ namespace MediaFoundation
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myMFTDD->GetMediaSource(), NULL);
 
-			delete myAttributes;
+			IMFAttributes* mySourceReaderAsycCallbackAttributes = myAttributesFactory->CreateSourceReaderAsycCallbackAttributes(NULL);
+			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)mySourceReaderAsycCallbackAttributes, NULL);
+
+			Assert::AreEqual((int)myMFTDD->GetSourceReader(), NULL);
+			myMFTDD->CreateSourceReader(myMFTDD->GetMediaSource(), mySourceReaderAsycCallbackAttributes);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)myMFTDD->GetSourceReader(), NULL);
+
+			delete myAttributesFactory;
 			delete myDevices;
 		}
-		//TEST_METHOD(CreateSourceReaderTEST)
-		//{
-		//	Assert::AreEqual((int)myMFTDD->GetSourceReader(), NULL);
-		//	myMFTDD->CreateSourceReader();
-		//	Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-		//	Assert::AreNotEqual((int)myMFTDD->GetSourceReader(), NULL);
-		//}
 	};
 }

@@ -163,14 +163,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Attributes.h" />
+    <ClInclude Include="AttributesFactory.h" />
     <ClInclude Include="Devices.h" />
     <ClInclude Include="IMFWrapper.h" />
     <ClInclude Include="MediaFoundationTDD.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Attributes.cpp" />
+    <ClCompile Include="AttributesFactory.cpp" />
     <ClCompile Include="Devices.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="IMFWrapper.cpp" />

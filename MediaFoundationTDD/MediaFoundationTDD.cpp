@@ -21,7 +21,7 @@ public:
 	void				CreateMediaSource(IMFActivate* myDevice);
 	IMFMediaSource*		GetMediaSource();
 
-	void				CreateSourceReader();
+	void				CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes);
 	IMFSourceReader*	GetSourceReader();
 
 private:
@@ -111,13 +111,13 @@ IMFMediaSource* MediaFoundationTDDRep::GetMediaSource()
 	return mMediaSourcePtr;
 }
 
-void MediaFoundationTDD::CreateSourceReader()
+void MediaFoundationTDD::CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes)
 {
-	return m_pRep->CreateSourceReader();
+	return m_pRep->CreateSourceReader(mediaSource, sourceReaderAsycCallbackAttributes);
 }
-void MediaFoundationTDDRep::CreateSourceReader()
+void MediaFoundationTDDRep::CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes)
 {
-	PrintIfErrAndSave(MFCreateSourceReaderFromMediaSource(NULL, NULL, &mSourceReaderPtr));
+	PrintIfErrAndSave(MFCreateSourceReaderFromMediaSource(mediaSource, sourceReaderAsycCallbackAttributes, &mSourceReaderPtr));
 }
 IMFSourceReader* MediaFoundationTDD::GetSourceReader()
 {

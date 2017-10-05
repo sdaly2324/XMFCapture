@@ -35,7 +35,7 @@ public:
 	void				CreateMediaSource(IMFActivate* myDevice);
 	IMFMediaSource*		GetMediaSource();
 
-	void				CreateSourceReader();
+	void				CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes);
 	IMFSourceReader*	GetSourceReader();
 
 private:
