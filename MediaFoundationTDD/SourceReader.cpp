@@ -12,9 +12,10 @@ public:
 	SourceReaderRep(CComPtr<IMFMediaSource> mediaSource);
 	~SourceReaderRep();
 
-	HRESULT						GetLastHRESULT();
+	HRESULT								GetLastHRESULT();
 
-	CComPtr<IMFSourceReader>	GetSourceReader();
+	CComPtr<IMFSourceReader>			GetSourceReader();
+	CComPtr<IMFPresentationDescriptor>	GetPresentationDescriptor();
 
 	// IUnknown methods
 	STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
@@ -27,6 +28,7 @@ public:
 	STDMETHODIMP OnFlush(DWORD dwStreamIndex);
 
 private:
+	CComPtr<IMFMediaSource>		mMediaSource = NULL;
 	CComPtr<IMFSourceReader>	mSourceReader = NULL;
 	long mRefCount = 0;
 };
@@ -36,6 +38,8 @@ SourceReader::SourceReader(CComPtr<IMFMediaSource> mediaSource)
 }
 SourceReaderRep::SourceReaderRep(CComPtr<IMFMediaSource> mediaSource)
 {
+	mMediaSource = mediaSource;
+
 	AttributesFactory* attributesFactory = new AttributesFactory();
 	CComPtr<IMFAttributes> sourceReaderAsycCallbackAttributes = attributesFactory->CreateSourceReaderAsycCallbackAttributes(this);
 
@@ -67,6 +71,20 @@ CComPtr<IMFSourceReader> SourceReaderRep::GetSourceReader()
 	return mSourceReader;
 }
 
+CComPtr<IMFPresentationDescriptor> SourceReader::GetPresentationDescriptor()
+{
+	return m_pRep->GetPresentationDescriptor();
+}
+CComPtr<IMFPresentationDescriptor> SourceReaderRep::GetPresentationDescriptor()
+{
+	CComPtr<IMFPresentationDescriptor> retVal = NULL;
+	PrintIfErrAndSave(mMediaSource->CreatePresentationDescriptor(&retVal));
+	if (!LastHR_OK() || !retVal)
+	{
+		return NULL;
+	}
+	return retVal;
+}
 
 HRESULT SourceReaderRep::OnEvent(DWORD streamIndex, IMFMediaEvent* pEvent)
 {

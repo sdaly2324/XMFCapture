@@ -55,9 +55,18 @@ namespace MediaFoundationTesing
 			Assert::IsTrue(audioMediaSource);
 
 			// reader
-			SourceReader* sourceReader = new SourceReader(audioMediaSource);
-			Assert::AreEqual(sourceReader->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(sourceReader->GetSourceReader());
+			SourceReader* audioSourceReader = new SourceReader(audioMediaSource);
+			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(audioSourceReader->GetSourceReader());
+
+			// PresentationDescriptor
+			CComPtr<IMFPresentationDescriptor> aggregatePresentationDescriptor = audioSourceReader->GetPresentationDescriptor();
+			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(aggregatePresentationDescriptor);
+			unsigned int items = 0;
+			HRESULT hr = aggregatePresentationDescriptor->GetCount(&items);
+			Assert::AreEqual(hr, S_OK);
+			Assert::AreEqual(items, (unsigned int)0); // why not 1?
 		}
 		TEST_METHOD(CreateVideoOnlySourceReaderTEST)
 		{
@@ -72,9 +81,18 @@ namespace MediaFoundationTesing
 			Assert::IsTrue(videoMediaSource);
 
 			// reader
-			SourceReader* sourceReader = new SourceReader(videoMediaSource);
-			Assert::AreEqual(sourceReader->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(sourceReader->GetSourceReader());
+			SourceReader* videoSourceReader = new SourceReader(videoMediaSource);
+			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(videoSourceReader->GetSourceReader());
+
+			// PresentationDescriptor
+			CComPtr<IMFPresentationDescriptor> aggregatePresentationDescriptor = videoSourceReader->GetPresentationDescriptor();
+			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(aggregatePresentationDescriptor);
+			unsigned int items = 0;
+			HRESULT hr = aggregatePresentationDescriptor->GetCount(&items);
+			Assert::AreEqual(hr, S_OK);
+			Assert::AreEqual(items, (unsigned int)0); // why not 1?
 		}
 		TEST_METHOD(CreateVideoAndAudioSourceReaderTEST)
 		{
@@ -107,6 +125,15 @@ namespace MediaFoundationTesing
 			SourceReader* aggregateSourceReader = new SourceReader(aggregateMediaSource);
 			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(aggregateSourceReader->GetSourceReader());
+
+			// PresentationDescriptor
+			CComPtr<IMFPresentationDescriptor> aggregatePresentationDescriptor = aggregateSourceReader->GetPresentationDescriptor();
+			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(aggregatePresentationDescriptor);
+			unsigned int items = 0;
+			HRESULT hr = aggregatePresentationDescriptor->GetCount(&items);
+			Assert::AreEqual(hr, S_OK);
+			Assert::AreEqual(items, (unsigned int)2);
 		}
 	};
 }
