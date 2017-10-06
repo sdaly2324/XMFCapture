@@ -34,11 +34,11 @@ public:
 	void						CreateTopology();
 	CComPtr<IMFTopology>		GetTopology();
 
-	void						CreateMediaSource(CComPtr<IMFActivate> myDevice);
-	CComPtr<IMFMediaSource>		GetMediaSource();
-
 	CComPtr<IMFActivate>		CreateVideoDevice(std::wstring videoDeviceName);
 	CComPtr<IMFActivate>		CreateAudioDevice(std::wstring audioDeviceName);
+
+	CComPtr<IMFMediaSource>		CreateMediaSource(CComPtr<IMFActivate> myDevice);
+	CComPtr<IMFMediaSource>		CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource);
 
 private:
 	MediaFoundationTDDRep* m_pRep = 0;

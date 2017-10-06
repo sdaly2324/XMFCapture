@@ -44,38 +44,69 @@ namespace MediaFoundationTesing
 		}
 		TEST_METHOD(CreateAudioOnlySourceReaderTEST)
 		{
+			// audio device
 			IMFActivate* myAudioDevice = myMFTDD->CreateAudioDevice(myAudioDeviceName);
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myAudioDevice, NULL);
 
 			// source
-			Assert::IsTrue(!myMFTDD->GetMediaSource());
-			myMFTDD->CreateMediaSource(myAudioDevice);
+			CComPtr<IMFMediaSource>	audioMediaSource = myMFTDD->CreateMediaSource(myAudioDevice);
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(myMFTDD->GetMediaSource());
+			Assert::IsTrue(audioMediaSource);
 
 			// reader
-			SourceReader* sourceReader = new SourceReader(myMFTDD->GetMediaSource());
+			SourceReader* sourceReader = new SourceReader(audioMediaSource);
 			Assert::AreEqual(sourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(sourceReader->GetSourceReader());
 		}
 		TEST_METHOD(CreateVideoOnlySourceReaderTEST)
 		{
-			// device
+			// video device
 			IMFActivate* myVideoDevice = myMFTDD->CreateVideoDevice(myVideoDeviceName);
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myVideoDevice, NULL);
 
 			// source
-			Assert::IsTrue(!myMFTDD->GetMediaSource());
-			myMFTDD->CreateMediaSource(myVideoDevice);
+			CComPtr<IMFMediaSource>	videoMediaSource = myMFTDD->CreateMediaSource(myVideoDevice);
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(myMFTDD->GetMediaSource());
+			Assert::IsTrue(videoMediaSource);
 
 			// reader
-			SourceReader* sourceReader = new SourceReader(myMFTDD->GetMediaSource());
+			SourceReader* sourceReader = new SourceReader(videoMediaSource);
 			Assert::AreEqual(sourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(sourceReader->GetSourceReader());
+		}
+		TEST_METHOD(CreateVideoAndAudioSourceReaderTEST)
+		{
+			// video device
+			IMFActivate* myVideoDevice = myMFTDD->CreateVideoDevice(myVideoDeviceName);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)myVideoDevice, NULL);
+
+			// audio device
+			IMFActivate* myAudioDevice = myMFTDD->CreateAudioDevice(myAudioDeviceName);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)myAudioDevice, NULL);
+
+			// video source
+			CComPtr<IMFMediaSource>	videoMediaSource = myMFTDD->CreateMediaSource(myVideoDevice);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(videoMediaSource);
+
+			// audio source
+			CComPtr<IMFMediaSource>	audioMediaSource = myMFTDD->CreateMediaSource(myAudioDevice);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(audioMediaSource);
+
+			// aggregate source
+			CComPtr<IMFMediaSource>	aggregateMediaSource = myMFTDD->CreateAggregateMediaSource(videoMediaSource, audioMediaSource);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(aggregateMediaSource);
+
+			// reader
+			SourceReader* aggregateSourceReader = new SourceReader(aggregateMediaSource);
+			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(aggregateSourceReader->GetSourceReader());
 		}
 	};
 }

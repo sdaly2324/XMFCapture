@@ -22,11 +22,11 @@ public:
 	void						CreateTopology();
 	CComPtr<IMFTopology>		GetTopology();
 
-	void						CreateMediaSource(CComPtr<IMFActivate> myDevice);
-	CComPtr<IMFMediaSource>		GetMediaSource();
-
 	CComPtr<IMFActivate>		CreateVideoDevice(std::wstring videoDeviceName);
 	CComPtr<IMFActivate>		CreateAudioDevice(std::wstring audioDeviceName);
+
+	CComPtr<IMFMediaSource>		CreateMediaSource(CComPtr<IMFActivate> myDevice);
+	CComPtr<IMFMediaSource>		CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource);
 
 private:
 	Devices*					CreateDevicesFromAttributes(CComPtr<IMFAttributes> attributes);
@@ -36,8 +36,6 @@ private:
 	CComPtr<IMFMediaSession>	mMediaSessionPtr	= NULL;
 	CComPtr<IMFTopology>		mTopologyPtr		= NULL;
 
-	
-	CComPtr<IMFMediaSource>		mMediaSourcePtr		= NULL;
 	CComPtr<IMFSourceReader>	mSourceReaderPtr	= NULL;
 };
 
@@ -104,21 +102,19 @@ CComPtr<IMFTopology> MediaFoundationTDDRep::GetTopology()
 	return mTopologyPtr;
 }
 
-void MediaFoundationTDD::CreateMediaSource(CComPtr<IMFActivate> myDevice)
+CComPtr<IMFMediaSource>	 MediaFoundationTDD::CreateMediaSource(CComPtr<IMFActivate> myDevice)
 {
 	return m_pRep->CreateMediaSource(myDevice);
 }
-void MediaFoundationTDDRep::CreateMediaSource(CComPtr<IMFActivate> myDevice)
+CComPtr<IMFMediaSource>	 MediaFoundationTDDRep::CreateMediaSource(CComPtr<IMFActivate> myDevice)
 {
-	PrintIfErrAndSave(myDevice->ActivateObject(__uuidof(IMFMediaSource), (void**)&mMediaSourcePtr));
-}
-CComPtr<IMFMediaSource> MediaFoundationTDD::GetMediaSource()
-{
-	return m_pRep->GetMediaSource();
-}
-CComPtr<IMFMediaSource> MediaFoundationTDDRep::GetMediaSource()
-{
-	return mMediaSourcePtr;
+	CComPtr<IMFMediaSource>	retVal = NULL;
+	PrintIfErrAndSave(myDevice->ActivateObject(__uuidof(IMFMediaSource), (void**)&retVal));
+	if (!LastHR_OK() || !retVal)
+	{
+		return NULL;
+	}
+	return retVal;
 }
 
 Devices* MediaFoundationTDDRep::CreateDevicesFromAttributes(CComPtr<IMFAttributes> attributes)
@@ -181,4 +177,32 @@ CComPtr<IMFActivate> MediaFoundationTDDRep::CreateAudioDevice(std::wstring audio
 	CComPtr<IMFActivate> retVal = myAudioDevices->GetDeviceByName(audioDeviceName);
 	delete myAudioDevices;
 	return retVal;
+}
+
+CComPtr<IMFMediaSource> MediaFoundationTDD::CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource)
+{
+	return m_pRep->CreateAggregateMediaSource(pVideoSource, pAudioSource);
+}
+CComPtr<IMFMediaSource> MediaFoundationTDDRep::CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource)
+{
+	CComPtr<IMFCollection> collection = NULL;
+	PrintIfErrAndSave(MFCreateCollection(&collection));
+	if (LastHR_OK())
+	{
+		PrintIfErrAndSave(collection->AddElement(pAudioSource));
+	}
+	if (LastHR_OK())
+	{
+		PrintIfErrAndSave(collection->AddElement(pVideoSource));
+	}
+	CComPtr<IMFMediaSource> AVMediaSource = NULL;
+	if (LastHR_OK())
+	{
+		PrintIfErrAndSave(MFCreateAggregateSource(collection, &AVMediaSource));
+	}
+	if (LastHR_OK() && AVMediaSource)
+	{
+		return AVMediaSource;
+	}
+	return NULL;
 }
