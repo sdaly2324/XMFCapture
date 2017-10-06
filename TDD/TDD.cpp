@@ -5,9 +5,10 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "MediaFoundationTDD.h"
 #include "AttributesFactory.h"
 #include "Devices.h"
+#include "SourceReader.h"
 
-#include <comutil.h>
-#include <algorithm> 
+#include <mfidl.h>
+#include <mfreadwrite.h>
 
 namespace MediaFoundationTesing
 {		
@@ -29,62 +30,52 @@ namespace MediaFoundationTesing
 		}
 		TEST_METHOD(CreateMediaSessionTEST)
 		{
-			Assert::AreEqual((int)myMFTDD->GetTopology(), NULL);
+			Assert::IsTrue(!myMFTDD->GetTopology());
 			myMFTDD->CreateTopology();
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myMFTDD->GetTopology(), NULL);
+			Assert::IsTrue(myMFTDD->GetTopology());
 		}
 		TEST_METHOD(CreateTopologyTEST)
 		{
-			Assert::AreEqual((int)myMFTDD->GetTopology(), NULL);
+			Assert::IsTrue(!myMFTDD->GetTopology());
 			myMFTDD->CreateTopology();
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myMFTDD->GetTopology(), NULL);
+			Assert::IsTrue(myMFTDD->GetTopology());
 		}
-
-		TEST_METHOD(CreateVideoOnlyMediaSourceTEST)
+		TEST_METHOD(CreateAudioOnlySourceReaderTEST)
 		{
-			// video
-			IMFActivate* myVideoDevice = myMFTDD->CreateVideoOnlyDevice(myVideoDeviceName);
+			IMFActivate* myAudioDevice = myMFTDD->CreateAudioDevice(myAudioDeviceName);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			Assert::AreNotEqual((int)myAudioDevice, NULL);
+
+			// source
+			Assert::IsTrue(!myMFTDD->GetMediaSource());
+			myMFTDD->CreateMediaSource(myAudioDevice);
+			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(myMFTDD->GetMediaSource());
+
+			// reader
+			SourceReader* sourceReader = new SourceReader(myMFTDD->GetMediaSource());
+			Assert::AreEqual(sourceReader->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(sourceReader->GetSourceReader());
+		}
+		TEST_METHOD(CreateVideoOnlySourceReaderTEST)
+		{
+			// device
+			IMFActivate* myVideoDevice = myMFTDD->CreateVideoDevice(myVideoDeviceName);
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
 			Assert::AreNotEqual((int)myVideoDevice, NULL);
 
-			// audio
-			IMFAttributes* myAudioDeviceAttributes = myAttributesFactory->CreateAudioDeviceAttributes();
-			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myAudioDeviceAttributes, NULL);
-
-			Devices* myAudioDevices = new Devices(myAudioDeviceAttributes);
-			Assert::AreEqual(myAudioDevices->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myAudioDevices->GetDevices(), NULL);
-			Assert::IsTrue(myAudioDevices->GetNumDevices() > 0);
-
-			std::vector<std::wstring> myAudioDeviceNames = myAudioDevices->GetDeviceNames();
-			bool foundAudioDevice = false;
-			if (std::find(myAudioDeviceNames.begin(), myAudioDeviceNames.end(), myAudioDeviceName) != myAudioDeviceNames.end())
-			{
-				foundAudioDevice = true;
-			}
-			Assert::IsTrue(foundAudioDevice);
-			IMFActivate* myAudioDevice = myAudioDevices->GetDeviceByName(myAudioDeviceName);
-			Assert::AreNotEqual((int)myVideoDevice, NULL);
-
-			// setup
-			Assert::AreEqual((int)myMFTDD->GetMediaSource(), NULL);
+			// source
+			Assert::IsTrue(!myMFTDD->GetMediaSource());
 			myMFTDD->CreateMediaSource(myVideoDevice);
 			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myMFTDD->GetMediaSource(), NULL);
+			Assert::IsTrue(myMFTDD->GetMediaSource());
 
-			IMFAttributes* mySourceReaderAsycCallbackAttributes = myAttributesFactory->CreateSourceReaderAsycCallbackAttributes(NULL);
-			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)mySourceReaderAsycCallbackAttributes, NULL);
-
-			Assert::AreEqual((int)myMFTDD->GetSourceReader(), NULL);
-			myMFTDD->CreateSourceReader(myMFTDD->GetMediaSource(), mySourceReaderAsycCallbackAttributes);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myMFTDD->GetSourceReader(), NULL);
-
-			delete myAttributesFactory;
+			// reader
+			SourceReader* sourceReader = new SourceReader(myMFTDD->GetMediaSource());
+			Assert::AreEqual(sourceReader->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(sourceReader->GetSourceReader());
 		}
 	};
 }

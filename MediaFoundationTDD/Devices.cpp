@@ -7,25 +7,23 @@
 class DevicesRep : public IMFWrapper
 {
 public:
-	DevicesRep(IMFAttributes* attributesPtr);
+	DevicesRep(CComPtr<IMFAttributes> attributesPtr);
 	~DevicesRep();
 
 	HRESULT						GetLastHRESULT();
 
-	IMFActivate**				GetDevices();
-	unsigned int				GetNumDevices();
 	std::vector<std::wstring>	GetDeviceNames();
-	IMFActivate*				GetDeviceByName(std::wstring deviceName);
+	CComPtr<IMFActivate>		GetDeviceByName(std::wstring deviceName);
 
 private:
-	IMFActivate**	mDevicesPtr			= NULL;
-	unsigned int	mNumberOfDevices	= 0;
+	IMFActivate**				mDevicesPtr			= NULL;
+	unsigned int				mNumberOfDevices	= 0;
 };
-Devices::Devices(IMFAttributes* attributesPtr)
+Devices::Devices(CComPtr<IMFAttributes> attributesPtr)
 {
 	m_pRep = new DevicesRep(attributesPtr);
 }
-DevicesRep::DevicesRep(IMFAttributes* attributesPtr)
+DevicesRep::DevicesRep(CComPtr<IMFAttributes> attributesPtr)
 {
 	PrintIfErrAndSave(MFEnumDeviceSources(attributesPtr, &mDevicesPtr, &mNumberOfDevices));
 }
@@ -44,24 +42,6 @@ HRESULT Devices::GetLastHRESULT()
 HRESULT DevicesRep::GetLastHRESULT()
 {
 	return IMFWrapper::GetLastHRESULT();
-}
-
-IMFActivate** Devices::GetDevices()
-{
-	return m_pRep->GetDevices();
-}
-IMFActivate** DevicesRep::GetDevices()
-{
-	return mDevicesPtr;
-}
-
-unsigned int Devices::GetNumDevices()
-{
-	return m_pRep->GetNumDevices();
-}
-unsigned int DevicesRep::GetNumDevices()
-{
-	return mNumberOfDevices;
 }
 
 std::vector<std::wstring> Devices::GetDeviceNames()
@@ -83,13 +63,13 @@ std::vector<std::wstring> DevicesRep::GetDeviceNames()
 	return retVal;
 }
 
-IMFActivate* Devices::GetDeviceByName(std::wstring deviceName)
+CComPtr<IMFActivate> Devices::GetDeviceByName(std::wstring deviceName)
 {
 	return m_pRep->GetDeviceByName(deviceName);
 }
-IMFActivate* DevicesRep::GetDeviceByName(std::wstring deviceName)
+CComPtr<IMFActivate> DevicesRep::GetDeviceByName(std::wstring deviceName)
 {
-	IMFActivate* retVal = NULL;
+	CComPtr<IMFActivate> retVal = NULL;
 	std::vector<std::wstring> myDeviceNames = GetDeviceNames();
 	auto found = std::find(myDeviceNames.begin(), myDeviceNames.end(), deviceName);
 	if (found != myDeviceNames.end())

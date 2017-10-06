@@ -1,6 +1,6 @@
 #pragma once
 #include <windows.h>
-
+#include <atlcomcli.h>
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
 #else
@@ -17,9 +17,9 @@ public:
 
 	HRESULT GetLastHRESULT();
 
-	IMFAttributes*	CreateVideoDeviceAttributes();
-	IMFAttributes*	CreateAudioDeviceAttributes();
-	IMFAttributes*	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
+	CComPtr<IMFAttributes>	CreateVideoDeviceAttributes();
+	CComPtr<IMFAttributes>	CreateAudioDeviceAttributes();
+	CComPtr<IMFAttributes>	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
 
 private:
 	AttributesFactoryRep* m_pRep = 0;

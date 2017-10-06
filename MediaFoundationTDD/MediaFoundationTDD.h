@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <string>
+#include <atlcomcli.h>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -25,21 +26,19 @@ public:
 	MediaFoundationTDD();
 	virtual ~MediaFoundationTDD();
 
-	HRESULT				GetLastHRESULT();
+	HRESULT						GetLastHRESULT();
 
-	void				CreateMediaSession();
-	IMFMediaSession*	GetMediaSession();
+	void						CreateMediaSession();
+	CComPtr<IMFMediaSession>	GetMediaSession();
 
-	void				CreateTopology();
-	IMFTopology*		GetTopology();
+	void						CreateTopology();
+	CComPtr<IMFTopology>		GetTopology();
 
-	void				CreateMediaSource(IMFActivate* myDevice);
-	IMFMediaSource*		GetMediaSource();
+	void						CreateMediaSource(CComPtr<IMFActivate> myDevice);
+	CComPtr<IMFMediaSource>		GetMediaSource();
 
-	void				CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes);
-	IMFSourceReader*	GetSourceReader();
-
-	IMFActivate*		CreateVideoOnlyDevice(std::wstring videoDeviceName);
+	CComPtr<IMFActivate>		CreateVideoDevice(std::wstring videoDeviceName);
+	CComPtr<IMFActivate>		CreateAudioDevice(std::wstring audioDeviceName);
 
 private:
 	MediaFoundationTDDRep* m_pRep = 0;

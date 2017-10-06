@@ -13,9 +13,9 @@ public:
 
 	HRESULT GetLastHRESULT();
 
-	IMFAttributes*	CreateVideoDeviceAttributes();
-	IMFAttributes*	CreateAudioDeviceAttributes();
-	IMFAttributes*	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
+	CComPtr<IMFAttributes>	CreateVideoDeviceAttributes();
+	CComPtr<IMFAttributes>	CreateAudioDeviceAttributes();
+	CComPtr<IMFAttributes>	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
 
 private:
 };
@@ -43,13 +43,13 @@ HRESULT AttributesFactoryRep::GetLastHRESULT()
 	return IMFWrapper::GetLastHRESULT();
 }
 
-IMFAttributes* AttributesFactory::CreateVideoDeviceAttributes()
+CComPtr<IMFAttributes> AttributesFactory::CreateVideoDeviceAttributes()
 {
 	return m_pRep->CreateVideoDeviceAttributes();
 }
-IMFAttributes* AttributesFactoryRep::CreateVideoDeviceAttributes()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoDeviceAttributes()
 {
-	IMFAttributes* retVal = NULL;
+	CComPtr<IMFAttributes> retVal = NULL;
 	PrintIfErrAndSave(MFCreateAttributes(&retVal, 1));
 	if (LastHR_OK())
 	{
@@ -58,13 +58,13 @@ IMFAttributes* AttributesFactoryRep::CreateVideoDeviceAttributes()
 	return retVal;
 }
 
-IMFAttributes* AttributesFactory::CreateAudioDeviceAttributes()
+CComPtr<IMFAttributes> AttributesFactory::CreateAudioDeviceAttributes()
 {
 	return m_pRep->CreateAudioDeviceAttributes();
 }
-IMFAttributes* AttributesFactoryRep::CreateAudioDeviceAttributes()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioDeviceAttributes()
 {
-	IMFAttributes* retVal = NULL;
+	CComPtr<IMFAttributes> retVal = NULL;
 	PrintIfErrAndSave(MFCreateAttributes(&retVal, 1));
 	if (LastHR_OK())
 	{
@@ -73,13 +73,13 @@ IMFAttributes* AttributesFactoryRep::CreateAudioDeviceAttributes()
 	return retVal;
 }
 
-IMFAttributes* AttributesFactory::CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack)
+CComPtr<IMFAttributes> AttributesFactory::CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack)
 {
 	return m_pRep->CreateSourceReaderAsycCallbackAttributes(callBack);
 }
-IMFAttributes* AttributesFactoryRep::CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack)
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack)
 {
-	IMFAttributes* retVal = NULL;
+	CComPtr<IMFAttributes> retVal = NULL;
 	PrintIfErrAndSave(MFCreateAttributes(&retVal, 0));
 
 	if (LastHR_OK() && retVal)

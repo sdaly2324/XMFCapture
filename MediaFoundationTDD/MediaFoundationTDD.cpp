@@ -14,29 +14,31 @@ public:
 	MediaFoundationTDDRep();
 	~MediaFoundationTDDRep();
 
-	HRESULT				GetLastHRESULT();
+	HRESULT						GetLastHRESULT();
 
-	void				CreateMediaSession();
-	IMFMediaSession*	GetMediaSession();
+	void						CreateMediaSession();
+	CComPtr<IMFMediaSession>	GetMediaSession();
 
-	void				CreateTopology();
-	IMFTopology*		GetTopology();
+	void						CreateTopology();
+	CComPtr<IMFTopology>		GetTopology();
 
-	void				CreateMediaSource(IMFActivate* myDevice);
-	IMFMediaSource*		GetMediaSource();
+	void						CreateMediaSource(CComPtr<IMFActivate> myDevice);
+	CComPtr<IMFMediaSource>		GetMediaSource();
 
-	void				CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes);
-	IMFSourceReader*	GetSourceReader();
-
-	IMFActivate*		CreateVideoOnlyDevice(std::wstring videoDeviceName);
+	CComPtr<IMFActivate>		CreateVideoDevice(std::wstring videoDeviceName);
+	CComPtr<IMFActivate>		CreateAudioDevice(std::wstring audioDeviceName);
 
 private:
-	IMFMediaSession*	mMediaSessionPtr	= NULL;
-	IMFTopology*		mTopologyPtr		= NULL;
+	Devices*					CreateDevicesFromAttributes(CComPtr<IMFAttributes> attributes);
+
+	AttributesFactory*			mAttributesFactory = NULL;
+
+	CComPtr<IMFMediaSession>	mMediaSessionPtr	= NULL;
+	CComPtr<IMFTopology>		mTopologyPtr		= NULL;
 
 	
-	IMFMediaSource*		mMediaSourcePtr		= NULL;
-	IMFSourceReader*	mSourceReaderPtr	= NULL;
+	CComPtr<IMFMediaSource>		mMediaSourcePtr		= NULL;
+	CComPtr<IMFSourceReader>	mSourceReaderPtr	= NULL;
 };
 
 MediaFoundationTDD::MediaFoundationTDD()
@@ -46,6 +48,7 @@ MediaFoundationTDD::MediaFoundationTDD()
 MediaFoundationTDDRep::MediaFoundationTDDRep()
 {
 	MFStartup(MF_VERSION);
+	mAttributesFactory = new AttributesFactory();
 }
 MediaFoundationTDD::~MediaFoundationTDD()
 {
@@ -53,6 +56,7 @@ MediaFoundationTDD::~MediaFoundationTDD()
 }
 MediaFoundationTDDRep::~MediaFoundationTDDRep()
 {
+	delete mAttributesFactory;
 	delete mTopologyPtr;
 	delete mMediaSessionPtr;
 }
@@ -74,11 +78,11 @@ void MediaFoundationTDDRep::CreateMediaSession()
 {
 	PrintIfErrAndSave(MFCreateMediaSession(NULL, &mMediaSessionPtr));
 }
-IMFMediaSession* MediaFoundationTDD::GetMediaSession()
+CComPtr<IMFMediaSession> MediaFoundationTDD::GetMediaSession()
 {
 	return m_pRep->GetMediaSession();
 }
-IMFMediaSession* MediaFoundationTDDRep::GetMediaSession()
+CComPtr<IMFMediaSession> MediaFoundationTDDRep::GetMediaSession()
 {
 	return mMediaSessionPtr;
 }
@@ -91,85 +95,90 @@ void MediaFoundationTDDRep::CreateTopology()
 {
 	PrintIfErrAndSave(MFCreateTopology(&mTopologyPtr));
 }
-IMFTopology* MediaFoundationTDD::GetTopology()
+CComPtr<IMFTopology> MediaFoundationTDD::GetTopology()
 {
 	return m_pRep->GetTopology();
 }
-IMFTopology* MediaFoundationTDDRep::GetTopology()
+CComPtr<IMFTopology> MediaFoundationTDDRep::GetTopology()
 {
 	return mTopologyPtr;
 }
 
-void MediaFoundationTDD::CreateMediaSource(IMFActivate* myDevice)
+void MediaFoundationTDD::CreateMediaSource(CComPtr<IMFActivate> myDevice)
 {
 	return m_pRep->CreateMediaSource(myDevice);
 }
-void MediaFoundationTDDRep::CreateMediaSource(IMFActivate* myDevice)
+void MediaFoundationTDDRep::CreateMediaSource(CComPtr<IMFActivate> myDevice)
 {
 	PrintIfErrAndSave(myDevice->ActivateObject(__uuidof(IMFMediaSource), (void**)&mMediaSourcePtr));
 }
-IMFMediaSource* MediaFoundationTDD::GetMediaSource()
+CComPtr<IMFMediaSource> MediaFoundationTDD::GetMediaSource()
 {
 	return m_pRep->GetMediaSource();
 }
-IMFMediaSource* MediaFoundationTDDRep::GetMediaSource()
+CComPtr<IMFMediaSource> MediaFoundationTDDRep::GetMediaSource()
 {
 	return mMediaSourcePtr;
 }
 
-void MediaFoundationTDD::CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes)
+Devices* MediaFoundationTDDRep::CreateDevicesFromAttributes(CComPtr<IMFAttributes> attributes)
 {
-	return m_pRep->CreateSourceReader(mediaSource, sourceReaderAsycCallbackAttributes);
-}
-void MediaFoundationTDDRep::CreateSourceReader(IMFMediaSource* mediaSource, IMFAttributes* sourceReaderAsycCallbackAttributes)
-{
-	PrintIfErrAndSave(MFCreateSourceReaderFromMediaSource(mediaSource, sourceReaderAsycCallbackAttributes, &mSourceReaderPtr));
-}
-IMFSourceReader* MediaFoundationTDD::GetSourceReader()
-{
-	return m_pRep->GetSourceReader();
-}
-IMFSourceReader* MediaFoundationTDDRep::GetSourceReader()
-{
-	return mSourceReaderPtr;
+	Devices* devices = new Devices(attributes);
+	if (!devices ||
+		devices->GetLastHRESULT() != S_OK ||
+		devices->GetDeviceNames().size() <= 0)
+	{
+		delete devices;
+		return NULL;
+	}
+	return devices;
 }
 
-IMFActivate* MediaFoundationTDD::CreateVideoOnlyDevice(std::wstring videoDeviceName)
+CComPtr<IMFActivate> MediaFoundationTDD::CreateVideoDevice(std::wstring videoDeviceName)
 {
-	return m_pRep->CreateVideoOnlyDevice(videoDeviceName);
+	return m_pRep->CreateVideoDevice(videoDeviceName);
 }
-IMFActivate* MediaFoundationTDDRep::CreateVideoOnlyDevice(std::wstring videoDeviceName)
+CComPtr<IMFActivate> MediaFoundationTDDRep::CreateVideoDevice(std::wstring videoDeviceName)
 {
-	IMFActivate* retVal = NULL;
-	AttributesFactory* myAttributesFactory = new AttributesFactory();
-	IMFAttributes* myVideoDeviceAttributes = myAttributesFactory->CreateVideoDeviceAttributes();
-	if (!myVideoDeviceAttributes || myAttributesFactory->GetLastHRESULT() != S_OK)
+	CComPtr<IMFAttributes> myVideoDeviceAttributes = mAttributesFactory->CreateVideoDeviceAttributes();
+	if (!myVideoDeviceAttributes || mAttributesFactory->GetLastHRESULT() != S_OK)
 	{
-		delete myAttributesFactory;
 		return NULL;
 	}
 
-	Devices* myVideoDevices = new Devices(myVideoDeviceAttributes);
-	if (!myVideoDevices ||
-		myVideoDevices->GetLastHRESULT() != S_OK ||
-		myVideoDevices->GetNumDevices() <= 0)
+	Devices* myVideoDevices = CreateDevicesFromAttributes(myVideoDeviceAttributes);
+	if (!myVideoDevices)
 	{
 		delete myVideoDevices;
-		delete myAttributesFactory;
 		return NULL;
 	}
 
-	std::vector<std::wstring> myVideoDeviceNames = myVideoDevices->GetDeviceNames();
-	bool foundVideoDevice = false;
-	if (std::find(myVideoDeviceNames.begin(), myVideoDeviceNames.end(), videoDeviceName) != myVideoDeviceNames.end())
-	{
-		foundVideoDevice = true;
-	}
-	if (foundVideoDevice)
-	{
-		retVal = myVideoDevices->GetDeviceByName(videoDeviceName);
-	}
+	CComPtr<IMFActivate> retVal = myVideoDevices->GetDeviceByName(videoDeviceName);
+
 	delete myVideoDevices;
-	delete myAttributesFactory;
+	return retVal;
+}
+
+CComPtr<IMFActivate> MediaFoundationTDD::CreateAudioDevice(std::wstring audioDeviceName)
+{
+	return m_pRep->CreateAudioDevice(audioDeviceName);
+}
+CComPtr<IMFActivate> MediaFoundationTDDRep::CreateAudioDevice(std::wstring audioDeviceName)
+{
+	CComPtr<IMFAttributes> myAudioDeviceAttributes = mAttributesFactory->CreateAudioDeviceAttributes();
+	if (!myAudioDeviceAttributes || mAttributesFactory->GetLastHRESULT() != S_OK)
+	{
+		return NULL;
+	}
+
+	Devices* myAudioDevices = CreateDevicesFromAttributes(myAudioDeviceAttributes);
+	if (!myAudioDevices)
+	{
+		delete myAudioDevices;
+		return NULL;
+	}
+
+	CComPtr<IMFActivate> retVal = myAudioDevices->GetDeviceByName(audioDeviceName);
+	delete myAudioDevices;
 	return retVal;
 }
