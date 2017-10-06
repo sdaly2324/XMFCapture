@@ -58,6 +58,7 @@ namespace MediaFoundationTesing
 			SourceReader* audioSourceReader = new SourceReader(audioMediaSource);
 			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioSourceReader->GetSourceReader());
+			Assert::IsTrue(audioSourceReader->GetMediaSource());
 
 			// PresentationDescriptor
 			CComPtr<IMFPresentationDescriptor> aggregatePresentationDescriptor = audioSourceReader->GetPresentationDescriptor();
@@ -84,6 +85,7 @@ namespace MediaFoundationTesing
 			SourceReader* videoSourceReader = new SourceReader(videoMediaSource);
 			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(videoSourceReader->GetSourceReader());
+			Assert::IsTrue(videoSourceReader->GetMediaSource());
 
 			// PresentationDescriptor
 			CComPtr<IMFPresentationDescriptor> aggregatePresentationDescriptor = videoSourceReader->GetPresentationDescriptor();
@@ -125,6 +127,7 @@ namespace MediaFoundationTesing
 			SourceReader* aggregateSourceReader = new SourceReader(aggregateMediaSource);
 			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(aggregateSourceReader->GetSourceReader());
+			Assert::IsTrue(aggregateSourceReader->GetMediaSource());
 
 			// PresentationDescriptor
 			CComPtr<IMFPresentationDescriptor> aggregatePresentationDescriptor = aggregateSourceReader->GetPresentationDescriptor();
