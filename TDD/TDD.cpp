@@ -185,6 +185,14 @@ namespace MediaFoundationTesing
 			TopologyNode* audioSourceTopologyNode = new TopologyNode(audioSource);
 			Assert::AreEqual(audioSourceTopologyNode->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioSourceTopologyNode->GetTopologyNode());
+
+			TopologyNode* videoRendererTopologyNode = new TopologyNode(NULL);
+			Assert::AreEqual(videoRendererTopologyNode->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(videoRendererTopologyNode->GetTopologyNode());
+
+			TopologyNode* audioRendererTopologyNode = new TopologyNode(L"SAR");
+			Assert::AreEqual(audioRendererTopologyNode->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(audioRendererTopologyNode->GetTopologyNode());
 		}
 	};
 }

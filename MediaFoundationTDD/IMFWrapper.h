@@ -8,7 +8,7 @@ public:
 	HRESULT GetLastHRESULT();
 	bool LastHR_OK();
 	bool LastHR_FAIL();
-	void SetFAILED();
+	void SetLastHR_Fail();
 private:
 	HRESULT mLastHR = S_OK;
 };

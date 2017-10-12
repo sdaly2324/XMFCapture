@@ -27,7 +27,7 @@ HRESULT IMFWrapper::GetLastHRESULT()
 	return mLastHR;
 }
 
-void IMFWrapper::SetFAILED()
+void IMFWrapper::SetLastHR_Fail()
 {
 	mLastHR = E_FAIL;
 }

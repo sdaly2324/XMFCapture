@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <atlcomcli.h>
+#include <string>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -15,6 +16,8 @@ class MediaFoundationTDD_API TopologyNode
 {
 public:
 	TopologyNode(CComPtr<IMFMediaSource> mediaSource);
+	TopologyNode(HWND windowForVideo);
+	TopologyNode(std::wstring nodeType);
 	~TopologyNode();
 
 	HRESULT								GetLastHRESULT();
