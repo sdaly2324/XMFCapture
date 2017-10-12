@@ -16,7 +16,13 @@
     <ClCompile Include="AttributesFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TopologyNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="SourceReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PresentationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -36,7 +42,13 @@
     <ClInclude Include="AttributesFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TopologyNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="SourceReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PresentationDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

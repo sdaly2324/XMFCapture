@@ -11,6 +11,7 @@
 struct IMFMediaSource;
 struct IMFSourceReader;
 struct IMFPresentationDescriptor;
+struct IMFStreamDescriptor;
 class SourceReaderRep;
 class MediaFoundationTDD_API SourceReader
 {
@@ -22,7 +23,6 @@ public:
 
 	CComPtr<IMFSourceReader>			GetSourceReader();
 	CComPtr<IMFMediaSource>				GetMediaSource();
-	CComPtr<IMFPresentationDescriptor>	GetPresentationDescriptor();
 
 private:
 	SourceReaderRep* m_pRep = 0;

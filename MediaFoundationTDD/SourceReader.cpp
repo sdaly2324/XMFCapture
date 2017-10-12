@@ -3,6 +3,7 @@
 #include "AttributesFactory.h"
 
 #include <mfidl.h>
+#include <mfapi.h>
 #include <mfreadwrite.h>
 #include <Shlwapi.h>
 
@@ -16,7 +17,6 @@ public:
 
 	CComPtr<IMFSourceReader>			GetSourceReader();
 	CComPtr<IMFMediaSource>				GetMediaSource();
-	CComPtr<IMFPresentationDescriptor>	GetPresentationDescriptor();
 
 	// IUnknown methods
 	STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
@@ -79,21 +79,6 @@ CComPtr<IMFMediaSource> SourceReader::GetMediaSource()
 CComPtr<IMFMediaSource> SourceReaderRep::GetMediaSource()
 {
 	return mMediaSource;
-}
-
-CComPtr<IMFPresentationDescriptor> SourceReader::GetPresentationDescriptor()
-{
-	return m_pRep->GetPresentationDescriptor();
-}
-CComPtr<IMFPresentationDescriptor> SourceReaderRep::GetPresentationDescriptor()
-{
-	CComPtr<IMFPresentationDescriptor> retVal = NULL;
-	PrintIfErrAndSave(mMediaSource->CreatePresentationDescriptor(&retVal));
-	if (!LastHR_OK() || !retVal)
-	{
-		return NULL;
-	}
-	return retVal;
 }
 
 HRESULT SourceReaderRep::OnEvent(DWORD streamIndex, IMFMediaEvent* pEvent)
