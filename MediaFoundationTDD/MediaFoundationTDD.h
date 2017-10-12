@@ -11,7 +11,6 @@
 
 // This class is exported from the MediaFoundationTDD.dll
 
-struct IMFMediaSession;
 struct IMFTopology;
 
 struct IMFAttributes;
@@ -27,9 +26,6 @@ public:
 	virtual ~MediaFoundationTDD();
 
 	HRESULT						GetLastHRESULT();
-
-	void						CreateMediaSession();
-	CComPtr<IMFMediaSession>	GetMediaSession();
 
 	void						CreateTopology();
 	CComPtr<IMFTopology>		GetTopology();

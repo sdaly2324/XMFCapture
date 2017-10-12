@@ -25,6 +25,9 @@
     <ClCompile Include="PresentationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MediaSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MediaFoundationTDD.h">
@@ -49,6 +52,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PresentationDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

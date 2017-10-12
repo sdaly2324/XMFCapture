@@ -7,6 +7,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "SourceReader.h"
 #include "TopologyNode.h"
 #include "PresentationDescriptor.h"
+#include "MediaSession.h"
 
 #include <mfidl.h>
 #include <mfreadwrite.h>
@@ -62,10 +63,9 @@ namespace MediaFoundationTesing
 		}
 		TEST_METHOD(CreateMediaSessionTEST)
 		{
-			Assert::IsTrue(!myMFTDD->GetTopology());
-			myMFTDD->CreateTopology();
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(myMFTDD->GetTopology());
+			MediaSession* mediaSession = new MediaSession();
+			Assert::AreEqual(mediaSession->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(mediaSession->GetMediaSession());
 		}
 		TEST_METHOD(CreateEmptyTopologyTEST)
 		{

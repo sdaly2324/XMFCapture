@@ -16,9 +16,6 @@ public:
 
 	HRESULT						GetLastHRESULT();
 
-	void						CreateMediaSession();
-	CComPtr<IMFMediaSession>	GetMediaSession();
-
 	void						CreateTopology();
 	CComPtr<IMFTopology>		GetTopology();
 
@@ -32,11 +29,7 @@ private:
 	Devices*					CreateDevicesFromAttributes(CComPtr<IMFAttributes> attributes);
 
 	AttributesFactory*			mAttributesFactory = NULL;
-
-	CComPtr<IMFMediaSession>	mMediaSessionPtr	= NULL;
 	CComPtr<IMFTopology>		mTopologyPtr		= NULL;
-
-	CComPtr<IMFSourceReader>	mSourceReaderPtr	= NULL;
 };
 
 MediaFoundationTDD::MediaFoundationTDD()
@@ -56,7 +49,6 @@ MediaFoundationTDDRep::~MediaFoundationTDDRep()
 {
 	delete mAttributesFactory;
 	delete mTopologyPtr;
-	delete mMediaSessionPtr;
 }
 
 HRESULT MediaFoundationTDD::GetLastHRESULT()
@@ -66,23 +58,6 @@ HRESULT MediaFoundationTDD::GetLastHRESULT()
 HRESULT MediaFoundationTDDRep::GetLastHRESULT()
 {
 	return IMFWrapper::GetLastHRESULT();
-}
-
-void MediaFoundationTDD::CreateMediaSession()
-{
-	return m_pRep->CreateMediaSession();
-}
-void MediaFoundationTDDRep::CreateMediaSession()
-{
-	PrintIfErrAndSave(MFCreateMediaSession(NULL, &mMediaSessionPtr));
-}
-CComPtr<IMFMediaSession> MediaFoundationTDD::GetMediaSession()
-{
-	return m_pRep->GetMediaSession();
-}
-CComPtr<IMFMediaSession> MediaFoundationTDDRep::GetMediaSession()
-{
-	return mMediaSessionPtr;
 }
 
 void MediaFoundationTDD::CreateTopology()
