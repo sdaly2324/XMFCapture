@@ -22,7 +22,6 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFSourceReader>			GetSourceReader();
-	CComPtr<IMFMediaSource>				GetMediaSource();
 
 private:
 	SourceReaderRep* m_pRep = 0;

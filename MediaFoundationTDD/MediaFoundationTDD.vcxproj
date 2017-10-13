@@ -169,6 +169,7 @@
     <ClInclude Include="IMFWrapper.h" />
     <ClInclude Include="MediaFoundationTDD.h" />
     <ClInclude Include="MediaSession.h" />
+    <ClInclude Include="MediaSource.h" />
     <ClInclude Include="PresentationDescriptor.h" />
     <ClInclude Include="SourceReader.h" />
     <ClInclude Include="targetver.h" />
@@ -183,6 +184,7 @@
     <ClCompile Include="IMFWrapper.cpp" />
     <ClCompile Include="MediaFoundationTDD.cpp" />
     <ClCompile Include="MediaSession.cpp" />
+    <ClCompile Include="MediaSource.cpp" />
     <ClCompile Include="PresentationDescriptor.cpp" />
     <ClCompile Include="SourceReader.cpp" />
     <ClCompile Include="TopologyNode.cpp" />

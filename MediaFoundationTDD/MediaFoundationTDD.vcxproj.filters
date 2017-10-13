@@ -34,6 +34,9 @@
     <ClCompile Include="VideoDevices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MediaSource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -51,22 +54,17 @@
     <ClInclude Include="MediaSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header Files\AttributesFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Header Files\Devices.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Header Files\IMFWrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Header Files\MediaFoundationTDD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AudioDevices.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VideoDevices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AttributesFactory.h" />
+    <ClInclude Include="Devices.h" />
+    <ClInclude Include="IMFWrapper.h" />
+    <ClInclude Include="MediaFoundationTDD.h" />
+    <ClInclude Include="MediaSource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

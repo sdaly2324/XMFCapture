@@ -30,9 +30,6 @@ public:
 	void						CreateTopology();
 	CComPtr<IMFTopology>		GetTopology();
 
-	CComPtr<IMFMediaSource>		CreateMediaSource(CComPtr<IMFActivate> myDevice);
-	CComPtr<IMFMediaSource>		CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource);
-
 private:
 	MediaFoundationTDDRep* m_pRep = 0;
 };

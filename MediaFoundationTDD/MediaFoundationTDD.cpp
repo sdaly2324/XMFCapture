@@ -19,15 +19,8 @@ public:
 	void						CreateTopology();
 	CComPtr<IMFTopology>		GetTopology();
 
-	CComPtr<IMFActivate>		CreateVideoDevice(std::wstring videoDeviceName);
-	CComPtr<IMFActivate>		CreateAudioDevice(std::wstring audioDeviceName);
-
-	CComPtr<IMFMediaSource>		CreateMediaSource(CComPtr<IMFActivate> myDevice);
-	CComPtr<IMFMediaSource>		CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource);
-
 private:
 
-	AttributesFactory*			mAttributesFactory = NULL;
 	CComPtr<IMFTopology>		mTopologyPtr		= NULL;
 };
 
@@ -38,7 +31,6 @@ MediaFoundationTDD::MediaFoundationTDD()
 MediaFoundationTDDRep::MediaFoundationTDDRep()
 {
 	MFStartup(MF_VERSION);
-	mAttributesFactory = new AttributesFactory();
 }
 MediaFoundationTDD::~MediaFoundationTDD()
 {
@@ -46,7 +38,6 @@ MediaFoundationTDD::~MediaFoundationTDD()
 }
 MediaFoundationTDDRep::~MediaFoundationTDDRep()
 {
-	delete mAttributesFactory;
 	delete mTopologyPtr;
 }
 
@@ -74,47 +65,4 @@ CComPtr<IMFTopology> MediaFoundationTDD::GetTopology()
 CComPtr<IMFTopology> MediaFoundationTDDRep::GetTopology()
 {
 	return mTopologyPtr;
-}
-
-CComPtr<IMFMediaSource>	 MediaFoundationTDD::CreateMediaSource(CComPtr<IMFActivate> myDevice)
-{
-	return m_pRep->CreateMediaSource(myDevice);
-}
-CComPtr<IMFMediaSource>	 MediaFoundationTDDRep::CreateMediaSource(CComPtr<IMFActivate> myDevice)
-{
-	CComPtr<IMFMediaSource>	retVal = NULL;
-	PrintIfErrAndSave(myDevice->ActivateObject(__uuidof(IMFMediaSource), (void**)&retVal));
-	if (!LastHR_OK() || !retVal)
-	{
-		return NULL;
-	}
-	return retVal;
-}
-
-CComPtr<IMFMediaSource> MediaFoundationTDD::CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource)
-{
-	return m_pRep->CreateAggregateMediaSource(pVideoSource, pAudioSource);
-}
-CComPtr<IMFMediaSource> MediaFoundationTDDRep::CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource)
-{
-	CComPtr<IMFCollection> collection = NULL;
-	PrintIfErrAndSave(MFCreateCollection(&collection));
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(collection->AddElement(pAudioSource));
-	}
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(collection->AddElement(pVideoSource));
-	}
-	CComPtr<IMFMediaSource> AVMediaSource = NULL;
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(MFCreateAggregateSource(collection, &AVMediaSource));
-	}
-	if (LastHR_OK() && AVMediaSource)
-	{
-		return AVMediaSource;
-	}
-	return NULL;
 }

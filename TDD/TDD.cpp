@@ -10,6 +10,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "MediaSession.h"
 #include "AudioDevices.h"
 #include "VideoDevices.h"
+#include "MediaSource.h"
 
 #include <mfidl.h>
 #include <mfreadwrite.h>
@@ -105,18 +106,17 @@ namespace MediaFoundationTesing
 			Assert::IsTrue(myAudioDevice);
 
 			// source
-			CComPtr<IMFMediaSource>	audioSource = myMFTDD->CreateMediaSource(myAudioDevice);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			MediaSource* audioSource = new MediaSource(myAudioDevice);
+			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioSource);
 
 			// reader
-			SourceReader* audioSourceReader = new SourceReader(audioSource);
+			SourceReader* audioSourceReader = new SourceReader(audioSource->GetMediaSource());
 			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioSourceReader->GetSourceReader());
-			Assert::IsTrue(audioSourceReader->GetMediaSource());
 
 			// PresentationDescriptor
-			PresentationDescriptor* audioPresentationDescriptor = new PresentationDescriptor(audioSource);
+			PresentationDescriptor* audioPresentationDescriptor = new PresentationDescriptor(audioSource->GetMediaSource());
 			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioPresentationDescriptor->GetPresentationDescriptor());
 			unsigned int items = 0;
@@ -131,18 +131,17 @@ namespace MediaFoundationTesing
 			Assert::IsTrue(myVideoDevice);
 
 			// source
-			CComPtr<IMFMediaSource>	videoSource = myMFTDD->CreateMediaSource(myVideoDevice);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			MediaSource* videoSource = new MediaSource(myVideoDevice);
+			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(videoSource);
 
 			// reader
-			SourceReader* videoSourceReader = new SourceReader(videoSource);
+			SourceReader* videoSourceReader = new SourceReader(videoSource->GetMediaSource());
 			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(videoSourceReader->GetSourceReader());
-			Assert::IsTrue(videoSourceReader->GetMediaSource());
 
 			// PresentationDescriptor
-			PresentationDescriptor* videoPresentationDescriptor = new PresentationDescriptor(videoSource);
+			PresentationDescriptor* videoPresentationDescriptor = new PresentationDescriptor(videoSource->GetMediaSource());
 			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(videoPresentationDescriptor->GetPresentationDescriptor());
 			unsigned int items = 0;
@@ -161,28 +160,28 @@ namespace MediaFoundationTesing
 			Assert::IsTrue(myAudioDevice);
 
 			// video source
-			CComPtr<IMFMediaSource>	videoSource = myMFTDD->CreateMediaSource(myVideoDevice);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			MediaSource* videoSource = new MediaSource(myVideoDevice);
+			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(videoSource);
 
 			// audio source
-			CComPtr<IMFMediaSource>	audioSource = myMFTDD->CreateMediaSource(myAudioDevice);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			MediaSource* audioSource = new MediaSource(myAudioDevice);
+			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioSource);
 
 			// aggregate source
-			CComPtr<IMFMediaSource>	aggregateSource = myMFTDD->CreateAggregateMediaSource(videoSource, audioSource);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
+			MediaSource* aggregateSource = new MediaSource(myVideoDevice, myAudioDevice);
+			Assert::AreEqual(aggregateSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(aggregateSource);
 
-			// reader
-			SourceReader* aggregateSourceReader = new SourceReader(aggregateSource);
+
+			// aggregate reader
+			SourceReader* aggregateSourceReader = new SourceReader(aggregateSource->GetMediaSource());
 			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(aggregateSourceReader->GetSourceReader());
-			Assert::IsTrue(aggregateSourceReader->GetMediaSource());
 
 			// PresentationDescriptors
-			PresentationDescriptor* aggregatePresentationDescriptor = new PresentationDescriptor(aggregateSource);
+			PresentationDescriptor* aggregatePresentationDescriptor = new PresentationDescriptor(aggregateSource->GetMediaSource());
 			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(aggregatePresentationDescriptor->GetPresentationDescriptor());
 			unsigned int items = 0;
@@ -198,11 +197,11 @@ namespace MediaFoundationTesing
 			ValidateAudioStreamDescriptor(audioStreamDescriptor);
 
 			// Topology Nodes
-			TopologyNode* videoSourceTopologyNode = new TopologyNode(videoSource);
+			TopologyNode* videoSourceTopologyNode = new TopologyNode(videoSource->GetMediaSource());
 			Assert::AreEqual(videoSourceTopologyNode->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(videoSourceTopologyNode->GetTopologyNode());
 
-			TopologyNode* audioSourceTopologyNode = new TopologyNode(audioSource);
+			TopologyNode* audioSourceTopologyNode = new TopologyNode(audioSource->GetMediaSource());
 			Assert::AreEqual(audioSourceTopologyNode->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioSourceTopologyNode->GetTopologyNode());
 

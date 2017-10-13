@@ -16,7 +16,6 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFSourceReader>			GetSourceReader();
-	CComPtr<IMFMediaSource>				GetMediaSource();
 
 	// IUnknown methods
 	STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
@@ -70,15 +69,6 @@ CComPtr<IMFSourceReader> SourceReader::GetSourceReader()
 CComPtr<IMFSourceReader> SourceReaderRep::GetSourceReader()
 {
 	return mSourceReader;
-}
-
-CComPtr<IMFMediaSource> SourceReader::GetMediaSource()
-{
-	return m_pRep->GetMediaSource();
-}
-CComPtr<IMFMediaSource> SourceReaderRep::GetMediaSource()
-{
-	return mMediaSource;
 }
 
 HRESULT SourceReaderRep::OnEvent(DWORD streamIndex, IMFMediaEvent* pEvent)
