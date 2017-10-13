@@ -30,9 +30,6 @@ public:
 	void						CreateTopology();
 	CComPtr<IMFTopology>		GetTopology();
 
-	CComPtr<IMFActivate>		CreateVideoDevice(std::wstring videoDeviceName);
-	CComPtr<IMFActivate>		CreateAudioDevice(std::wstring audioDeviceName);
-
 	CComPtr<IMFMediaSource>		CreateMediaSource(CComPtr<IMFActivate> myDevice);
 	CComPtr<IMFMediaSource>		CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource);
 

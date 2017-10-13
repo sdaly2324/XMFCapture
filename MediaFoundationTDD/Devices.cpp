@@ -12,10 +12,11 @@ public:
 
 	HRESULT						GetLastHRESULT();
 
-	std::vector<std::wstring>	GetDeviceNames();
 	CComPtr<IMFActivate>		GetDeviceByName(std::wstring deviceName);
 
 private:
+	std::vector<std::wstring>	GetDeviceNames();
+
 	IMFActivate**				mDevicesPtr			= NULL;
 	unsigned int				mNumberOfDevices	= 0;
 };
@@ -44,10 +45,6 @@ HRESULT DevicesRep::GetLastHRESULT()
 	return IMFWrapper::GetLastHRESULT();
 }
 
-std::vector<std::wstring> Devices::GetDeviceNames()
-{
-	return m_pRep->GetDeviceNames();
-}
 std::vector<std::wstring> DevicesRep::GetDeviceNames()
 {
 	std::vector<std::wstring> retVal;

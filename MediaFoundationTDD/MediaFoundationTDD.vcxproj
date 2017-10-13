@@ -163,6 +163,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AudioDevices.h" />
     <ClInclude Include="AttributesFactory.h" />
     <ClInclude Include="Devices.h" />
     <ClInclude Include="IMFWrapper.h" />
@@ -172,9 +173,11 @@
     <ClInclude Include="SourceReader.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TopologyNode.h" />
+    <ClInclude Include="VideoDevices.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AttributesFactory.cpp" />
+    <ClCompile Include="AudioDevices.cpp" />
     <ClCompile Include="Devices.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="IMFWrapper.cpp" />
@@ -183,6 +186,7 @@
     <ClCompile Include="PresentationDescriptor.cpp" />
     <ClCompile Include="SourceReader.cpp" />
     <ClCompile Include="TopologyNode.cpp" />
+    <ClCompile Include="VideoDevices.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,6 +8,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "TopologyNode.h"
 #include "PresentationDescriptor.h"
 #include "MediaSession.h"
+#include "AudioDevices.h"
+#include "VideoDevices.h"
 
 #include <mfidl.h>
 #include <mfreadwrite.h>
@@ -24,6 +26,28 @@ namespace MediaFoundationTesing
 		MediaFoundationTDD* myMFTDD = NULL;
 		HRESULT mLastHR = S_OK;
 
+		CComPtr<IMFActivate> GetVideoDevice()
+		{
+			VideoDevices* videoDevices = new VideoDevices();
+			Assert::AreEqual(videoDevices->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(videoDevices);
+
+			CComPtr<IMFActivate> myVideoDevice = videoDevices->GetVideoDevice(myVideoDeviceName);
+			Assert::AreEqual(videoDevices->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(myVideoDevice);
+			return myVideoDevice;
+		}
+		CComPtr<IMFActivate> GetAudioDevice()
+		{
+			AudioDevices* audioDevices = new AudioDevices();
+			Assert::AreEqual(audioDevices->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(audioDevices);
+
+			CComPtr<IMFActivate> myAudioDevice = audioDevices->GetAudioDevice(myAudioDeviceName);
+			Assert::AreEqual(audioDevices->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(myAudioDevice);
+			return myAudioDevice;
+		}
 		void ValidateVideoStreamDescriptor(CComPtr<IMFStreamDescriptor> videoStreamDescriptor)
 		{
 			return ValidateStreamDescriptor(videoStreamDescriptor, MFMediaType_Video);
@@ -77,9 +101,8 @@ namespace MediaFoundationTesing
 		TEST_METHOD(CreateAudioOnlySourceReaderTEST)
 		{
 			// audio device
-			IMFActivate* myAudioDevice = myMFTDD->CreateAudioDevice(myAudioDeviceName);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myAudioDevice, NULL);
+			CComPtr<IMFActivate> myAudioDevice = GetAudioDevice();
+			Assert::IsTrue(myAudioDevice);
 
 			// source
 			CComPtr<IMFMediaSource>	audioSource = myMFTDD->CreateMediaSource(myAudioDevice);
@@ -104,9 +127,8 @@ namespace MediaFoundationTesing
 		TEST_METHOD(CreateVideoOnlySourceReaderTEST)
 		{
 			// video device
-			IMFActivate* myVideoDevice = myMFTDD->CreateVideoDevice(myVideoDeviceName);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myVideoDevice, NULL);
+			CComPtr<IMFActivate> myVideoDevice = GetVideoDevice();
+			Assert::IsTrue(myVideoDevice);
 
 			// source
 			CComPtr<IMFMediaSource>	videoSource = myMFTDD->CreateMediaSource(myVideoDevice);
@@ -131,14 +153,12 @@ namespace MediaFoundationTesing
 		TEST_METHOD(CreateVideoAndAudioSourceReaderTEST)
 		{
 			// video device
-			IMFActivate* myVideoDevice = myMFTDD->CreateVideoDevice(myVideoDeviceName);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myVideoDevice, NULL);
+			CComPtr<IMFActivate> myVideoDevice = GetVideoDevice();
+			Assert::IsTrue(myVideoDevice);
 
 			// audio device
-			IMFActivate* myAudioDevice = myMFTDD->CreateAudioDevice(myAudioDeviceName);
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::AreNotEqual((int)myAudioDevice, NULL);
+			CComPtr<IMFActivate> myAudioDevice = GetAudioDevice();
+			Assert::IsTrue(myAudioDevice);
 
 			// video source
 			CComPtr<IMFMediaSource>	videoSource = myMFTDD->CreateMediaSource(myVideoDevice);

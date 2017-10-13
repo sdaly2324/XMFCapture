@@ -20,7 +20,6 @@ public:
 
 	HRESULT						GetLastHRESULT();
 
-	std::vector<std::wstring>	GetDeviceNames();
 	CComPtr<IMFActivate>		GetDeviceByName(std::wstring deviceName);
 
 private:

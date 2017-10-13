@@ -26,7 +26,6 @@ public:
 	CComPtr<IMFMediaSource>		CreateAggregateMediaSource(CComPtr<IMFMediaSource> pVideoSource, CComPtr<IMFMediaSource> pAudioSource);
 
 private:
-	Devices*					CreateDevicesFromAttributes(CComPtr<IMFAttributes> attributes);
 
 	AttributesFactory*			mAttributesFactory = NULL;
 	CComPtr<IMFTopology>		mTopologyPtr		= NULL;
@@ -89,68 +88,6 @@ CComPtr<IMFMediaSource>	 MediaFoundationTDDRep::CreateMediaSource(CComPtr<IMFAct
 	{
 		return NULL;
 	}
-	return retVal;
-}
-
-Devices* MediaFoundationTDDRep::CreateDevicesFromAttributes(CComPtr<IMFAttributes> attributes)
-{
-	Devices* devices = new Devices(attributes);
-	if (!devices ||
-		devices->GetLastHRESULT() != S_OK ||
-		devices->GetDeviceNames().size() <= 0)
-	{
-		delete devices;
-		return NULL;
-	}
-	return devices;
-}
-
-CComPtr<IMFActivate> MediaFoundationTDD::CreateVideoDevice(std::wstring videoDeviceName)
-{
-	return m_pRep->CreateVideoDevice(videoDeviceName);
-}
-CComPtr<IMFActivate> MediaFoundationTDDRep::CreateVideoDevice(std::wstring videoDeviceName)
-{
-	CComPtr<IMFAttributes> myVideoDeviceAttributes = mAttributesFactory->CreateVideoDeviceAttributes();
-	if (!myVideoDeviceAttributes || mAttributesFactory->GetLastHRESULT() != S_OK)
-	{
-		return NULL;
-	}
-
-	Devices* myVideoDevices = CreateDevicesFromAttributes(myVideoDeviceAttributes);
-	if (!myVideoDevices)
-	{
-		delete myVideoDevices;
-		return NULL;
-	}
-
-	CComPtr<IMFActivate> retVal = myVideoDevices->GetDeviceByName(videoDeviceName);
-
-	delete myVideoDevices;
-	return retVal;
-}
-
-CComPtr<IMFActivate> MediaFoundationTDD::CreateAudioDevice(std::wstring audioDeviceName)
-{
-	return m_pRep->CreateAudioDevice(audioDeviceName);
-}
-CComPtr<IMFActivate> MediaFoundationTDDRep::CreateAudioDevice(std::wstring audioDeviceName)
-{
-	CComPtr<IMFAttributes> myAudioDeviceAttributes = mAttributesFactory->CreateAudioDeviceAttributes();
-	if (!myAudioDeviceAttributes || mAttributesFactory->GetLastHRESULT() != S_OK)
-	{
-		return NULL;
-	}
-
-	Devices* myAudioDevices = CreateDevicesFromAttributes(myAudioDeviceAttributes);
-	if (!myAudioDevices)
-	{
-		delete myAudioDevices;
-		return NULL;
-	}
-
-	CComPtr<IMFActivate> retVal = myAudioDevices->GetDeviceByName(audioDeviceName);
-	delete myAudioDevices;
 	return retVal;
 }
 
