@@ -9,17 +9,26 @@
 #endif
 
 struct IMFMediaSession;
+class OnTopologyReadyCallback
+{
+public:
+	virtual void OnTopologyReady(CComPtr<IMFMediaSession> mediaSession) = 0;
+};
+
+class OnTopologyReadyCallback;
 class MediaSessionRep;
 class MediaFoundationTDD_API MediaSession
 {
 public:
-	MediaSession();
+	MediaSession(OnTopologyReadyCallback* onTopologyReadyCallback);
 	~MediaSession();
 
 	HRESULT								GetLastHRESULT();
 
+	void								Start();
 	CComPtr<IMFMediaSession>			GetMediaSession();
 
 private:
+	MediaSession();
 	MediaSessionRep* m_pRep = 0;
 };

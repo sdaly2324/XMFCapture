@@ -77,7 +77,7 @@ CComPtr<IMFStreamDescriptor> PresentationDescriptorRep::GetFirstStreamDescriptor
 	PrintIfErrAndSave(mPresentationDescriptor->GetCount(&streams));
 	if (streams == 0)
 	{
-		streams = 1; // no idea why it returns 0 when there is only one stream
+		streams = 1; // I have no idea why GetCount returns 0 when there is only 1 stream
 	}
 	for (unsigned int streamID = 0; streamID < streams && LastHR_OK(); streamID++)
 	{
