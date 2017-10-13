@@ -2,8 +2,6 @@
 #include "CppUnitTest.h"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-#include "MediaFoundationTDD.h"
-#include "AttributesFactory.h"
 #include "SourceReader.h"
 #include "TopologyNode.h"
 #include "PresentationDescriptor.h"
@@ -11,6 +9,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "AudioDevices.h"
 #include "VideoDevices.h"
 #include "MediaSource.h"
+#include "Topology.h"
 
 #include <mfidl.h>
 #include <mfreadwrite.h>
@@ -23,8 +22,6 @@ namespace MediaFoundationTesing
 	private:
 		std::wstring myVideoDeviceName = L"XI100DUSB-SDI Video";							//<-------------------Video device to test-----------------------------
 		std::wstring myAudioDeviceName = L"Digital Audio Interface (XI100DUSB-SDI Audio)";	//<-------------------Audio device to test-----------------------------
-		AttributesFactory* myAttributesFactory;
-		MediaFoundationTDD* myMFTDD = NULL;
 		HRESULT mLastHR = S_OK;
 
 		CComPtr<IMFActivate> GetVideoDevice()
@@ -80,11 +77,6 @@ namespace MediaFoundationTesing
 	public:
 		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
-			myAttributesFactory = new AttributesFactory();
-			Assert::AreEqual(myAttributesFactory->GetLastHRESULT(), S_OK);
-
-			myMFTDD = new MediaFoundationTDD();
-			Assert::AreNotEqual(NULL, (int)myMFTDD);
 		}
 		TEST_METHOD(CreateMediaSessionTEST)
 		{
@@ -94,10 +86,9 @@ namespace MediaFoundationTesing
 		}
 		TEST_METHOD(CreateEmptyTopologyTEST)
 		{
-			Assert::IsTrue(!myMFTDD->GetTopology());
-			myMFTDD->CreateTopology();
-			Assert::AreEqual(myMFTDD->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(myMFTDD->GetTopology());
+			Topology* myTopology = new Topology();
+			Assert::AreEqual(myTopology->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(myTopology->GetTopology());
 		}
 		TEST_METHOD(CreateAudioOnlySourceReaderTEST)
 		{
