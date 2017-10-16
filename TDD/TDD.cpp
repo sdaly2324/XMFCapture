@@ -43,26 +43,6 @@ namespace MediaFoundationTesing
 		CComPtr<IMFActivate> mVideoDevice = NULL;
 		HWND mVideoWindow = NULL;
 
-		void InitVideoWindow()
-		{
-			WNDCLASS wc = { 0 };
-			wc.lpfnWndProc = WindowProc;
-			wc.hInstance = GetModuleHandle(NULL);
-			wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-			wc.lpszClassName = L"MFCapture Window Class";
-			ATOM atom = RegisterClass(&wc);
-			if (atom == 0)
-			{
-				wchar_t  mess[1024];
-				swprintf_s(mess, 1024, L"InitVideoWindow failed with %d 0x%x\n", GetLastError(), GetLastError());
-				OutputDebugStringW(mess);
-			}
-			HWND videoWindow = CreateWindow(L"MFCapture Window Class", L"MFCapture Sample Application", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, NULL, NULL, GetModuleHandle(NULL), NULL);
-			Assert::IsTrue(videoWindow);
-			ShowWindow(videoWindow, SW_HIDE);
-			UpdateWindow(videoWindow);
-			mVideoWindow = videoWindow;
-		}
 		CComPtr<IMFActivate> GetVideoDevice()
 		{
 			std::unique_ptr<VideoDevices> videoDevices(new VideoDevices());
@@ -127,14 +107,13 @@ namespace MediaFoundationTesing
 	public:
 		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
-			InitVideoWindow();
 			InitMediaSession();
 			InitTopology();
 
 			mVideoDevice = GetVideoDevice();
 			mAudioDevice = GetAudioDevice();
 		}
-		TEST_METHOD(AudioOnlyStreamDescriptorsTEST)
+		TEST_METHOD(StreamDescriptorsAudioOnlyVilidation)
 		{
 			// source
 			std::unique_ptr<MediaSource> audioSource(new MediaSource(mAudioDevice));
@@ -152,7 +131,7 @@ namespace MediaFoundationTesing
 			CComPtr<IMFStreamDescriptor> audioStreamDescriptor = audioPresentationDescriptor->GetFirstAudioStreamDescriptor();
 			ValidateAudioStreamDescriptor(audioStreamDescriptor);
 		}
-		TEST_METHOD(VideoOnlyStreamDescriptorsTEST)
+		TEST_METHOD(StreamDescriptorsVideoOnlyVilidation)
 		{
 			// source
 			std::unique_ptr<MediaSource> videoSource(new MediaSource(mVideoDevice));
@@ -171,7 +150,7 @@ namespace MediaFoundationTesing
 			CComPtr<IMFStreamDescriptor> videoStreamDescriptor = videoPresentationDescriptor->GetFirstVideoStreamDescriptor();
 			ValidateVideoStreamDescriptor(videoStreamDescriptor);
 		}
-		TEST_METHOD(AggregateStreamDescriptorsTEST)
+		TEST_METHOD(StreamDescriptorsAggregateVilidation)
 		{
 			// video source
 			std::unique_ptr<MediaSource> videoSource(new MediaSource(mVideoDevice));
@@ -201,7 +180,7 @@ namespace MediaFoundationTesing
 			CComPtr<IMFStreamDescriptor> audioStreamDescriptor = aggregatePresentationDescriptor->GetFirstAudioStreamDescriptor();
 			ValidateAudioStreamDescriptor(audioStreamDescriptor);
 		}
-		TEST_METHOD(AudioOnlyPassthroughTEST)
+		TEST_METHOD(PassthroughAudioOnly)
 		{
 			// source
 			std::shared_ptr<MediaSource> audioSource(new MediaSource(mAudioDevice));
@@ -225,8 +204,9 @@ namespace MediaFoundationTesing
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+			::Sleep(1000);
 		}
-		TEST_METHOD(VideoOnlyPassthroughTEST)
+		TEST_METHOD(PassthroughVideoOnly)
 		{
 			// source
 			std::shared_ptr<MediaSource> videoSource(new MediaSource(mVideoDevice));
@@ -252,14 +232,10 @@ namespace MediaFoundationTesing
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+			::Sleep(1000);
 		}
-		TEST_METHOD(VideoAndAudioPassthroughTEST)
+		TEST_METHOD(PassthroughVideoAndAudio)
 		{
-			// aggregate source
-			//std::unique_ptr<MediaSource> aggregateSource(new MediaSource(mVideoDevice, mAudioDevice));
-			//Assert::AreEqual(aggregateSource->GetLastHRESULT(), S_OK);
-			//Assert::IsTrue(aggregateSource);
-
 			// source
 			std::shared_ptr<MediaSource> videoSource(new MediaSource(mVideoDevice));
 			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
@@ -283,9 +259,12 @@ namespace MediaFoundationTesing
 
 			::Sleep(1000);
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(mVideoDisplayControl->GetVideoDisplayControl());
+			Assert::AreEqual(mVideoDisplayControl->GetLastHRESULT(), S_OK);
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+			::Sleep(1000);
 		}
 	};
 }

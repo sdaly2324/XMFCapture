@@ -27,7 +27,7 @@ private:
 	GUID								GetTopSourceNodeMediaType(CComPtr<IMFTopologyNode> topSourceNode);
 	void								UpdateSourceNodeMediaTypes(CComPtr<IMFTopologyNode> node);
 	bool								IsNodeTypeSource(CComPtr<IMFTopologyNode> node);
-	void								ResolveMultiSourceTopology(CComPtr<IMFTopology> topology);
+	CComPtr<IMFTopology>				ResolveMultiSourceTopology(CComPtr<IMFTopology> topology);
 	void								InspectNodeConections(CComPtr<IMFTopology> topology);
 	std::shared_ptr<TopologyNode>		CreateAudioRendererNode();
 	std::shared_ptr<TopologyNode>		CreateVideoRendererNode(HWND windowForVideo);
@@ -245,7 +245,7 @@ void TopologyRep::InspectNodeConections(CComPtr<IMFTopology> topology)
 	}
 }
 
-void TopologyRep::ResolveMultiSourceTopology(CComPtr<IMFTopology> topology)
+CComPtr<IMFTopology> TopologyRep::ResolveMultiSourceTopology(CComPtr<IMFTopology> topology)
 {
 	CComPtr<IMFSequencerSource> sequencerSource = NULL;
 	PrintIfErrAndSave(MFCreateSequencerSource(NULL, &sequencerSource));
@@ -274,6 +274,12 @@ void TopologyRep::ResolveMultiSourceTopology(CComPtr<IMFTopology> topology)
 	{
 		PrintIfErrAndSave(mediaSourceTopologyProvider->GetMediaSourceTopology(presentationDescriptor, &topology));
 	}
+	if (LastHR_OK())
+	{
+		return topology;
+	}
+	SetLastHR_Fail();
+	return NULL;
 }
 
 void Topology::ResolveTopology()
@@ -291,9 +297,9 @@ void TopologyRep::ResolveTopology()
 	if (LastHR_OK())
 	{
 		InspectNodeConections(topologyClone);
-		if (mHaveAudioSourceNode && mHaveVideoSourceNode)
+		if (LastHR_OK() && mHaveAudioSourceNode && mHaveVideoSourceNode)
 		{
-			ResolveMultiSourceTopology(topologyClone);
+			topologyClone = ResolveMultiSourceTopology(topologyClone);
 		}
 	}
 	if (LastHR_OK())
