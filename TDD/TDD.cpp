@@ -141,14 +141,9 @@ namespace MediaFoundationTesing
 			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioSource);
 
-			// reader
-			SourceReader* audioSourceReader = new SourceReader(audioSource->GetMediaSource());
-			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(audioSourceReader->GetSourceReader());
-
 			//// PresentationDescriptor
 			PresentationDescriptor* audioPresentationDescriptor = new PresentationDescriptor(audioSource->GetMediaSource());
-			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(audioPresentationDescriptor->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(audioPresentationDescriptor->GetPresentationDescriptor());
 			unsigned int items = 0;
 			mLastHR = audioPresentationDescriptor->GetPresentationDescriptor()->GetCount(&items);
@@ -165,14 +160,9 @@ namespace MediaFoundationTesing
 			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(videoSource);
 
-			// reader
-			SourceReader* videoSourceReader = new SourceReader(videoSource->GetMediaSource());
-			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(videoSourceReader->GetSourceReader());
-
 			// PresentationDescriptor
 			PresentationDescriptor* videoPresentationDescriptor = new PresentationDescriptor(videoSource->GetMediaSource());
-			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(videoPresentationDescriptor->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(videoPresentationDescriptor->GetPresentationDescriptor());
 			unsigned int items = 0;
 			mLastHR = videoPresentationDescriptor->GetPresentationDescriptor()->GetCount(&items);
@@ -200,14 +190,9 @@ namespace MediaFoundationTesing
 			Assert::AreEqual(aggregateSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(aggregateSource);
 
-			// aggregate reader
-			SourceReader* aggregateSourceReader = new SourceReader(aggregateSource->GetMediaSource());
-			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(aggregateSourceReader->GetSourceReader());
-
 			// PresentationDescriptors
 			PresentationDescriptor* aggregatePresentationDescriptor = new PresentationDescriptor(aggregateSource->GetMediaSource());
-			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(aggregatePresentationDescriptor->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(aggregatePresentationDescriptor->GetPresentationDescriptor());
 			unsigned int items = 0;
 			mLastHR = aggregatePresentationDescriptor->GetPresentationDescriptor()->GetCount(&items);
@@ -221,7 +206,7 @@ namespace MediaFoundationTesing
 			CComPtr<IMFStreamDescriptor> audioStreamDescriptor = aggregatePresentationDescriptor->GetFirstAudioStreamDescriptor();
 			ValidateAudioStreamDescriptor(audioStreamDescriptor);
 		}
-		TEST_METHOD(CreateAudioOnlySourceReaderTEST)
+		TEST_METHOD(AudioOnlyPassthroughTEST)
 		{
 			// source
 			MediaSource* audioSource = new MediaSource(mAudioDevice);
@@ -254,7 +239,7 @@ namespace MediaFoundationTesing
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 		}
-		TEST_METHOD(CreateVideoOnlySourceReaderTEST)
+		TEST_METHOD(VideoOnlyPassthroughTEST)
 		{
 			// source
 			MediaSource* videoSource = new MediaSource(mVideoDevice);
@@ -290,7 +275,7 @@ namespace MediaFoundationTesing
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 		}
-		TEST_METHOD(CreateVideoAndAudioSourceReaderTEST)
+		TEST_METHOD(VideoAndAudioPassthroughTEST)
 		{
 			// aggregate source
 			MediaSource* aggregateSource = new MediaSource(mVideoDevice, mAudioDevice);
