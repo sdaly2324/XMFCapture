@@ -226,12 +226,6 @@ namespace MediaFoundationTesing
 			// source
 			MediaSource* audioSource = new MediaSource(mAudioDevice);
 			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(audioSource);
-
-			// reader
-			SourceReader* audioSourceReader = new SourceReader(audioSource->GetMediaSource());
-			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(audioSourceReader->GetSourceReader());
 
 			// Topology Nodes
 			TopologyNode* audioSourceTopologyNode = new TopologyNode(audioSource->GetMediaSource());
@@ -253,18 +247,18 @@ namespace MediaFoundationTesing
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 			mMediaSession->Start();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+
+			::Sleep(1000);
+			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+
+			mMediaSession->Stop();
+			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 		}
 		TEST_METHOD(CreateVideoOnlySourceReaderTEST)
 		{
 			// source
 			MediaSource* videoSource = new MediaSource(mVideoDevice);
 			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(videoSource);
-
-			// reader
-			SourceReader* videoSourceReader = new SourceReader(videoSource->GetMediaSource());
-			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(videoSourceReader->GetSourceReader());
 
 			// Topology Nodes
 			TopologyNode* videoSourceTopologyNode = new TopologyNode(videoSource->GetMediaSource());
@@ -288,9 +282,13 @@ namespace MediaFoundationTesing
 			mMediaSession->Start();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 
-			::Sleep(500);
-			Assert::AreEqual(mVideoDisplayControl->GetLastHRESULT(), S_OK);
+			::Sleep(1000);
+			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(mVideoDisplayControl->GetVideoDisplayControl());
+			Assert::AreEqual(mVideoDisplayControl->GetLastHRESULT(), S_OK);
+
+			mMediaSession->Stop();
+			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 		}
 		TEST_METHOD(CreateVideoAndAudioSourceReaderTEST)
 		{

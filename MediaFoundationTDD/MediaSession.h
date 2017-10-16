@@ -26,6 +26,8 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	void								Start();
+	void								Stop();
+
 	CComPtr<IMFMediaSession>			GetMediaSession();
 
 private:

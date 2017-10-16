@@ -14,6 +14,7 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	void								Start();
+	void								Stop();
 
 	// IMFAsyncCallback
 	STDMETHODIMP						GetParameters(DWORD* /*pdwFlags*/, DWORD* /*pdwQueue*/) { return E_NOTIMPL; }
@@ -79,20 +80,21 @@ CComPtr<IMFMediaSession> MediaSessionRep::GetMediaSession()
 HRESULT MediaSessionRep::Invoke(IMFAsyncResult* pAsyncResult)
 {
 	CComCritSecLock<CComAutoCriticalSection> lock(m_critSec);
-
+	if (!LastHR_OK())
+	{
+		return GetLastHRESULT();
+	}
 	CComPtr<IMFMediaEvent> pEvent;
 	PrintIfErrAndSave(mMediaSession->EndGetEvent(pAsyncResult, &pEvent));
 	if (!LastHR_OK())
 	{
 		return GetLastHRESULT();
 	}
-
 	ProcessMediaEvent(pEvent);
 	if (!LastHR_OK())
 	{
 		return GetLastHRESULT();
 	}
-
 	PrintIfErrAndSave(mMediaSession->BeginGetEvent(this, NULL));
 	if (!LastHR_OK())
 	{
@@ -104,23 +106,27 @@ HRESULT MediaSessionRep::Invoke(IMFAsyncResult* pAsyncResult)
 HRESULT MediaSessionRep::QueryInterface(REFIID riid, void** ppv)
 {
 	HRESULT hr = S_OK;
-
 	if (ppv == NULL)
+	{
 		return E_POINTER;
-
+	}
 	if (riid == __uuidof(IMFAsyncCallback))
+	{
 		*ppv = static_cast<IMFAsyncCallback*>(this);
+	}
 	else if (riid == __uuidof(IUnknown))
+	{
 		*ppv = static_cast<IUnknown*>(this);
+	}
 	else
 	{
 		*ppv = NULL;
 		hr = E_NOINTERFACE;
 	}
-
 	if (SUCCEEDED(hr))
+	{
 		AddRef();
-
+	}
 	return hr;
 }
 ULONG MediaSessionRep::AddRef()
@@ -142,7 +148,6 @@ void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& pMediaEvent)
 	HRESULT hrStatus = S_OK;            // Event status
 	HRESULT hr = S_OK;
 	UINT32 TopoStatus = MF_TOPOSTATUS_INVALID;
-	
 
 	MediaEventType eventType;
 	PrintIfErrAndSave(pMediaEvent->GetType(&eventType));
@@ -157,10 +162,7 @@ void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& pMediaEvent)
 	}
 	if (FAILED(hrStatus))
 	{
-		WCHAR mess[256];
-		swprintf(mess, 256, L"MediaSessionRep::ProcessMediaEvent ERROR(%d) (0x%x)!!!!!!!!!!!!!!\n", hrStatus, hrStatus);
-		OutputDebugString(mess);
-
+		PrintIfErrAndSave(hrStatus);
 		SetLastHR_Fail();
 		return;
 	}
@@ -185,4 +187,20 @@ void MediaSession::Start()
 void MediaSessionRep::Start()
 {
 	PrintIfErrAndSave(mMediaSession->BeginGetEvent((IMFAsyncCallback*)this, NULL));
+	if (LastHR_OK())
+	{
+		PROPVARIANT varStart;
+		PropVariantInit(&varStart);
+		varStart.vt = VT_EMPTY;
+		PrintIfErrAndSave(mMediaSession->Start(&GUID_NULL, &varStart));
+	}
+}
+
+void MediaSession::Stop()
+{
+	m_pRep->Stop();
+}
+void MediaSessionRep::Stop()
+{
+	PrintIfErrAndSave(mMediaSession->Stop());
 }
