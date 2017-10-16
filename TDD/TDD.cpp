@@ -128,6 +128,7 @@ namespace MediaFoundationTesing
 	public:
 		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
+			InitVideoWindow();
 			InitMediaSession();
 			InitTopology();
 
@@ -212,16 +213,8 @@ namespace MediaFoundationTesing
 			MediaSource* audioSource = new MediaSource(mAudioDevice);
 			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
 
-			// Topology Nodes
-			TopologyNode* audioSourceTopologyNode = new TopologyNode(audioSource->GetMediaSource());
-			Assert::AreEqual(audioSourceTopologyNode->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(audioSourceTopologyNode->GetTopologyNode());
-
-			TopologyNode* audioRendererTopologyNode = new TopologyNode(L"SAR");
-			Assert::AreEqual(audioRendererTopologyNode->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(audioRendererTopologyNode->GetTopologyNode());
-
-			mTopology->AddAndConnect2Nodes(audioSourceTopologyNode->GetTopologyNode(), audioRendererTopologyNode->GetTopologyNode());
+			// Topology
+			mTopology->CreateAudioPassthroughTopology(audioSource);
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 
 			mTopology->ResolveSingleSourceTopology();
@@ -245,17 +238,8 @@ namespace MediaFoundationTesing
 			MediaSource* videoSource = new MediaSource(mVideoDevice);
 			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
 
-			// Topology Nodes
-			TopologyNode* videoSourceTopologyNode = new TopologyNode(videoSource->GetMediaSource());
-			Assert::AreEqual(videoSourceTopologyNode->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(videoSourceTopologyNode->GetTopologyNode());
-
-			InitVideoWindow();
-			TopologyNode* videoRendererTopologyNode = new TopologyNode(mVideoWindow);
-			Assert::AreEqual(videoRendererTopologyNode->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(videoRendererTopologyNode->GetTopologyNode());
-
-			mTopology->AddAndConnect2Nodes(videoSourceTopologyNode->GetTopologyNode(), videoRendererTopologyNode->GetTopologyNode());
+			// Topology
+			mTopology->CreateVideoPassthroughTopology(videoSource, mVideoWindow);
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 
 			mTopology->ResolveSingleSourceTopology();
@@ -281,11 +265,6 @@ namespace MediaFoundationTesing
 			MediaSource* aggregateSource = new MediaSource(mVideoDevice, mAudioDevice);
 			Assert::AreEqual(aggregateSource->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(aggregateSource);
-
-			// aggregate reader
-			SourceReader* aggregateSourceReader = new SourceReader(aggregateSource->GetMediaSource());
-			Assert::AreEqual(aggregateSourceReader->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(aggregateSourceReader->GetSourceReader());
 
 			// Topology Nodes
 

@@ -1,4 +1,6 @@
 #include "Topology.h"
+#include "TopologyNode.h"
+#include "MediaSource.h"
 #include "IMFWrapper.h"
 
 #include <mfapi.h>
@@ -12,13 +14,18 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	void								AddAndConnect2Nodes(CComPtr<IMFTopologyNode> sourceNode, CComPtr<IMFTopologyNode> renderNode);
+	void								CreateAudioPassthroughTopology(MediaSource* audioSource);
+	void								CreateVideoPassthroughTopology(MediaSource* videoSource, HWND windowForVideo);
 	void								ResolveSingleSourceTopology();
 	void								SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
 	CComPtr<IMFTopology>				GetTopology();
 
 private:
+	TopologyNode*						CreateAudioRendererNode();
+	TopologyNode*						CreateVideoRendererNode(HWND windowForVideo);
+	TopologyNode*						CreateNodeFromMediaSource(MediaSource* audioSource);
+	void								AddAndConnect2Nodes(CComPtr<IMFTopologyNode> sourceNode, CComPtr<IMFTopologyNode> renderNode);
 	bool								IsInputConnected(CComPtr<IMFTopologyNode> node);
 	bool								IsOutputConnected(CComPtr<IMFTopologyNode> node);
 	void								CleanOutErrors(CComPtr<IMFTopologyNode> node);
@@ -60,10 +67,78 @@ CComPtr<IMFTopology> TopologyRep::GetTopology()
 	return mTopology;
 }
 
-void Topology::AddAndConnect2Nodes(CComPtr<IMFTopologyNode> sourceNode, CComPtr<IMFTopologyNode> renderNode)
+TopologyNode* TopologyRep::CreateNodeFromMediaSource(MediaSource* audioSource)
 {
-	m_pRep->AddAndConnect2Nodes(sourceNode, renderNode);
+	TopologyNode* mediaSourceNode = new TopologyNode(audioSource->GetMediaSource());
+	if (mediaSourceNode->GetLastHRESULT() != S_OK)
+	{
+		return NULL;
+	}
+	return mediaSourceNode;
 }
+
+TopologyNode* TopologyRep::CreateAudioRendererNode()
+{
+	TopologyNode* audioRendererNode = new TopologyNode(L"SAR");
+	if (audioRendererNode->GetLastHRESULT() != S_OK)
+	{
+		return NULL;
+	}
+	return audioRendererNode;
+}
+
+TopologyNode* TopologyRep::CreateVideoRendererNode(HWND windowForVideo)
+{
+	TopologyNode* videoRendererNode = new TopologyNode(windowForVideo);
+	if (videoRendererNode->GetLastHRESULT() != S_OK)
+	{
+		return NULL;
+	}
+	return videoRendererNode;
+}
+
+void Topology::CreateVideoPassthroughTopology(MediaSource* videoSource, HWND windowForVideo)
+{
+	m_pRep->CreateVideoPassthroughTopology(videoSource, windowForVideo);
+}
+void TopologyRep::CreateVideoPassthroughTopology(MediaSource* videoSource, HWND windowForVideo)
+{
+	TopologyNode* videoSourceNode = CreateNodeFromMediaSource(videoSource);
+	if (!videoSourceNode)
+	{
+		SetLastHR_Fail();
+		return;
+	}
+	TopologyNode* videoRendererNode = CreateVideoRendererNode(windowForVideo);
+	if (!videoRendererNode)
+	{
+		SetLastHR_Fail();
+		return;
+	}
+	AddAndConnect2Nodes(videoSourceNode->GetTopologyNode(), videoRendererNode->GetTopologyNode());
+}
+
+void Topology::CreateAudioPassthroughTopology(MediaSource* audioSource)
+{
+	m_pRep->CreateAudioPassthroughTopology(audioSource);
+}
+void TopologyRep::CreateAudioPassthroughTopology(MediaSource* audioSource)
+{
+	TopologyNode* audioSourceNode = CreateNodeFromMediaSource(audioSource);
+	if (!audioSourceNode)
+	{
+		SetLastHR_Fail();
+		return;
+	}
+	TopologyNode* audioRendererNode = CreateAudioRendererNode();
+	if (!audioRendererNode)
+	{
+		SetLastHR_Fail();
+		return;
+	}
+	AddAndConnect2Nodes(audioSourceNode->GetTopologyNode(), audioRendererNode->GetTopologyNode());
+}
+
 void TopologyRep::AddAndConnect2Nodes(CComPtr<IMFTopologyNode> sourceNode, CComPtr<IMFTopologyNode> renderNode)
 {
 	PrintIfErrAndSave(mTopology->AddNode(sourceNode));

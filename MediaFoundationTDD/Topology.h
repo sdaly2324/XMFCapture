@@ -9,8 +9,8 @@
 #endif
 
 struct IMFMediaSession;
-struct IMFTopologyNode;
 struct IMFTopology;
+class MediaSource;
 class TopologyRep;
 class MediaFoundationTDD_API Topology
 {
@@ -20,9 +20,11 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	void								AddAndConnect2Nodes(CComPtr<IMFTopologyNode> sourceNode, CComPtr<IMFTopologyNode> renderNode);
+	void								CreateAudioPassthroughTopology(MediaSource* audioSource);
+	void								CreateVideoPassthroughTopology(MediaSource* videoSource, HWND windowForVideo);
 	void								ResolveSingleSourceTopology();
 	void								SetTopology(CComPtr<IMFMediaSession> mediaSession);
+
 	CComPtr<IMFTopology>				GetTopology();
 
 private:
