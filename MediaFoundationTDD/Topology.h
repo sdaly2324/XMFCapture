@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <atlcomcli.h>
+#include <memory>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -20,13 +21,16 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	void								CreateAudioPassthroughTopology(MediaSource* audioSource);
-	void								CreateVideoPassthroughTopology(MediaSource* videoSource, HWND windowForVideo);
-	void								ResolveSingleSourceTopology();
+	void								CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource);
+	void								CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, HWND windowForVideo);
+	void								ResolveTopology();
 	void								SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
 	CComPtr<IMFTopology>				GetTopology();
 
 private:
-	TopologyRep* m_pRep = 0;
+#pragma warning(push)
+#pragma warning(disable:4251)
+	std::unique_ptr<TopologyRep> m_pRep = 0;
+#pragma warning(pop)
 };

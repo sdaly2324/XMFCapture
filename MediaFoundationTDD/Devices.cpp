@@ -22,7 +22,7 @@ private:
 };
 Devices::Devices(CComPtr<IMFAttributes> attributesPtr)
 {
-	m_pRep = new DevicesRep(attributesPtr);
+	m_pRep = std::unique_ptr<DevicesRep>(new DevicesRep(attributesPtr));
 }
 DevicesRep::DevicesRep(CComPtr<IMFAttributes> attributesPtr)
 {
@@ -30,7 +30,6 @@ DevicesRep::DevicesRep(CComPtr<IMFAttributes> attributesPtr)
 }
 Devices::~Devices()
 {
-	delete m_pRep;
 }
 DevicesRep::~DevicesRep()
 {

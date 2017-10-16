@@ -16,14 +16,13 @@ private:
 AudioDevices::AudioDevices()
 {
 	AttributesFactory attributesFactory;
-	m_pRep = new AudioDevicesRep(attributesFactory.CreateAudioDeviceAttributes());
+	m_pRep = std::unique_ptr<AudioDevicesRep>(new AudioDevicesRep(attributesFactory.CreateAudioDeviceAttributes()));
 }
 AudioDevicesRep::AudioDevicesRep(CComPtr<IMFAttributes> attributesPtr):Devices(attributesPtr)
 {
 }
 AudioDevices::~AudioDevices()
 {
-	delete m_pRep;
 }
 AudioDevicesRep::~AudioDevicesRep()
 {

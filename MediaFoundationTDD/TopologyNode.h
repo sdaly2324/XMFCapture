@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <atlcomcli.h>
 #include <string>
+#include <memory>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -26,5 +27,8 @@ public:
 
 private:
 	TopologyNode();
-	TopologyNodeRep* m_pRep = 0;
+#pragma warning(push)
+#pragma warning(disable:4251)
+	std::unique_ptr<TopologyNodeRep> m_pRep = 0;
+#pragma warning(pop)
 };

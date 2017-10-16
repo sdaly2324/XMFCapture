@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <atlcomcli.h>
+#include <memory>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -25,5 +26,8 @@ public:
 
 private:
 	MediaSource();
-	MediaSourceRep* m_pRep = 0;
+#pragma warning(push)
+#pragma warning(disable:4251)
+	std::unique_ptr<MediaSourceRep> m_pRep = 0;
+#pragma warning(pop)
 };

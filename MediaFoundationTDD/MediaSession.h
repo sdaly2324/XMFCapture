@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <atlcomcli.h>
+#include <memory>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -20,7 +21,7 @@ class MediaSessionRep;
 class MediaFoundationTDD_API MediaSession
 {
 public:
-	MediaSession(OnTopologyReadyCallback* onTopologyReadyCallback);
+	MediaSession(std::shared_ptr<OnTopologyReadyCallback> onTopologyReadyCallback);
 	~MediaSession();
 
 	HRESULT								GetLastHRESULT();
@@ -32,5 +33,8 @@ public:
 
 private:
 	MediaSession();
-	MediaSessionRep* m_pRep = 0;
+#pragma warning(push)
+#pragma warning(disable:4251)
+	std::unique_ptr<MediaSessionRep> m_pRep = 0;
+#pragma warning(pop)
 };

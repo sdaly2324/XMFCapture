@@ -23,7 +23,7 @@ private:
 
 PresentationDescriptor::PresentationDescriptor(CComPtr<IMFMediaSource> mediaSource)
 {
-	m_pRep = new PresentationDescriptorRep(mediaSource);
+	m_pRep = std::unique_ptr<PresentationDescriptorRep>(new PresentationDescriptorRep(mediaSource));
 }
 PresentationDescriptorRep::PresentationDescriptorRep(CComPtr<IMFMediaSource> mediaSource)
 {
@@ -31,7 +31,6 @@ PresentationDescriptorRep::PresentationDescriptorRep(CComPtr<IMFMediaSource> med
 }
 PresentationDescriptor::~PresentationDescriptor()
 {
-	delete m_pRep;
 }
 PresentationDescriptorRep::~PresentationDescriptorRep()
 {

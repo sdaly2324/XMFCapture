@@ -1,6 +1,8 @@
 #pragma once
 #include <windows.h>
 #include <atlcomcli.h>
+#include <memory>
+
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
 #else
@@ -22,5 +24,8 @@ public:
 	CComPtr<IMFAttributes>	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
 
 private:
-	AttributesFactoryRep* m_pRep = 0;
+#pragma warning(push)
+#pragma warning(disable:4251)
+	std::unique_ptr<AttributesFactoryRep> m_pRep = 0;
+#pragma warning(pop)
 };

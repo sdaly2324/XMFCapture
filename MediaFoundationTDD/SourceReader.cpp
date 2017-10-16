@@ -34,7 +34,7 @@ private:
 };
 SourceReader::SourceReader(CComPtr<IMFMediaSource> mediaSource)
 {
-	m_pRep = new SourceReaderRep(mediaSource);
+	m_pRep = std::unique_ptr<SourceReaderRep>(new SourceReaderRep(mediaSource));
 }
 SourceReaderRep::SourceReaderRep(CComPtr<IMFMediaSource> mediaSource)
 {
@@ -47,7 +47,6 @@ SourceReaderRep::SourceReaderRep(CComPtr<IMFMediaSource> mediaSource)
 }
 SourceReader::~SourceReader()
 {
-	delete m_pRep;
 }
 SourceReaderRep::~SourceReaderRep()
 {

@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <vector>
 #include <atlcomcli.h>
+#include <memory>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -23,5 +24,8 @@ public:
 	CComPtr<IMFActivate>		GetDeviceByName(std::wstring deviceName);
 
 private:
-	DevicesRep* m_pRep = 0;
+#pragma warning(push)
+#pragma warning(disable:4251)
+	std::unique_ptr<DevicesRep> m_pRep = 0;
+#pragma warning(pop)
 };

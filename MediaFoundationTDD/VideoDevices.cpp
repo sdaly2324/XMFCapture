@@ -16,14 +16,13 @@ private:
 VideoDevices::VideoDevices()
 {
 	AttributesFactory attributesFactory;
-	m_pRep = new VideoDevicesRep(attributesFactory.CreateVideoDeviceAttributes());
+	m_pRep = std::unique_ptr<VideoDevicesRep>(new VideoDevicesRep(attributesFactory.CreateVideoDeviceAttributes()));
 }
 VideoDevicesRep::VideoDevicesRep(CComPtr<IMFAttributes> attributesPtr) :Devices(attributesPtr)
 {
 }
 VideoDevices::~VideoDevices()
 {
-	delete m_pRep;
 }
 VideoDevicesRep::~VideoDevicesRep()
 {

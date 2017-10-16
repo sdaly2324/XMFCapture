@@ -24,14 +24,14 @@ private:
 
 TopologyNode::TopologyNode(CComPtr<IMFMediaSource> mediaSource)
 {
-	m_pRep = new TopologyNodeRep(mediaSource);
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(mediaSource));
 }
 TopologyNodeRep::TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource)
 {
 	PrintIfErrAndSave(MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &mTopologyNode));
 	PrintIfErrAndSave(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, mediaSource));
 
-	PresentationDescriptor* presentationDescriptor = new PresentationDescriptor(mediaSource);
+	std::unique_ptr<PresentationDescriptor> presentationDescriptor(new PresentationDescriptor(mediaSource));
 	if (presentationDescriptor->GetLastHRESULT() != S_OK || !presentationDescriptor)
 	{
 		SetLastHR_Fail();
@@ -67,7 +67,7 @@ TopologyNodeRep::TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource)
 
 TopologyNode::TopologyNode(HWND windowForVideo)
 {
-	m_pRep = new TopologyNodeRep(windowForVideo);
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(windowForVideo));
 }
 TopologyNodeRep::TopologyNodeRep(HWND windowForVideo)
 {
@@ -85,7 +85,7 @@ TopologyNodeRep::TopologyNodeRep(HWND windowForVideo)
 
 TopologyNode::TopologyNode(std::wstring nodeType)
 {
-	m_pRep = new TopologyNodeRep(nodeType);
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(nodeType));
 }
 TopologyNodeRep::TopologyNodeRep(std::wstring nodeType)
 {
@@ -114,7 +114,6 @@ void TopologyNodeRep::CreateAudioRenderer()
 
 TopologyNode::~TopologyNode()
 {
-	delete m_pRep;
 }
 TopologyNodeRep::~TopologyNodeRep()
 {

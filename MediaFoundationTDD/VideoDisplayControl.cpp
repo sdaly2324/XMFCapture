@@ -21,15 +21,13 @@ private:
 
 VideoDisplayControl::VideoDisplayControl()
 {
-	m_pRep = new VideoDisplayControlRep();
+	m_pRep = std::unique_ptr<VideoDisplayControlRep>(new VideoDisplayControlRep());
 }
 VideoDisplayControlRep::VideoDisplayControlRep()
 {
-
 }
 VideoDisplayControl::~VideoDisplayControl()
 {
-	delete m_pRep;
 }
 VideoDisplayControlRep::~VideoDisplayControlRep()
 {

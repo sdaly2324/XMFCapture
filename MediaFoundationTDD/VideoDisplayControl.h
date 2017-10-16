@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <atlcomcli.h>
+#include <memory>
 
 #include "MediaSession.h"
 
@@ -27,5 +28,8 @@ public:
 	CComPtr<IMFVideoDisplayControl>		GetVideoDisplayControl();
 
 private:
-	VideoDisplayControlRep* m_pRep = 0;
+#pragma warning(push)
+#pragma warning(disable:4251)
+	std::unique_ptr<VideoDisplayControlRep> m_pRep = 0;
+#pragma warning(pop)
 };

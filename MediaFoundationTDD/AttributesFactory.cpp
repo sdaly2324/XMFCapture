@@ -21,14 +21,13 @@ private:
 };
 AttributesFactory::AttributesFactory()
 {
-	m_pRep = new AttributesFactoryRep();
+	m_pRep = std::unique_ptr<AttributesFactoryRep>(new AttributesFactoryRep());
 }
 AttributesFactoryRep::AttributesFactoryRep()
 {	
 }
 AttributesFactory::~AttributesFactory()
 {
-	delete m_pRep;
 }
 AttributesFactoryRep::~AttributesFactoryRep()
 {

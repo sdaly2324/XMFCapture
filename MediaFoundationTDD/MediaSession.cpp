@@ -8,7 +8,7 @@
 class MediaSessionRep : public IMFAsyncCallback, public IMFWrapper
 {
 public:
-	MediaSessionRep(OnTopologyReadyCallback* onTopologyReadyCallback);
+	MediaSessionRep(std::shared_ptr<OnTopologyReadyCallback> onTopologyReadyCallback);
 	~MediaSessionRep();
 
 	HRESULT								GetLastHRESULT();
@@ -34,14 +34,14 @@ private:
 	CComAutoCriticalSection				m_critSec;
 	volatile long						m_nRefCount = 1;
 
-	OnTopologyReadyCallback*			mOnTopologyReadyCallback = NULL;
+	std::shared_ptr<OnTopologyReadyCallback>			mOnTopologyReadyCallback = NULL;
 };
 
-MediaSession::MediaSession(OnTopologyReadyCallback* onTopologyReadyCallback)
+MediaSession::MediaSession(std::shared_ptr<OnTopologyReadyCallback> onTopologyReadyCallback)
 {
-	m_pRep = new MediaSessionRep(onTopologyReadyCallback);
+	m_pRep = std::unique_ptr<MediaSessionRep>(new MediaSessionRep(onTopologyReadyCallback));
 }
-MediaSessionRep::MediaSessionRep(OnTopologyReadyCallback* onTopologyReadyCallback):
+MediaSessionRep::MediaSessionRep(std::shared_ptr<OnTopologyReadyCallback> onTopologyReadyCallback):
 	mOnTopologyReadyCallback(onTopologyReadyCallback)
 {
 	PrintIfErrAndSave(MFStartup(MF_VERSION));
@@ -52,7 +52,6 @@ MediaSessionRep::MediaSessionRep(OnTopologyReadyCallback* onTopologyReadyCallbac
 }
 MediaSession::~MediaSession()
 {
-	delete m_pRep;
 }
 MediaSessionRep::~MediaSessionRep()
 {
