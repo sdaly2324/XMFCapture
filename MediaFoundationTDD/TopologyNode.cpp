@@ -29,8 +29,15 @@ TopologyNode::TopologyNode(CComPtr<IMFMediaSource> mediaSource)
 TopologyNodeRep::TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource)
 {
 	PrintIfErrAndSave(MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &mTopologyNode));
+	if (!LastHR_OK())
+	{
+		return;
+	}
 	PrintIfErrAndSave(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, mediaSource));
-
+	if (!LastHR_OK())
+	{
+		return;
+	}
 	std::unique_ptr<PresentationDescriptor> presentationDescriptor(new PresentationDescriptor(mediaSource));
 	if (presentationDescriptor->GetLastHRESULT() != S_OK || !presentationDescriptor)
 	{
