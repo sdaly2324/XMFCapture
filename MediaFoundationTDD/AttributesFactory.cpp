@@ -49,11 +49,8 @@ CComPtr<IMFAttributes> AttributesFactory::CreateVideoDeviceAttributes()
 CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoDeviceAttributes()
 {
 	CComPtr<IMFAttributes> retVal = NULL;
-	PrintIfErrAndSave(MFCreateAttributes(&retVal, 1));
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID));
-	}
+	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
+	OnERR_return_NULL(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID));
 	return retVal;
 }
 
@@ -64,11 +61,8 @@ CComPtr<IMFAttributes> AttributesFactory::CreateAudioDeviceAttributes()
 CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioDeviceAttributes()
 {
 	CComPtr<IMFAttributes> retVal = NULL;
-	PrintIfErrAndSave(MFCreateAttributes(&retVal, 1));
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_AUDCAP_GUID));
-	}
+	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
+	OnERR_return_NULL(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_AUDCAP_GUID));
 	return retVal;
 }
 
@@ -79,12 +73,8 @@ CComPtr<IMFAttributes> AttributesFactory::CreateSourceReaderAsycCallbackAttribut
 CComPtr<IMFAttributes> AttributesFactoryRep::CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack)
 {
 	CComPtr<IMFAttributes> retVal = NULL;
-	PrintIfErrAndSave(MFCreateAttributes(&retVal, 0));
-
-	if (LastHR_OK() && retVal)
-	{
+	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
 		// for some reason SetUnknown does not count towards the IMFAttributes count
-		PrintIfErrAndSave(retVal->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, callBack));
-	}
+	OnERR_return_NULL(retVal->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, callBack));
 	return retVal;
 }

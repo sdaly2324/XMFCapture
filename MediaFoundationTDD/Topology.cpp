@@ -48,7 +48,7 @@ Topology::Topology()
 }
 TopologyRep::TopologyRep()
 {
-	PrintIfErrAndSave(MFCreateTopology(&mTopology));
+	OnERR_return(MFCreateTopology(&mTopology));
 }
 Topology::~Topology()
 {
@@ -150,27 +150,18 @@ void TopologyRep::CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> au
 
 void TopologyRep::AddAndConnect2Nodes(CComPtr<IMFTopologyNode> sourceNode, CComPtr<IMFTopologyNode> renderNode)
 {
-	PrintIfErrAndSave(mTopology->AddNode(sourceNode));
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(mTopology->AddNode(renderNode));
-	}
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(sourceNode->ConnectOutput(0, renderNode, 0));
-	}
+	OnERR_return(mTopology->AddNode(sourceNode));
+	OnERR_return(mTopology->AddNode(renderNode));
+	OnERR_return(sourceNode->ConnectOutput(0, renderNode, 0));
 }
 
 bool TopologyRep::IsNodeTypeSource(CComPtr<IMFTopologyNode> node)
 {
 	MF_TOPOLOGY_TYPE nodeType = MF_TOPOLOGY_MAX;
-	PrintIfErrAndSave(node->GetNodeType(&nodeType));
-	if (LastHR_OK())
+	OnERR_return_false(node->GetNodeType(&nodeType));
+	if (nodeType == MF_TOPOLOGY_SOURCESTREAM_NODE)
 	{
-		if (nodeType == MF_TOPOLOGY_SOURCESTREAM_NODE)
-		{
-			return true;
-		}
+		return true;
 	}
 	return false;
 }
@@ -178,8 +169,7 @@ bool TopologyRep::IsNodeTypeSource(CComPtr<IMFTopologyNode> node)
 GUID TopologyRep::GetTopSourceNodeMediaType(CComPtr<IMFTopologyNode> topSourceNode)
 {
 	CComPtr<IMFMediaSource> mediaSource = NULL;
-	PrintIfErrAndSave(topSourceNode->GetUnknown(MF_TOPONODE_SOURCE, IID_IMFMediaSource, (void**)&mediaSource));
-	if (!LastHR_OK())
+	if (IsHRError(topSourceNode->GetUnknown(MF_TOPONODE_SOURCE, IID_IMFMediaSource, (void**)&mediaSource)))
 	{
 		return MFMediaType_Default;
 	}
@@ -217,11 +207,11 @@ void TopologyRep::UpdateSourceNodeMediaTypes(CComPtr<IMFTopologyNode> node)
 
 void TopologyRep::InspectNodeConections(CComPtr<IMFTopology> topology)
 {
-	PrintIfErrAndSave(topology->GetNodeCount(&mConnectedNodes));
+	OnERR_return(topology->GetNodeCount(&mConnectedNodes));
 	for (WORD nodeNumber = 0; nodeNumber < mConnectedNodes; nodeNumber++)
 	{
 		CComPtr<IMFTopologyNode> node = NULL;
-		PrintIfErrAndSave(topology->GetNode(nodeNumber, &node));
+		OnERR_return(topology->GetNode(nodeNumber, &node));
 		CleanOutErrors(node);
 		bool isConnected = false;
 		if (LastHR_OK())
@@ -235,12 +225,9 @@ void TopologyRep::InspectNodeConections(CComPtr<IMFTopology> topology)
 		}
 		if (LastHR_OK() && isConnected == false)
 		{
-			PrintIfErrAndSave(topology->RemoveNode(node));
-			if (LastHR_OK())
-			{
-				mConnectedNodes--;
-				nodeNumber--;
-			}
+			OnERR_return(topology->RemoveNode(node));
+			mConnectedNodes--;
+			nodeNumber--;
 		}
 	}
 }
@@ -248,38 +235,18 @@ void TopologyRep::InspectNodeConections(CComPtr<IMFTopology> topology)
 CComPtr<IMFTopology> TopologyRep::ResolveMultiSourceTopology(CComPtr<IMFTopology> topology)
 {
 	CComPtr<IMFSequencerSource> sequencerSource = NULL;
-	PrintIfErrAndSave(MFCreateSequencerSource(NULL, &sequencerSource));
+	OnERR_return_NULL(MFCreateSequencerSource(NULL, &sequencerSource));
 	MFSequencerElementId newMFSequencerElementId = 0;
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(sequencerSource->AppendTopology(topology, SequencerTopologyFlags_Last, &newMFSequencerElementId));
-	}
+	OnERR_return_NULL(sequencerSource->AppendTopology(topology, SequencerTopologyFlags_Last, &newMFSequencerElementId));
 	CComPtr<IMFMediaSource> mediaSource = NULL;
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(sequencerSource->QueryInterface(IID_IMFMediaSource, (void**)&mediaSource));
-	}
+	OnERR_return_NULL(sequencerSource->QueryInterface(IID_IMFMediaSource, (void**)&mediaSource));
 	CComPtr<IMFPresentationDescriptor> presentationDescriptor = NULL;
-	if (LastHR_OK() && mediaSource)
-	{
-		PrintIfErrAndSave(mediaSource->CreatePresentationDescriptor(&presentationDescriptor));
-	}
+	OnERR_return_NULL(mediaSource->CreatePresentationDescriptor(&presentationDescriptor));
 	CComPtr<IMFMediaSourceTopologyProvider> mediaSourceTopologyProvider = NULL;
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(sequencerSource->QueryInterface(IID_IMFMediaSourceTopologyProvider, (void**)&mediaSourceTopologyProvider));
-	}
+	OnERR_return_NULL(sequencerSource->QueryInterface(IID_IMFMediaSourceTopologyProvider, (void**)&mediaSourceTopologyProvider));
 	topology.Release();
-	if (LastHR_OK() && mediaSourceTopologyProvider && presentationDescriptor)
-	{
-		PrintIfErrAndSave(mediaSourceTopologyProvider->GetMediaSourceTopology(presentationDescriptor, &topology));
-	}
-	if (LastHR_OK())
-	{
-		return topology;
-	}
-	SetLastHR_Fail();
-	return NULL;
+	OnERR_return_NULL(mediaSourceTopologyProvider->GetMediaSourceTopology(presentationDescriptor, &topology));
+	return topology;
 }
 
 void Topology::ResolveTopology()
@@ -289,18 +256,12 @@ void Topology::ResolveTopology()
 void TopologyRep::ResolveTopology()
 {
 	CComPtr<IMFTopology> topologyClone = NULL;
-	PrintIfErrAndSave(MFCreateTopology(&topologyClone));
-	if (LastHR_OK())
+	OnERR_return(MFCreateTopology(&topologyClone));
+	OnERR_return(topologyClone->CloneFrom(mTopology));
+	InspectNodeConections(topologyClone);
+	if (LastHR_OK() && mHaveAudioSourceNode && mHaveVideoSourceNode)
 	{
-		PrintIfErrAndSave(topologyClone->CloneFrom(mTopology));
-	}
-	if (LastHR_OK())
-	{
-		InspectNodeConections(topologyClone);
-		if (LastHR_OK() && mHaveAudioSourceNode && mHaveVideoSourceNode)
-		{
-			topologyClone = ResolveMultiSourceTopology(topologyClone);
-		}
+		topologyClone = ResolveMultiSourceTopology(topologyClone);
 	}
 	if (LastHR_OK())
 	{
@@ -313,32 +274,21 @@ void TopologyRep::ResolveTopology()
 }
 void TopologyRep::CleanOutErrors(CComPtr<IMFTopologyNode> node)
 {
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(node->DeleteItem(MF_TOPONODE_ERRORCODE));
-	}
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(node->DeleteItem(MF_TOPONODE_ERROR_MAJORTYPE));
-	}
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(node->DeleteItem(MF_TOPONODE_ERROR_SUBTYPE));
-	}
+	OnERR_return(node->DeleteItem(MF_TOPONODE_ERRORCODE));
+	OnERR_return(node->DeleteItem(MF_TOPONODE_ERROR_MAJORTYPE));
+	OnERR_return(node->DeleteItem(MF_TOPONODE_ERROR_SUBTYPE));
 }
 
 bool TopologyRep::IsInputConnected(CComPtr<IMFTopologyNode> node)
 {
 	DWORD inputCount = 0;
-	PrintIfErrAndSave(node->GetInputCount(&inputCount));
-	if (LastHR_OK())
+	if (!IsHRError(node->GetInputCount(&inputCount)))
 	{
 		for (DWORD inputNumber = 0; inputNumber < inputCount; inputNumber++)
 		{
 			CComPtr<IMFTopologyNode> pIMFTopologyNodeUp;
 			DWORD upIndex;
-			PrintIfErrAndSave(node->GetInput(inputNumber, &pIMFTopologyNodeUp, &upIndex));
-			if (LastHR_OK())
+			if (!IsHRError(node->GetInput(inputNumber, &pIMFTopologyNodeUp, &upIndex)))
 			{
 				return true;
 			}
@@ -350,15 +300,13 @@ bool TopologyRep::IsInputConnected(CComPtr<IMFTopologyNode> node)
 bool TopologyRep::IsOutputConnected(CComPtr<IMFTopologyNode> node)
 {
 	DWORD outputCount = 0;
-	PrintIfErrAndSave(node->GetOutputCount(&outputCount));
-	if (LastHR_OK())
+	if (!IsHRError(node->GetOutputCount(&outputCount)))
 	{
 		for (DWORD outputNumber = 0; outputNumber < outputCount; outputNumber++)
 		{
 			CComPtr<IMFTopologyNode> pIMFTopologyNodeDown;
 			DWORD downIndex;
-			PrintIfErrAndSave(node->GetOutput(outputNumber, &pIMFTopologyNodeDown, &downIndex));
-			if (LastHR_OK())
+			if (!IsHRError(node->GetOutput(outputNumber, &pIMFTopologyNodeDown, &downIndex)))
 			{
 				return true;
 			}
@@ -373,16 +321,7 @@ void Topology::SetTopology(CComPtr<IMFMediaSession> mediaSession)
 }
 void TopologyRep::SetTopology(CComPtr<IMFMediaSession> mediaSession)
 {
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(mTopology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE));
-	}
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(mTopology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL));
-	}
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(mediaSession->SetTopology(0, mTopology));
-	}
+	OnERR_return(mTopology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE));
+	OnERR_return(mTopology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL));
+	OnERR_return(mediaSession->SetTopology(0, mTopology));
 }

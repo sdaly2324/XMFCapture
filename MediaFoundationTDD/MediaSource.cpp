@@ -36,10 +36,7 @@ MediaSource::MediaSource(CComPtr<IMFActivate> videoDevice, CComPtr<IMFActivate> 
 MediaSourceRep::MediaSourceRep(CComPtr<IMFActivate> videoDevice, CComPtr<IMFActivate> audioDevice)
 {
 	CComPtr<IMFMediaSource>	 videoSource = NULL;
-	if (LastHR_OK())
-	{
-		videoSource = CreateMediaSource(videoDevice);
-	}
+	videoSource = CreateMediaSource(videoDevice);
 	CComPtr<IMFMediaSource>	 audioSource = NULL;
 	if (LastHR_OK())
 	{
@@ -48,19 +45,10 @@ MediaSourceRep::MediaSourceRep(CComPtr<IMFActivate> videoDevice, CComPtr<IMFActi
 	if (LastHR_OK())
 	{
 		CComPtr<IMFCollection> collection = NULL;
-		PrintIfErrAndSave(MFCreateCollection(&collection));
-		if (LastHR_OK())
-		{
-			PrintIfErrAndSave(collection->AddElement(videoSource));
-		}
-		if (LastHR_OK())
-		{
-			PrintIfErrAndSave(collection->AddElement(audioSource));
-		}
-		if (LastHR_OK())
-		{
-			PrintIfErrAndSave(MFCreateAggregateSource(collection, &mMediaSource));
-		}
+		OnERR_return(MFCreateCollection(&collection));
+		OnERR_return(collection->AddElement(videoSource));
+		OnERR_return(collection->AddElement(audioSource));
+		OnERR_return(MFCreateAggregateSource(collection, &mMediaSource));
 	}
 }
 MediaSource::~MediaSource()
@@ -82,11 +70,7 @@ HRESULT MediaSourceRep::GetLastHRESULT()
 CComPtr<IMFMediaSource>	MediaSourceRep::CreateMediaSource(CComPtr<IMFActivate> singleDevice)
 {
 	CComPtr<IMFMediaSource> retVal = NULL;
-	PrintIfErrAndSave(singleDevice->ActivateObject(__uuidof(IMFMediaSource), (void**)&retVal));
-	if (!LastHR_OK() || !retVal)
-	{
-		return NULL;
-	}
+	OnERR_return_NULL(singleDevice->ActivateObject(__uuidof(IMFMediaSource), (void**)&retVal));
 	return retVal;
 }
 

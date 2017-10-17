@@ -28,22 +28,15 @@ SinkWriterRep::SinkWriterRep(LPCWSTR fullFilePath)
 	CComPtr<IMFAttributes> attributes = GetSinkWriterAttributesForCreation();
 	if (attributes)
 	{
-		PrintIfErrAndSave(MFCreateSinkWriterFromURL(fullFilePath, NULL, attributes, &mSinkWriter));
+		OnERR_return(MFCreateSinkWriterFromURL(fullFilePath, NULL, attributes, &mSinkWriter));
 	}
 }
 CComPtr<IMFAttributes> SinkWriterRep::GetSinkWriterAttributesForCreation()
 {
 	CComPtr<IMFAttributes> attributes = NULL;
-	PrintIfErrAndSave(MFCreateAttributes(&attributes, 1));
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(attributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
-	}
-	if (LastHR_OK())
-	{
-		return attributes;
-	}
-	return NULL;
+	OnERR_return_NULL(MFCreateAttributes(&attributes, 1));
+	OnERR_return_NULL(attributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
+	return attributes;
 }
 SinkWriter::~SinkWriter()
 {

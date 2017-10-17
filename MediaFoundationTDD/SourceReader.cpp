@@ -43,7 +43,7 @@ SourceReaderRep::SourceReaderRep(CComPtr<IMFMediaSource> mediaSource)
 	AttributesFactory* attributesFactory = new AttributesFactory();
 	CComPtr<IMFAttributes> sourceReaderAsycCallbackAttributes = attributesFactory->CreateSourceReaderAsycCallbackAttributes(this);
 
-	PrintIfErrAndSave(MFCreateSourceReaderFromMediaSource(mediaSource, sourceReaderAsycCallbackAttributes, &mSourceReader));
+	OnERR_return(MFCreateSourceReaderFromMediaSource(mediaSource, sourceReaderAsycCallbackAttributes, &mSourceReader));
 }
 SourceReader::~SourceReader()
 {
@@ -73,17 +73,13 @@ CComPtr<IMFSourceReader> SourceReaderRep::GetSourceReader()
 HRESULT SourceReaderRep::OnEvent(DWORD streamIndex, IMFMediaEvent* pEvent)
 {
 	MediaEventType mediaEventType = MEUnknown;
-	PrintIfErrAndSave(pEvent->GetType(&mediaEventType));
-	if (LastHR_OK())
+	OnERR_return_HR(pEvent->GetType(&mediaEventType));
+	if (mediaEventType != MESourceCharacteristicsChanged)
 	{
-		if (mediaEventType != MESourceCharacteristicsChanged)
-		{
-			WCHAR mess[1024];
-			swprintf_s(mess, 1024, L"SourceReaderCallbackRep::OnEvent stream(%d) type(%d)\n", streamIndex, mediaEventType);
-			OutputDebugStringW(mess);
-		}
+		WCHAR mess[1024];
+		swprintf_s(mess, 1024, L"SourceReaderCallbackRep::OnEvent stream(%d) type(%d)\n", streamIndex, mediaEventType);
+		OutputDebugStringW(mess);
 	}
-
 	return S_OK;
 }
 

@@ -44,18 +44,15 @@ MediaSession::MediaSession(std::shared_ptr<OnTopologyReadyCallback> onTopologyRe
 MediaSessionRep::MediaSessionRep(std::shared_ptr<OnTopologyReadyCallback> onTopologyReadyCallback):
 	mOnTopologyReadyCallback(onTopologyReadyCallback)
 {
-	PrintIfErrAndSave(MFStartup(MF_VERSION));
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(MFCreateMediaSession(NULL, &mMediaSession));
-	}
+	OnERR_return(MFStartup(MF_VERSION));
+	OnERR_return(MFCreateMediaSession(NULL, &mMediaSession));
 }
 MediaSession::~MediaSession()
 {
 }
 MediaSessionRep::~MediaSessionRep()
 {
-	PrintIfErrAndSave(MFShutdown());
+	OnERR_return(MFShutdown());
 }
 
 HRESULT MediaSession::GetLastHRESULT()
@@ -84,21 +81,13 @@ HRESULT MediaSessionRep::Invoke(IMFAsyncResult* pAsyncResult)
 		return GetLastHRESULT();
 	}
 	CComPtr<IMFMediaEvent> pEvent;
-	PrintIfErrAndSave(mMediaSession->EndGetEvent(pAsyncResult, &pEvent));
-	if (!LastHR_OK())
-	{
-		return GetLastHRESULT();
-	}
+	OnERR_return_HR(mMediaSession->EndGetEvent(pAsyncResult, &pEvent));
 	ProcessMediaEvent(pEvent);
 	if (!LastHR_OK())
 	{
 		return GetLastHRESULT();
 	}
-	PrintIfErrAndSave(mMediaSession->BeginGetEvent(this, NULL));
-	if (!LastHR_OK())
-	{
-		return GetLastHRESULT();
-	}
+	OnERR_return_HR(mMediaSession->BeginGetEvent(this, NULL));
 	return S_OK;
 }
 
@@ -149,29 +138,16 @@ void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& pMediaEvent)
 	UINT32 TopoStatus = MF_TOPOSTATUS_INVALID;
 
 	MediaEventType eventType;
-	PrintIfErrAndSave(pMediaEvent->GetType(&eventType));
-	if (!LastHR_OK())
+	OnERR_return(pMediaEvent->GetType(&eventType));
+	OnERR_return(pMediaEvent->GetStatus(&hrStatus));
+	if (IsHRError(hrStatus))
 	{
-		return;
-	}
-	PrintIfErrAndSave(pMediaEvent->GetStatus(&hrStatus));
-	if (!LastHR_OK())
-	{
-		return;
-	}
-	if (FAILED(hrStatus))
-	{
-		PrintIfErrAndSave(hrStatus);
 		SetLastHR_Fail();
 		return;
 	}
 	if (eventType == MESessionTopologyStatus)
 	{
-		PrintIfErrAndSave(pMediaEvent->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, (UINT32*)&TopoStatus));
-		if (!LastHR_OK())
-		{
-			return;
-		}
+		OnERR_return(pMediaEvent->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, (UINT32*)&TopoStatus));
 		if (TopoStatus == MF_TOPOSTATUS_READY && mOnTopologyReadyCallback)
 		{
 			mOnTopologyReadyCallback->OnTopologyReady(mMediaSession);
@@ -185,14 +161,11 @@ void MediaSession::Start()
 }
 void MediaSessionRep::Start()
 {
-	PrintIfErrAndSave(mMediaSession->BeginGetEvent((IMFAsyncCallback*)this, NULL));
-	if (LastHR_OK())
-	{
-		PROPVARIANT varStart;
-		PropVariantInit(&varStart);
-		varStart.vt = VT_EMPTY;
-		PrintIfErrAndSave(mMediaSession->Start(&GUID_NULL, &varStart));
-	}
+	OnERR_return(mMediaSession->BeginGetEvent((IMFAsyncCallback*)this, NULL));
+	PROPVARIANT varStart;
+	PropVariantInit(&varStart);
+	varStart.vt = VT_EMPTY;
+	OnERR_return(mMediaSession->Start(&GUID_NULL, &varStart));
 }
 
 void MediaSession::Stop()
@@ -201,5 +174,5 @@ void MediaSession::Stop()
 }
 void MediaSessionRep::Stop()
 {
-	PrintIfErrAndSave(mMediaSession->Stop());
+	OnERR_return(mMediaSession->Stop());
 }

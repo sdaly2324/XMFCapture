@@ -26,7 +26,7 @@ Devices::Devices(CComPtr<IMFAttributes> attributesPtr)
 }
 DevicesRep::DevicesRep(CComPtr<IMFAttributes> attributesPtr)
 {
-	PrintIfErrAndSave(MFEnumDeviceSources(attributesPtr, &mDevicesPtr, &mNumberOfDevices));
+	OnERR_return(MFEnumDeviceSources(attributesPtr, &mDevicesPtr, &mNumberOfDevices));
 }
 Devices::~Devices()
 {
@@ -50,8 +50,7 @@ std::vector<std::wstring> DevicesRep::GetDeviceNames()
 	for (UINT32 i = 0; i < mNumberOfDevices && LastHR_OK(); i++)
 	{
 		WCHAR* devicename;
-		PrintIfErrAndSave(mDevicesPtr[i]->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &devicename, NULL));
-		if (LastHR_OK())
+		if (!IsHRError(mDevicesPtr[i]->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &devicename, NULL)))
 		{
 			retVal.push_back(devicename);
 		}

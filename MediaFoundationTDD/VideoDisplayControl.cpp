@@ -58,5 +58,5 @@ void VideoDisplayControl::OnTopologyReady(CComPtr<IMFMediaSession> mediaSession)
 void VideoDisplayControlRep::OnTopologyReady(CComPtr<IMFMediaSession> mediaSession)
 {
 	mVideoDisplayControl.Release();
-	PrintIfErrAndSave(MFGetService(mediaSession, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl, (void**)&mVideoDisplayControl));
+	OnERR_return(MFGetService(mediaSession, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl, (void**)&mVideoDisplayControl));
 }

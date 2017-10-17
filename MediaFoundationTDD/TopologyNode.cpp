@@ -28,23 +28,15 @@ TopologyNode::TopologyNode(CComPtr<IMFMediaSource> mediaSource)
 }
 TopologyNodeRep::TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource)
 {
-	PrintIfErrAndSave(MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &mTopologyNode));
-	if (!LastHR_OK())
-	{
-		return;
-	}
-	PrintIfErrAndSave(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, mediaSource));
-	if (!LastHR_OK())
-	{
-		return;
-	}
+	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &mTopologyNode));
+	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, mediaSource));
 	std::unique_ptr<PresentationDescriptor> presentationDescriptor(new PresentationDescriptor(mediaSource));
 	if (presentationDescriptor->GetLastHRESULT() != S_OK || !presentationDescriptor)
 	{
 		SetLastHR_Fail();
 		return;
 	}
-	PrintIfErrAndSave(mTopologyNode->SetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, presentationDescriptor->GetPresentationDescriptor()));
+	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, presentationDescriptor->GetPresentationDescriptor()));
 
 	CComPtr<IMFStreamDescriptor> firstVideoStreamDescriptor = presentationDescriptor->GetFirstVideoStreamDescriptor();
 	CComPtr<IMFStreamDescriptor> firstAudioStreamDescriptor = presentationDescriptor->GetFirstAudioStreamDescriptor();
@@ -69,7 +61,7 @@ TopologyNodeRep::TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource)
 		mTopologyNode = NULL;
 		return;
 	}
-	PrintIfErrAndSave(mTopologyNode->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, streamDescriptorToUse));
+	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, streamDescriptorToUse));
 }
 
 TopologyNode::TopologyNode(HWND windowForVideo)
@@ -79,15 +71,9 @@ TopologyNode::TopologyNode(HWND windowForVideo)
 TopologyNodeRep::TopologyNodeRep(HWND windowForVideo)
 {
 	CComPtr<IMFActivate> pIMFActivate = NULL;
-	PrintIfErrAndSave(MFCreateVideoRendererActivate(windowForVideo, &pIMFActivate));
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
-	}
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(mTopologyNode->SetObject(pIMFActivate));
-	}
+	OnERR_return(MFCreateVideoRendererActivate(windowForVideo, &pIMFActivate));
+	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
+	OnERR_return(mTopologyNode->SetObject(pIMFActivate));
 }
 
 TopologyNode::TopologyNode(std::wstring nodeType)
@@ -108,15 +94,9 @@ TopologyNodeRep::TopologyNodeRep(std::wstring nodeType)
 void TopologyNodeRep::CreateAudioRenderer()
 {
 	CComPtr<IMFActivate> pIMFActivate = NULL;
-	PrintIfErrAndSave(MFCreateAudioRendererActivate(&pIMFActivate));
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
-	}
-	if (LastHR_OK())
-	{
-		PrintIfErrAndSave(mTopologyNode->SetObject(pIMFActivate));
-	}
+	OnERR_return(MFCreateAudioRendererActivate(&pIMFActivate));
+	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
+	OnERR_return(mTopologyNode->SetObject(pIMFActivate));
 }
 
 TopologyNode::~TopologyNode()

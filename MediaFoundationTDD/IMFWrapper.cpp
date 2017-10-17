@@ -8,7 +8,7 @@ std::wstring ConvertCharToWString(char* stringToConvert)
 	std::string sstr(stringToConvert);
 	return std::wstring(sstr.begin(), sstr.end());
 }
-HRESULT IMFWrapper::HRESULTPrintIfErrAndSave(HRESULT hr, char* function, char* file, int line)
+HRESULT IMFWrapper::HRESULTLogErr(HRESULT hr, char* function, char* file, int line)
 {
 	if (FAILED(hr))
 	{
@@ -19,7 +19,7 @@ HRESULT IMFWrapper::HRESULTPrintIfErrAndSave(HRESULT hr, char* function, char* f
 		OutputDebugStringW(mess);
 	}
 	mLastHR = hr;
-	return hr;
+	return mLastHR;
 }
 
 HRESULT IMFWrapper::GetLastHRESULT()

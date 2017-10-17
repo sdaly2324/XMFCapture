@@ -27,7 +27,7 @@ PresentationDescriptor::PresentationDescriptor(CComPtr<IMFMediaSource> mediaSour
 }
 PresentationDescriptorRep::PresentationDescriptorRep(CComPtr<IMFMediaSource> mediaSource)
 {
-	PrintIfErrAndSave(mediaSource->CreatePresentationDescriptor(&mPresentationDescriptor));
+	OnERR_return(mediaSource->CreatePresentationDescriptor(&mPresentationDescriptor));
 }
 PresentationDescriptor::~PresentationDescriptor()
 {
@@ -73,7 +73,7 @@ CComPtr<IMFStreamDescriptor> PresentationDescriptorRep::GetFirstAudioStreamDescr
 CComPtr<IMFStreamDescriptor> PresentationDescriptorRep::GetFirstStreamDescriptor(GUID MAJOR_TYPE)
 {
 	unsigned int streams = 0;
-	PrintIfErrAndSave(mPresentationDescriptor->GetCount(&streams));
+	OnERR_return_NULL(mPresentationDescriptor->GetCount(&streams));
 	if (streams == 0)
 	{
 		streams = 1; // I have no idea why GetCount returns 0 when there is only 1 stream
@@ -82,37 +82,17 @@ CComPtr<IMFStreamDescriptor> PresentationDescriptorRep::GetFirstStreamDescriptor
 	{
 		BOOL streamSelected = FALSE;
 		CComPtr<IMFStreamDescriptor> currentStreamDescriptor = NULL;
-		PrintIfErrAndSave(mPresentationDescriptor->GetStreamDescriptorByIndex(streamID, &streamSelected, &currentStreamDescriptor));
-		if (!LastHR_OK() || !currentStreamDescriptor)
-		{
-			return NULL;
-		}
+		OnERR_return_NULL(mPresentationDescriptor->GetStreamDescriptorByIndex(streamID, &streamSelected, &currentStreamDescriptor));
 		CComPtr<IMFMediaTypeHandler> mediaTypeHandler = NULL;
-		PrintIfErrAndSave(currentStreamDescriptor->GetMediaTypeHandler(&mediaTypeHandler));
-		if (!LastHR_OK() || !mediaTypeHandler)
-		{
-			return NULL;
-		}
+		OnERR_return_NULL(currentStreamDescriptor->GetMediaTypeHandler(&mediaTypeHandler));
 		unsigned long mediaTypes = 0;
-		PrintIfErrAndSave(mediaTypeHandler->GetMediaTypeCount(&mediaTypes));
-		if (!LastHR_OK() || mediaTypes <= 0)
-		{
-			return NULL;
-		}
+		OnERR_return_NULL(mediaTypeHandler->GetMediaTypeCount(&mediaTypes));
 		for (unsigned int mediaType = 0; (mediaType < mediaTypes) && LastHR_OK(); mediaType++)
 		{
 			CComPtr<IMFMediaType> mediaTypeAPI = NULL;
-			PrintIfErrAndSave(mediaTypeHandler->GetMediaTypeByIndex(mediaType, &mediaTypeAPI));
-			if (!LastHR_OK() || !mediaTypeAPI)
-			{
-				return NULL;
-			}
+			OnERR_return_NULL(mediaTypeHandler->GetMediaTypeByIndex(mediaType, &mediaTypeAPI));
 			GUID guidValue = GUID_NULL;
-			PrintIfErrAndSave(mediaTypeAPI->GetGUID(MF_MT_MAJOR_TYPE, &guidValue));
-			if (!LastHR_OK())
-			{
-				return NULL;
-			}
+			OnERR_return_NULL(mediaTypeAPI->GetGUID(MF_MT_MAJOR_TYPE, &guidValue));
 			if (guidValue == MAJOR_TYPE)
 			{
 				return currentStreamDescriptor;
