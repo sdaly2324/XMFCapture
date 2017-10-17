@@ -11,6 +11,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "MediaSource.h"
 #include "Topology.h"
 #include "VideoDisplayControl.h"
+#include "SinkWriter.h"
 
 #include <mfidl.h>
 #include <mfreadwrite.h>
@@ -35,6 +36,7 @@ namespace MediaFoundationTesing
 	private:
 		std::wstring	myVideoDeviceName = L"XI100DUSB-SDI Video";								//<-------------------Video device to test-----------------------------
 		std::wstring	myAudioDeviceName = L"Digital Audio Interface (XI100DUSB-SDI Audio)";	//<-------------------Audio device to test-----------------------------
+		std::wstring	myCaptureFilePath = L"C:\\";											//<-------------------Path to file captures----------------------------
 		HRESULT			mLastHR = S_OK;
 		std::unique_ptr<MediaSession>	mMediaSession = NULL;
 		std::unique_ptr<Topology>		mTopology = NULL;
@@ -265,6 +267,22 @@ namespace MediaFoundationTesing
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 			::Sleep(1000);
+		}
+		TEST_METHOD(CreateAACFileSink)
+		{
+			// sink writer
+			std::wstring fileToWrite = myCaptureFilePath + L"audioOnly.aac";
+			std::shared_ptr<SinkWriter> sinkWriter(new SinkWriter(fileToWrite.c_str()));
+			Assert::AreEqual(sinkWriter->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(sinkWriter->GetSinkWriter());
+		}
+		TEST_METHOD(CreateTSFileSink)
+		{
+			// sink writer
+			std::wstring fileToWrite = myCaptureFilePath + L"capture.ts";
+			std::shared_ptr<SinkWriter> sinkWriter(new SinkWriter(fileToWrite.c_str()));
+			Assert::AreEqual(sinkWriter->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(sinkWriter->GetSinkWriter());
 		}
 	};
 }

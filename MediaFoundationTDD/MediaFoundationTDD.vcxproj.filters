@@ -40,6 +40,9 @@
     <ClCompile Include="VideoDisplayControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SinkWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -74,6 +77,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VideoDisplayControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SinkWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
