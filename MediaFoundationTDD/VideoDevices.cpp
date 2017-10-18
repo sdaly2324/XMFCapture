@@ -3,22 +3,28 @@
 #include "Devices.h"
 
 #include <mfobjects.h>
+#include <mfidl.h>
 
 class VideoDevicesRep : public Devices
 {
 public:
-	VideoDevicesRep(CComPtr<IMFAttributes> attributesPtr);
+	VideoDevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer);
 	~VideoDevicesRep();
 
 private:
 };
 
-VideoDevices::VideoDevices()
+VideoDevices::VideoDevices(HWND windowForVideo)
 {
-	AttributesFactory attributesFactory;
-	m_pRep = std::unique_ptr<VideoDevicesRep>(new VideoDevicesRep(attributesFactory.CreateVideoDeviceAttributes()));
+	CComPtr<IMFActivate> renderer = NULL;
+	HRESULT hr = MFCreateVideoRendererActivate(windowForVideo, &renderer);
+	if (SUCCEEDED(hr))
+	{
+		AttributesFactory attributesFactory;
+		m_pRep = std::unique_ptr<VideoDevicesRep>(new VideoDevicesRep(attributesFactory.CreateVideoDeviceAttributes(), renderer));
+	}
 }
-VideoDevicesRep::VideoDevicesRep(CComPtr<IMFAttributes> attributesPtr) :Devices(attributesPtr)
+VideoDevicesRep::VideoDevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer) : Devices(attributesPtr, renderer)
 {
 }
 VideoDevices::~VideoDevices()
@@ -33,7 +39,12 @@ HRESULT VideoDevices::GetLastHRESULT()
 	return m_pRep->GetLastHRESULT();
 }
 
-CComPtr<IMFActivate> VideoDevices::GetVideoDevice(std::wstring videoDeviceName)
+CComPtr<IMFActivate> VideoDevices::GetCaptureVideoDevice(std::wstring videoDeviceName)
 {
-	return m_pRep->GetDeviceByName(videoDeviceName);
+	return m_pRep->GetCaptureDeviceByName(videoDeviceName);
+}
+
+CComPtr<IMFActivate> VideoDevices::GetVideoRenderer()
+{
+	return m_pRep->GetRenderer();
 }

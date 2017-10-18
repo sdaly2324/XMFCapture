@@ -2,6 +2,7 @@
 #include "IMFWrapper.h"
 #include "SourceReader.h"
 #include "PresentationDescriptor.h"
+#include "Devices.h"
 
 #include <mfidl.h>
 
@@ -9,8 +10,7 @@ class TopologyNodeRep : public IMFWrapper
 {
 public:
 	TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource);
-	TopologyNodeRep(HWND windowForVideo);
-	TopologyNodeRep(std::wstring nodeType);
+	TopologyNodeRep(CComPtr<IMFActivate> device);
 	~TopologyNodeRep();
 
 	HRESULT								GetLastHRESULT();
@@ -64,39 +64,14 @@ TopologyNodeRep::TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource)
 	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, streamDescriptorToUse));
 }
 
-TopologyNode::TopologyNode(HWND windowForVideo)
+TopologyNode::TopologyNode(CComPtr<IMFActivate> device)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(windowForVideo));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(device));
 }
-TopologyNodeRep::TopologyNodeRep(HWND windowForVideo)
+TopologyNodeRep::TopologyNodeRep(CComPtr<IMFActivate> device)
 {
-	CComPtr<IMFActivate> pIMFActivate = NULL;
-	OnERR_return(MFCreateVideoRendererActivate(windowForVideo, &pIMFActivate));
 	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
-	OnERR_return(mTopologyNode->SetObject(pIMFActivate));
-}
-
-TopologyNode::TopologyNode(std::wstring nodeType)
-{
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(nodeType));
-}
-TopologyNodeRep::TopologyNodeRep(std::wstring nodeType)
-{
-	if (nodeType == L"SAR")
-	{
-		CreateAudioRenderer();
-	}
-	else
-	{
-		SetLastHR_Fail();
-	}
-}
-void TopologyNodeRep::CreateAudioRenderer()
-{
-	CComPtr<IMFActivate> pIMFActivate = NULL;
-	OnERR_return(MFCreateAudioRendererActivate(&pIMFActivate));
-	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
-	OnERR_return(mTopologyNode->SetObject(pIMFActivate));
+	OnERR_return(mTopologyNode->SetObject(device));
 }
 
 TopologyNode::~TopologyNode()

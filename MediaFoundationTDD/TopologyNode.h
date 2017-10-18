@@ -12,13 +12,13 @@
 
 struct IMFMediaSource;
 struct IMFTopologyNode;
+struct IMFActivate;
 class TopologyNodeRep;
 class MediaFoundationTDD_API TopologyNode
 {
 public:
 	TopologyNode(CComPtr<IMFMediaSource> mediaSource);
-	TopologyNode(HWND windowForVideo);
-	TopologyNode(std::wstring nodeType);
+	TopologyNode(CComPtr<IMFActivate> device);
 	~TopologyNode();
 
 	HRESULT								GetLastHRESULT();

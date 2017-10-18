@@ -11,6 +11,7 @@
 
 struct IMFMediaSession;
 struct IMFTopology;
+struct IMFActivate;
 class MediaSource;
 class TopologyRep;
 class MediaFoundationTDD_API Topology
@@ -21,8 +22,8 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	void								CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource);
-	void								CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, HWND windowForVideo);
+	void								CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource, CComPtr<IMFActivate> audioRenderer);
+	void								CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, CComPtr<IMFActivate> videoRenderer);
 	void								ResolveTopology();
 	void								SetTopology(CComPtr<IMFMediaSession> mediaSession);
 

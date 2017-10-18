@@ -41,29 +41,37 @@ namespace MediaFoundationTesing
 		std::unique_ptr<MediaSession>	mMediaSession = NULL;
 		std::unique_ptr<Topology>		mTopology = NULL;
 		std::shared_ptr<VideoDisplayControl> mVideoDisplayControl = NULL;
-		CComPtr<IMFActivate> mAudioDevice = NULL;
-		CComPtr<IMFActivate> mVideoDevice = NULL;
+		CComPtr<IMFActivate> mAudioCaptureDevice = NULL;
+		CComPtr<IMFActivate> mVideoCaptureDevice = NULL;
+		CComPtr<IMFActivate> mAudioRenderer = NULL;
+		CComPtr<IMFActivate> mVideoRenderer = NULL;
 		HWND mVideoWindow = NULL;
 
-		CComPtr<IMFActivate> GetVideoDevice()
+		void InitVideoDevices()
 		{
-			std::unique_ptr<VideoDevices> videoDevices(new VideoDevices());
+			std::unique_ptr<VideoDevices> videoDevices(new VideoDevices(NULL));
 			Assert::AreEqual(videoDevices->GetLastHRESULT(), S_OK);
 
-			CComPtr<IMFActivate> myVideoDevice = videoDevices->GetVideoDevice(myVideoDeviceName);
+			mVideoCaptureDevice = videoDevices->GetCaptureVideoDevice(myVideoDeviceName);
 			Assert::AreEqual(videoDevices->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(myVideoDevice);
-			return myVideoDevice;
+			Assert::IsTrue(mVideoCaptureDevice);
+
+			mVideoRenderer = videoDevices->GetVideoRenderer();
+			Assert::AreEqual(videoDevices->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(mVideoRenderer);
 		}
-		CComPtr<IMFActivate> GetAudioDevice()
+		void InitAudioDevices()
 		{
 			std::unique_ptr<AudioDevices> audioDevices(new AudioDevices());
 			Assert::AreEqual(audioDevices->GetLastHRESULT(), S_OK);
 
-			CComPtr<IMFActivate> myAudioDevice = audioDevices->GetAudioDevice(myAudioDeviceName);
+			mAudioCaptureDevice = audioDevices->GetCaptureAudioDevice(myAudioDeviceName);
 			Assert::AreEqual(audioDevices->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(myAudioDevice);
-			return myAudioDevice;
+			Assert::IsTrue(mAudioCaptureDevice);
+
+			mAudioRenderer = audioDevices->GetAudioRenderer();
+			Assert::AreEqual(audioDevices->GetLastHRESULT(), S_OK);
+			Assert::IsTrue(mAudioRenderer);
 		}
 		void ValidateVideoStreamDescriptor(CComPtr<IMFStreamDescriptor> videoStreamDescriptor)
 		{
@@ -111,14 +119,13 @@ namespace MediaFoundationTesing
 		{
 			InitMediaSession();
 			InitTopology();
-
-			mVideoDevice = GetVideoDevice();
-			mAudioDevice = GetAudioDevice();
+			InitAudioDevices();
+			InitVideoDevices();
 		}
 		TEST_METHOD(StreamDescriptorsAudioOnlyVilidation)
 		{
 			// source
-			std::unique_ptr<MediaSource> audioSource(new MediaSource(mAudioDevice));
+			std::unique_ptr<MediaSource> audioSource(new MediaSource(mAudioCaptureDevice));
 			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
 
 			//// PresentationDescriptor
@@ -136,7 +143,7 @@ namespace MediaFoundationTesing
 		TEST_METHOD(StreamDescriptorsVideoOnlyVilidation)
 		{
 			// source
-			std::unique_ptr<MediaSource> videoSource(new MediaSource(mVideoDevice));
+			std::unique_ptr<MediaSource> videoSource(new MediaSource(mVideoCaptureDevice));
 			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
 
 			// PresentationDescriptor
@@ -155,15 +162,15 @@ namespace MediaFoundationTesing
 		TEST_METHOD(StreamDescriptorsAggregateVilidation)
 		{
 			// video source
-			std::unique_ptr<MediaSource> videoSource(new MediaSource(mVideoDevice));
+			std::unique_ptr<MediaSource> videoSource(new MediaSource(mVideoCaptureDevice));
 			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
 
 			// audio source
-			std::unique_ptr<MediaSource> audioSource(new MediaSource(mAudioDevice));
+			std::unique_ptr<MediaSource> audioSource(new MediaSource(mAudioCaptureDevice));
 			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
 
 			// aggregate source
-			std::unique_ptr<MediaSource> aggregateSource(new MediaSource(mVideoDevice, mAudioDevice));
+			std::unique_ptr<MediaSource> aggregateSource(new MediaSource(mVideoCaptureDevice, mAudioCaptureDevice));
 			Assert::AreEqual(aggregateSource->GetLastHRESULT(), S_OK);
 
 			// PresentationDescriptors
@@ -182,14 +189,14 @@ namespace MediaFoundationTesing
 			CComPtr<IMFStreamDescriptor> audioStreamDescriptor = aggregatePresentationDescriptor->GetFirstAudioStreamDescriptor();
 			ValidateAudioStreamDescriptor(audioStreamDescriptor);
 		}
-		TEST_METHOD(PassthroughAudioOnly)
+		TEST_METHOD(PassthroughAudioOnlyTopology)
 		{
 			// source
-			std::shared_ptr<MediaSource> audioSource(new MediaSource(mAudioDevice));
+			std::shared_ptr<MediaSource> audioSource(new MediaSource(mAudioCaptureDevice));
 			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
 
 			// Topology
-			mTopology->CreateAudioPassthroughTopology(audioSource);
+			mTopology->CreateAudioPassthroughTopology(audioSource , mAudioRenderer);
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 
 			mTopology->ResolveTopology();
@@ -208,14 +215,14 @@ namespace MediaFoundationTesing
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 			::Sleep(1000);
 		}
-		TEST_METHOD(PassthroughVideoOnly)
+		TEST_METHOD(PassthroughVideoOnlyTopology)
 		{
 			// source
-			std::shared_ptr<MediaSource> videoSource(new MediaSource(mVideoDevice));
+			std::shared_ptr<MediaSource> videoSource(new MediaSource(mVideoCaptureDevice));
 			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
 
 			// Topology
-			mTopology->CreateVideoPassthroughTopology(videoSource, mVideoWindow);
+			mTopology->CreateVideoPassthroughTopology(videoSource, mVideoRenderer);
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 
 			mTopology->ResolveTopology();
@@ -236,18 +243,18 @@ namespace MediaFoundationTesing
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 			::Sleep(1000);
 		}
-		TEST_METHOD(PassthroughVideoAndAudio)
+		TEST_METHOD(PassthroughVideoAndAudioTopology)
 		{
 			// source
-			std::shared_ptr<MediaSource> videoSource(new MediaSource(mVideoDevice));
+			std::shared_ptr<MediaSource> videoSource(new MediaSource(mVideoCaptureDevice));
 			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
-			std::shared_ptr<MediaSource> audioSource(new MediaSource(mAudioDevice));
+			std::shared_ptr<MediaSource> audioSource(new MediaSource(mAudioCaptureDevice));
 			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
 
 			// Topology
-			mTopology->CreateVideoPassthroughTopology(videoSource, mVideoWindow);
+			mTopology->CreateVideoPassthroughTopology(videoSource, mVideoRenderer);
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
-			mTopology->CreateAudioPassthroughTopology(audioSource);
+			mTopology->CreateAudioPassthroughTopology(audioSource, mAudioRenderer);
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 
 			mTopology->ResolveTopology();
@@ -283,6 +290,26 @@ namespace MediaFoundationTesing
 			std::shared_ptr<SinkWriter> sinkWriter(new SinkWriter(fileToWrite.c_str()));
 			Assert::AreEqual(sinkWriter->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(sinkWriter->GetSinkWriter());
+		}
+		TEST_METHOD(CreateAudioSourceReader)
+		{
+			// source
+			std::shared_ptr<MediaSource> audioSource(new MediaSource(mAudioCaptureDevice));
+			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
+
+			// source reader
+			std::unique_ptr<SourceReader> audioSourceReader(new SourceReader(audioSource->GetMediaSource()));
+			Assert::AreEqual(audioSourceReader->GetLastHRESULT(), S_OK);
+		}
+		TEST_METHOD(CreateVideoSourceReader)
+		{
+			// source
+			std::shared_ptr<MediaSource> videoSource(new MediaSource(mVideoCaptureDevice));
+			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
+
+			// source reader
+			std::unique_ptr<SourceReader> videoSourceReader(new SourceReader(videoSource->GetMediaSource()));
+			Assert::AreEqual(videoSourceReader->GetLastHRESULT(), S_OK);
 		}
 	};
 }

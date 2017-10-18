@@ -3,6 +3,7 @@
 #include "MediaSource.h"
 #include "PresentationDescriptor.h"
 #include "IMFWrapper.h"
+#include "Devices.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
@@ -16,8 +17,8 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	void								CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource);
-	void								CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, HWND windowForVideo);
+	void								CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource, CComPtr<IMFActivate> audioRenderer);
+	void								CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, CComPtr<IMFActivate> videoRenderer);
 	void								ResolveTopology();
 	void								SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
@@ -29,8 +30,7 @@ private:
 	bool								IsNodeTypeSource(CComPtr<IMFTopologyNode> node);
 	CComPtr<IMFTopology>				ResolveMultiSourceTopology(CComPtr<IMFTopology> topology);
 	void								InspectNodeConections(CComPtr<IMFTopology> topology);
-	std::shared_ptr<TopologyNode>		CreateAudioRendererNode();
-	std::shared_ptr<TopologyNode>		CreateVideoRendererNode(HWND windowForVideo);
+	std::shared_ptr<TopologyNode>		CreateRendererNode(CComPtr<IMFActivate> renderer);
 	std::shared_ptr<TopologyNode>		CreateNodeFromMediaSource(std::shared_ptr<MediaSource> mediaSource);
 	void								AddAndConnect2Nodes(CComPtr<IMFTopologyNode> sourceNode, CComPtr<IMFTopologyNode> renderNode);
 	bool								IsInputConnected(CComPtr<IMFTopologyNode> node);
@@ -86,31 +86,21 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateNodeFromMediaSource(std::shared
 	return mediaSourceNode;
 }
 
-std::shared_ptr<TopologyNode> TopologyRep::CreateAudioRendererNode()
+std::shared_ptr<TopologyNode> TopologyRep::CreateRendererNode(CComPtr<IMFActivate> renderer)
 {
-	std::shared_ptr<TopologyNode> audioRendererNode(new TopologyNode(L"SAR"));
-	if (audioRendererNode->GetLastHRESULT() != S_OK)
+	std::shared_ptr<TopologyNode> rendererNode(new TopologyNode(renderer));
+	if (rendererNode->GetLastHRESULT() != S_OK)
 	{
 		return NULL;
 	}
-	return audioRendererNode;
+	return rendererNode;
 }
 
-std::shared_ptr<TopologyNode> TopologyRep::CreateVideoRendererNode(HWND windowForVideo)
+void Topology::CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, CComPtr<IMFActivate> videoRenderer)
 {
-	std::shared_ptr<TopologyNode> videoRendererNode(new TopologyNode(windowForVideo));
-	if (videoRendererNode->GetLastHRESULT() != S_OK)
-	{
-		return NULL;
-	}
-	return videoRendererNode;
+	m_pRep->CreateVideoPassthroughTopology(videoSource, videoRenderer);
 }
-
-void Topology::CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, HWND windowForVideo)
-{
-	m_pRep->CreateVideoPassthroughTopology(videoSource, windowForVideo);
-}
-void TopologyRep::CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, HWND windowForVideo)
+void TopologyRep::CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, CComPtr<IMFActivate> videoRenderer)
 {
 	std::shared_ptr<TopologyNode> videoSourceNode = CreateNodeFromMediaSource(videoSource);
 	if (!videoSourceNode)
@@ -118,7 +108,7 @@ void TopologyRep::CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> vi
 		SetLastHR_Fail();
 		return;
 	}
-	std::shared_ptr<TopologyNode> videoRendererNode = CreateVideoRendererNode(windowForVideo);
+	std::shared_ptr<TopologyNode> videoRendererNode = CreateRendererNode(videoRenderer);
 	if (!videoRendererNode)
 	{
 		SetLastHR_Fail();
@@ -127,11 +117,11 @@ void TopologyRep::CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> vi
 	AddAndConnect2Nodes(videoSourceNode->GetTopologyNode(), videoRendererNode->GetTopologyNode());
 }
 
-void Topology::CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource)
+void Topology::CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource, CComPtr<IMFActivate> audioRenderer)
 {
-	m_pRep->CreateAudioPassthroughTopology(audioSource);
+	m_pRep->CreateAudioPassthroughTopology(audioSource, audioRenderer);
 }
-void TopologyRep::CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource)
+void TopologyRep::CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource, CComPtr<IMFActivate> audioRenderer)
 {
 	std::shared_ptr<TopologyNode> audioSourceNode = CreateNodeFromMediaSource(audioSource);
 	if (!audioSourceNode)
@@ -139,7 +129,7 @@ void TopologyRep::CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> au
 		SetLastHR_Fail();
 		return;
 	}
-	std::shared_ptr<TopologyNode> audioRendererNode = CreateAudioRendererNode();
+	std::shared_ptr<TopologyNode> audioRendererNode = CreateRendererNode(audioRenderer);
 	if (!audioRendererNode)
 	{
 		SetLastHR_Fail();

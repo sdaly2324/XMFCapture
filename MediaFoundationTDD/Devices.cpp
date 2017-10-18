@@ -7,26 +7,29 @@
 class DevicesRep : public IMFWrapper
 {
 public:
-	DevicesRep(CComPtr<IMFAttributes> attributesPtr);
+	DevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer);
 	~DevicesRep();
 
 	HRESULT						GetLastHRESULT();
 
-	CComPtr<IMFActivate>		GetDeviceByName(std::wstring deviceName);
+	CComPtr<IMFActivate>		GetCaptureDeviceByName(std::wstring deviceName);
+	CComPtr<IMFActivate>		GetRenderer();
 
 private:
-	std::vector<std::wstring>	GetDeviceNames();
+	std::vector<std::wstring>	GetCaptureDeviceNames();
 
-	IMFActivate**				mDevicesPtr			= NULL;
-	unsigned int				mNumberOfDevices	= 0;
+	IMFActivate**				mCaptureDevices			= NULL;
+	unsigned int				mNumberOfCaptureDevices	= 0;
+	CComPtr<IMFActivate>		mRenderer				= NULL;
 };
-Devices::Devices(CComPtr<IMFAttributes> attributesPtr)
+Devices::Devices(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer)
 {
-	m_pRep = std::unique_ptr<DevicesRep>(new DevicesRep(attributesPtr));
+	m_pRep = std::unique_ptr<DevicesRep>(new DevicesRep(attributesPtr, renderer));
 }
-DevicesRep::DevicesRep(CComPtr<IMFAttributes> attributesPtr)
+DevicesRep::DevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer)
 {
-	OnERR_return(MFEnumDeviceSources(attributesPtr, &mDevicesPtr, &mNumberOfDevices));
+	mRenderer = renderer;
+	OnERR_return(MFEnumDeviceSources(attributesPtr, &mCaptureDevices, &mNumberOfCaptureDevices));
 }
 Devices::~Devices()
 {
@@ -44,13 +47,13 @@ HRESULT DevicesRep::GetLastHRESULT()
 	return IMFWrapper::GetLastHRESULT();
 }
 
-std::vector<std::wstring> DevicesRep::GetDeviceNames()
+std::vector<std::wstring> DevicesRep::GetCaptureDeviceNames()
 {
 	std::vector<std::wstring> retVal;
-	for (UINT32 i = 0; i < mNumberOfDevices && LastHR_OK(); i++)
+	for (UINT32 i = 0; i < mNumberOfCaptureDevices && LastHR_OK(); i++)
 	{
 		WCHAR* devicename;
-		if (!IsHRError(mDevicesPtr[i]->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &devicename, NULL)))
+		if (!IsHRError(mCaptureDevices[i]->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &devicename, NULL)))
 		{
 			retVal.push_back(devicename);
 		}
@@ -58,19 +61,28 @@ std::vector<std::wstring> DevicesRep::GetDeviceNames()
 	return retVal;
 }
 
-CComPtr<IMFActivate> Devices::GetDeviceByName(std::wstring deviceName)
+CComPtr<IMFActivate> Devices::GetCaptureDeviceByName(std::wstring deviceName)
 {
-	return m_pRep->GetDeviceByName(deviceName);
+	return m_pRep->GetCaptureDeviceByName(deviceName);
 }
-CComPtr<IMFActivate> DevicesRep::GetDeviceByName(std::wstring deviceName)
+CComPtr<IMFActivate> DevicesRep::GetCaptureDeviceByName(std::wstring deviceName)
 {
 	CComPtr<IMFActivate> retVal = NULL;
-	std::vector<std::wstring> myDeviceNames = GetDeviceNames();
+	std::vector<std::wstring> myDeviceNames = GetCaptureDeviceNames();
 	auto found = std::find(myDeviceNames.begin(), myDeviceNames.end(), deviceName);
 	if (found != myDeviceNames.end())
 	{
 		int x = found - myDeviceNames.begin();
-		retVal = mDevicesPtr[x];
+		retVal = mCaptureDevices[x];
 	}
 	return retVal;
+}
+
+CComPtr<IMFActivate> Devices::GetRenderer()
+{
+	return m_pRep->GetRenderer();
+}
+CComPtr<IMFActivate> DevicesRep::GetRenderer()
+{
+	return mRenderer;
 }

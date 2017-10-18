@@ -21,7 +21,8 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	CComPtr<IMFActivate>				GetAudioDevice(std::wstring audioDeviceName);
+	CComPtr<IMFActivate>				GetCaptureAudioDevice(std::wstring audioDeviceName);
+	CComPtr<IMFActivate>				GetAudioRenderer();
 
 private:
 #pragma warning(push)

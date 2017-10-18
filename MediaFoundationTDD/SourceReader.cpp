@@ -28,7 +28,6 @@ public:
 	STDMETHODIMP OnFlush(DWORD dwStreamIndex);
 
 private:
-	CComPtr<IMFMediaSource>		mMediaSource = NULL;
 	CComPtr<IMFSourceReader>	mSourceReader = NULL;
 	long mRefCount = 0;
 };
@@ -38,8 +37,6 @@ SourceReader::SourceReader(CComPtr<IMFMediaSource> mediaSource)
 }
 SourceReaderRep::SourceReaderRep(CComPtr<IMFMediaSource> mediaSource)
 {
-	mMediaSource = mediaSource;
-
 	AttributesFactory* attributesFactory = new AttributesFactory();
 	CComPtr<IMFAttributes> sourceReaderAsycCallbackAttributes = attributesFactory->CreateSourceReaderAsycCallbackAttributes(this);
 
@@ -90,7 +87,6 @@ HRESULT SourceReaderRep::OnFlush(DWORD streamIndex)
 
 HRESULT SourceReaderRep::OnReadSample(HRESULT hrStatus, DWORD streamIndex, DWORD streamFlags, LONGLONG llTimeStamp, IMFSample* sample)
 {
-
 	return E_FAIL;
 }
 
@@ -112,9 +108,5 @@ ULONG SourceReaderRep::AddRef()
 ULONG SourceReaderRep::Release()
 {
 	ULONG uCount = InterlockedDecrement(&mRefCount);
-	if (uCount == 0)
-	{
-		delete this;
-	}
 	return uCount;
 }

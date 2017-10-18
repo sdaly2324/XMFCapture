@@ -16,12 +16,13 @@ class DevicesRep;
 class MediaFoundationTDD_API Devices
 {
 public:
-	Devices(CComPtr<IMFAttributes> attributesPtr);
+	Devices(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer);
 	~Devices();
 
 	HRESULT						GetLastHRESULT();
 
-	CComPtr<IMFActivate>		GetDeviceByName(std::wstring deviceName);
+	CComPtr<IMFActivate>		GetCaptureDeviceByName(std::wstring deviceName);
+	CComPtr<IMFActivate>		GetRenderer();
 
 private:
 #pragma warning(push)
