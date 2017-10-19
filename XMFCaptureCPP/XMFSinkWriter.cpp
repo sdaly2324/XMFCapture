@@ -164,15 +164,15 @@ HRESULT XMFSinkWriterRep::BeginWriting()
 		{
 			// HACK BECAUSE setting the IMFMediaType with this attribute MF_MT_MAX_KEYFRAME_SPACING set to 30
 			// does not work when we call IMFSinkWriter::AddAddStream, it has to happen later
-			CComPtr<IMFTransform> videoDecoder = NULL;
+			CComPtr<IMFTransform> videoEncoder = NULL;
 			if (SUCCEEDED_Xb(hr))
 			{
-				hr = m_pSinkWriter->GetServiceForStream(m_VideoStreamIndex, GUID_NULL, IID_IMFTransform, (LPVOID*)&videoDecoder);
+				hr = m_pSinkWriter->GetServiceForStream(m_VideoStreamIndex, GUID_NULL, IID_IMFTransform, (LPVOID*)&videoEncoder);
 			}
 			CComPtr<ICodecAPI> codecApi;
 			if (SUCCEEDED_Xb(hr))
 			{
-				hr = videoDecoder->QueryInterface(&codecApi);
+				hr = videoEncoder->QueryInterface(&codecApi);
 			}
 			VARIANT GOPSize;
 			VariantInit(&GOPSize);
