@@ -208,9 +208,6 @@ namespace MediaFoundationTesing
 			mMediaSession->Start();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 
-			::Sleep(1000);
-			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
-
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 		}
@@ -231,9 +228,6 @@ namespace MediaFoundationTesing
 			mTopology->SetTopology(mMediaSession->GetMediaSession());
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 			mMediaSession->Start();
-			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
-
-			::Sleep(1000);
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(mVideoDisplayControl->GetVideoDisplayControl());
 			Assert::AreEqual(mVideoDisplayControl->GetLastHRESULT(), S_OK);
@@ -262,9 +256,6 @@ namespace MediaFoundationTesing
 			mTopology->SetTopology(mMediaSession->GetMediaSession());
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 			mMediaSession->Start();
-			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
-
-			::Sleep(1000);
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(mVideoDisplayControl->GetVideoDisplayControl());
 			Assert::AreEqual(mVideoDisplayControl->GetLastHRESULT(), S_OK);

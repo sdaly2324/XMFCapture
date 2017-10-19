@@ -33,6 +33,7 @@ private:
 	CComAutoCriticalSection						mCritSec;
 	CComPtr<IMFMediaSession>					mMediaSession				= NULL;
 	volatile long								mRefCount					= 1;
+	HANDLE										mStartedEvent				= INVALID_HANDLE_VALUE;
 	HANDLE										mStoppedEvent				= INVALID_HANDLE_VALUE;
 	std::shared_ptr<OnTopologyReadyCallback>	mOnTopologyReadyCallback	= NULL;
 };
@@ -49,6 +50,11 @@ MediaSessionRep::MediaSessionRep(std::shared_ptr<OnTopologyReadyCallback> onTopo
 
 	mStoppedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	if (mStoppedEvent == INVALID_HANDLE_VALUE)
+	{
+		OnERR_return(HRESULT_FROM_WIN32(GetLastError()));
+	}
+	mStartedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (mStartedEvent == INVALID_HANDLE_VALUE)
 	{
 		OnERR_return(HRESULT_FROM_WIN32(GetLastError()));
 	}
@@ -159,9 +165,13 @@ void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& pMediaEvent)
 			mOnTopologyReadyCallback->OnTopologyReady(mMediaSession);
 		}
 	}
-	if (eventType == MESessionStopped)
+	else if (eventType == MESessionStopped)
 	{
 		SetEvent(mStoppedEvent);
+	}
+	else if (eventType == MESessionStarted)
+	{
+		SetEvent(mStartedEvent);
 	}
 }
 
@@ -176,6 +186,7 @@ void MediaSessionRep::Start()
 	PropVariantInit(&varStart);
 	varStart.vt = VT_EMPTY;
 	OnERR_return(mMediaSession->Start(&GUID_NULL, &varStart));
+	DWORD res = WaitForSingleObject(mStartedEvent, INFINITE);
 }
 
 void MediaSession::Stop()
