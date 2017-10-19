@@ -213,7 +213,6 @@ namespace MediaFoundationTesing
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
-			::Sleep(1000);
 		}
 		TEST_METHOD(PassthroughVideoOnlyTopology)
 		{
@@ -241,7 +240,6 @@ namespace MediaFoundationTesing
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
-			::Sleep(1000);
 		}
 		TEST_METHOD(PassthroughVideoAndAudioTopology)
 		{
@@ -273,7 +271,6 @@ namespace MediaFoundationTesing
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
-			::Sleep(1000);
 		}
 		TEST_METHOD(CreateAACFileSink)
 		{

@@ -30,11 +30,11 @@ public:
 private:
 	void								ProcessMediaEvent(CComPtr<IMFMediaEvent>& pMediaEvent);
 
-	CComPtr<IMFMediaSession>			mMediaSession = NULL;
-	CComAutoCriticalSection				m_critSec;
-	volatile long						m_nRefCount = 1;
-
-	std::shared_ptr<OnTopologyReadyCallback>			mOnTopologyReadyCallback = NULL;
+	CComAutoCriticalSection						mCritSec;
+	CComPtr<IMFMediaSession>					mMediaSession				= NULL;
+	volatile long								mRefCount					= 1;
+	HANDLE										mStoppedEvent				= INVALID_HANDLE_VALUE;
+	std::shared_ptr<OnTopologyReadyCallback>	mOnTopologyReadyCallback	= NULL;
 };
 
 MediaSession::MediaSession(std::shared_ptr<OnTopologyReadyCallback> onTopologyReadyCallback)
@@ -46,6 +46,12 @@ MediaSessionRep::MediaSessionRep(std::shared_ptr<OnTopologyReadyCallback> onTopo
 {
 	OnERR_return(MFStartup(MF_VERSION));
 	OnERR_return(MFCreateMediaSession(NULL, &mMediaSession));
+
+	mStoppedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (mStoppedEvent == INVALID_HANDLE_VALUE)
+	{
+		OnERR_return(HRESULT_FROM_WIN32(GetLastError()));
+	}
 }
 MediaSession::~MediaSession()
 {
@@ -75,7 +81,7 @@ CComPtr<IMFMediaSession> MediaSessionRep::GetMediaSession()
 
 HRESULT MediaSessionRep::Invoke(IMFAsyncResult* pAsyncResult)
 {
-	CComCritSecLock<CComAutoCriticalSection> lock(m_critSec);
+	CComCritSecLock<CComAutoCriticalSection> lock(mCritSec);
 	if (!LastHR_OK())
 	{
 		return GetLastHRESULT();
@@ -119,11 +125,11 @@ HRESULT MediaSessionRep::QueryInterface(REFIID riid, void** ppv)
 }
 ULONG MediaSessionRep::AddRef()
 {
-	return InterlockedIncrement(&m_nRefCount);
+	return InterlockedIncrement(&mRefCount);
 }
 ULONG MediaSessionRep::Release()
 {
-	ULONG uCount = InterlockedDecrement(&m_nRefCount);
+	ULONG uCount = InterlockedDecrement(&mRefCount);
 	if (uCount == 0)
 	{
 		delete this;
@@ -153,6 +159,10 @@ void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& pMediaEvent)
 			mOnTopologyReadyCallback->OnTopologyReady(mMediaSession);
 		}
 	}
+	if (eventType == MESessionStopped)
+	{
+		SetEvent(mStoppedEvent);
+	}
 }
 
 void MediaSession::Start()
@@ -175,4 +185,5 @@ void MediaSession::Stop()
 void MediaSessionRep::Stop()
 {
 	OnERR_return(mMediaSession->Stop());
+	DWORD res = WaitForSingleObject(mStoppedEvent, INFINITE);
 }
