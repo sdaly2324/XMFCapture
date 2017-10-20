@@ -41,24 +41,28 @@ XMFSinkWriterRep::XMFSinkWriterRep(LPCWSTR fullFilePath)
 
 	// make sure we ask for hardware transforms (Intel quick sync)
 	CComPtr<IMFAttributes> pAttributes = NULL;
-	HRESULT hr = MFCreateAttributes(&pAttributes, 1);
+	HRESULT hr = MFCreateAttributes(&pAttributes, 0);
 	if (SUCCEEDED_Xb(hr))
 	{
 		hr = pAttributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE);
 	}
-
 	if (SUCCEEDED_Xb(hr))
 	{
-		// for some reason SetUnknown does not count towards the IMFAttributes count
 		hr = pAttributes->SetUnknown(MF_SINK_WRITER_ASYNC_CALLBACK, new XMFSinkWriterCallback());
 	}
-
+	if (SUCCEEDED_Xb(hr))
+	{
+		hr = pAttributes->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Stream);
+	}
+	if (SUCCEEDED_Xb(hr))
+	{
+		hr = pAttributes->SetGUID(MF_MT_SUBTYPE, MFStreamFormat_MPEG2Transport);
+	}
 	if (SUCCEEDED_Xb(hr))
 	{
 		CComCritSecLock<CComCriticalSection> lock(m_protectSinkWriter);
 		hr = MFCreateSinkWriterFromURL(fullFilePath, NULL, pAttributes, &m_pSinkWriter);
 	}
-
 	SUCCEEDED_Xv(hr);
 }
 
@@ -164,15 +168,15 @@ HRESULT XMFSinkWriterRep::BeginWriting()
 		{
 			// HACK BECAUSE setting the IMFMediaType with this attribute MF_MT_MAX_KEYFRAME_SPACING set to 30
 			// does not work when we call IMFSinkWriter::AddAddStream, it has to happen later
-			CComPtr<IMFTransform> videoEncoder = NULL;
+			CComPtr<IMFTransform> videoDecoder = NULL;
 			if (SUCCEEDED_Xb(hr))
 			{
-				hr = m_pSinkWriter->GetServiceForStream(m_VideoStreamIndex, GUID_NULL, IID_IMFTransform, (LPVOID*)&videoEncoder);
+				hr = m_pSinkWriter->GetServiceForStream(m_VideoStreamIndex, GUID_NULL, IID_IMFTransform, (LPVOID*)&videoDecoder);
 			}
 			CComPtr<ICodecAPI> codecApi;
 			if (SUCCEEDED_Xb(hr))
 			{
-				hr = videoEncoder->QueryInterface(&codecApi);
+				hr = videoDecoder->QueryInterface(&codecApi);
 			}
 			VARIANT GOPSize;
 			VariantInit(&GOPSize);
