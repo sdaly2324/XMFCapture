@@ -10,6 +10,7 @@
 #endif
 
 struct IMFSinkWriter;
+struct IMFMediaSink;
 class SinkWriterRep;
 class MediaFoundationTDD_API SinkWriter
 {
@@ -20,6 +21,7 @@ public:
 	HRESULT							GetLastHRESULT();
 
 	CComPtr<IMFSinkWriter>			GetSinkWriter();
+	CComPtr<IMFMediaSink>			GetMediaSink();
 
 private:
 #pragma warning(push)

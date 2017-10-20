@@ -16,6 +16,7 @@ public:
 	CComPtr<IMFAttributes>	CreateVideoDeviceAttributes();
 	CComPtr<IMFAttributes>	CreateAudioDeviceAttributes();
 	CComPtr<IMFAttributes>	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
+	CComPtr<IMFAttributes>	CreateSinkWriterAttributes();
 
 private:
 };
@@ -77,4 +78,18 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateSourceReaderAsycCallbackAttri
 		// for some reason SetUnknown does not count towards the IMFAttributes count
 	OnERR_return_NULL(retVal->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, callBack));
 	return retVal;
+}
+
+CComPtr<IMFAttributes> AttributesFactory::CreateSinkWriterAttributes()
+{
+	return m_pRep->CreateSinkWriterAttributes();
+}
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateSinkWriterAttributes()
+{
+	CComPtr<IMFAttributes> attributes = NULL;
+	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
+	OnERR_return_NULL(attributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
+	OnERR_return_NULL(attributes->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Stream));
+	OnERR_return_NULL(attributes->SetGUID(MF_MT_SUBTYPE, MFStreamFormat_MPEG2Transport));
+	return attributes;
 }

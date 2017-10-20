@@ -22,6 +22,7 @@ public:
 	CComPtr<IMFAttributes>	CreateVideoDeviceAttributes();
 	CComPtr<IMFAttributes>	CreateAudioDeviceAttributes();
 	CComPtr<IMFAttributes>	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
+	CComPtr<IMFAttributes>	CreateSinkWriterAttributes();
 
 private:
 #pragma warning(push)

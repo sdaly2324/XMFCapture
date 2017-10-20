@@ -2,76 +2,88 @@
 #include "IMFWrapper.h"
 #include "SourceReader.h"
 #include "PresentationDescriptor.h"
-#include "Devices.h"
+#include "SinkWriter.h"
 
 #include <mfidl.h>
+#include <mfapi.h>
+#include <mfreadwrite.h>
 
 class TopologyNodeRep : public IMFWrapper
 {
 public:
-	TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource);
-	TopologyNodeRep(CComPtr<IMFActivate> device);
-	~TopologyNodeRep();
+	TopologyNodeRep();
+	TopologyNodeRep
+	(
+		CComPtr<IMFMediaSource> mediaSource, 
+		CComPtr<IMFPresentationDescriptor> presentationDescriptor,
+		CComPtr<IMFStreamDescriptor> streamDescriptor,
+		CComPtr<IMFActivate> renderer
+	);
+	TopologyNodeRep(std::shared_ptr<SinkWriter> sinkWriter);
+	virtual ~TopologyNodeRep();
 
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFTopologyNode>			GetTopologyNode();
+	CComPtr<IMFTopologyNode>			GetTopologyRendererNode();
 
 private:
-	void CreateAudioRenderer();
-	CComPtr<IMFTopologyNode> mTopologyNode = NULL;
+	void CreateRendereNode(CComPtr<IMFActivate> device);
+	CComPtr<IMFTopologyNode>	mTopologyNode	= NULL;
+	CComPtr<IMFTopologyNode>	mRendererNode	= NULL;
 };
 
-TopologyNode::TopologyNode(CComPtr<IMFMediaSource> mediaSource)
+TopologyNode::TopologyNode()
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(mediaSource));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep());
 }
-TopologyNodeRep::TopologyNodeRep(CComPtr<IMFMediaSource> mediaSource)
+TopologyNodeRep::TopologyNodeRep()
 {
-	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &mTopologyNode));
-	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, mediaSource));
-	std::unique_ptr<PresentationDescriptor> presentationDescriptor(new PresentationDescriptor(mediaSource));
-	if (presentationDescriptor->GetLastHRESULT() != S_OK || !presentationDescriptor)
-	{
-		SetLastHR_Fail();
-		return;
-	}
-	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, presentationDescriptor->GetPresentationDescriptor()));
-
-	CComPtr<IMFStreamDescriptor> firstVideoStreamDescriptor = presentationDescriptor->GetFirstVideoStreamDescriptor();
-	CComPtr<IMFStreamDescriptor> firstAudioStreamDescriptor = presentationDescriptor->GetFirstAudioStreamDescriptor();
-	if (firstVideoStreamDescriptor && firstAudioStreamDescriptor)
-	{
-		OutputDebugStringW(L"TopologyNodeRep::TopologyNodeRep failed because we found 2 IMFStreamDescriptors instead of the expected 1");
-		mTopologyNode = NULL;
-		return;
-	}
-	CComPtr<IMFStreamDescriptor> streamDescriptorToUse = NULL;
-	if (firstVideoStreamDescriptor)
-	{
-		streamDescriptorToUse = firstVideoStreamDescriptor;
-	}
-	else if(firstAudioStreamDescriptor)
-	{
-		streamDescriptorToUse = firstAudioStreamDescriptor;
-	}
-	else
-	{
-		OutputDebugStringW(L"TopologyNodeRep::TopologyNodeRep failed to find a IMFStreamDescriptor");
-		mTopologyNode = NULL;
-		return;
-	}
-	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, streamDescriptorToUse));
+	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_TEE_NODE, &mTopologyNode));
 }
 
-TopologyNode::TopologyNode(CComPtr<IMFActivate> device)
+TopologyNode::TopologyNode
+(
+	CComPtr<IMFMediaSource> mediaSource,
+	CComPtr<IMFPresentationDescriptor> presentationDescriptor,
+	CComPtr<IMFStreamDescriptor> streamDescriptor,
+	CComPtr<IMFActivate> renderer
+)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(device));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(mediaSource, presentationDescriptor, streamDescriptor, renderer));
 }
-TopologyNodeRep::TopologyNodeRep(CComPtr<IMFActivate> device)
+TopologyNodeRep::TopologyNodeRep
+(
+	CComPtr<IMFMediaSource> mediaSource,
+	CComPtr<IMFPresentationDescriptor> presentationDescriptor,
+	CComPtr<IMFStreamDescriptor> streamDescriptor,
+	CComPtr<IMFActivate> renderer
+)
+{
+	CreateRendereNode(renderer);
+	if (LastHR_OK())
+	{
+		OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &mTopologyNode));
+		OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, mediaSource));
+		OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, presentationDescriptor));
+		OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, streamDescriptor));
+	}
+}
+
+TopologyNode::TopologyNode(std::shared_ptr<SinkWriter> sinkWriter)
+{
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(sinkWriter));
+}
+TopologyNodeRep::TopologyNodeRep(std::shared_ptr<SinkWriter> sinkWriter)
 {
 	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
-	OnERR_return(mTopologyNode->SetObject(device));
+	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, sinkWriter->GetMediaSink()));
+}
+
+void TopologyNodeRep::CreateRendereNode(CComPtr<IMFActivate> device)
+{
+	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mRendererNode));
+	OnERR_return(mRendererNode->SetObject(device));
 }
 
 TopologyNode::~TopologyNode()
@@ -97,4 +109,13 @@ CComPtr<IMFTopologyNode> TopologyNode::GetTopologyNode()
 CComPtr<IMFTopologyNode> TopologyNodeRep::GetTopologyNode()
 {
 	return mTopologyNode;
+}
+
+CComPtr<IMFTopologyNode> TopologyNode::GetTopologyRendererNode()
+{
+	return m_pRep->GetTopologyRendererNode();
+}
+CComPtr<IMFTopologyNode> TopologyNodeRep::GetTopologyRendererNode()
+{
+	return mRendererNode;
 }

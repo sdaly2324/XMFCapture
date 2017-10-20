@@ -1,5 +1,6 @@
 #include "SinkWriter.h"
 #include "IMFWrapper.h"
+#include "AttributesFactory.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
@@ -14,9 +15,9 @@ public:
 	HRESULT					GetLastHRESULT();
 
 	CComPtr<IMFSinkWriter>	GetSinkWriter();
+	CComPtr<IMFMediaSink>	GetMediaSink();
 
 private:
-	CComPtr<IMFAttributes>	GetSinkWriterAttributesForCreation();
 	CComPtr<IMFSinkWriter>	mSinkWriter = NULL;
 };
 SinkWriter::SinkWriter(LPCWSTR fullFilePath)
@@ -25,18 +26,12 @@ SinkWriter::SinkWriter(LPCWSTR fullFilePath)
 }
 SinkWriterRep::SinkWriterRep(LPCWSTR fullFilePath)
 {
-	CComPtr<IMFAttributes> attributes = GetSinkWriterAttributesForCreation();
+	AttributesFactory attributesFactory;
+	CComPtr<IMFAttributes> attributes = attributesFactory.CreateSinkWriterAttributes();
 	if (attributes)
 	{
 		OnERR_return(MFCreateSinkWriterFromURL(fullFilePath, NULL, attributes, &mSinkWriter));
 	}
-}
-CComPtr<IMFAttributes> SinkWriterRep::GetSinkWriterAttributesForCreation()
-{
-	CComPtr<IMFAttributes> attributes = NULL;
-	OnERR_return_NULL(MFCreateAttributes(&attributes, 1));
-	OnERR_return_NULL(attributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
-	return attributes;
 }
 SinkWriter::~SinkWriter()
 {
@@ -61,4 +56,15 @@ CComPtr<IMFSinkWriter> SinkWriter::GetSinkWriter()
 CComPtr<IMFSinkWriter> SinkWriterRep::GetSinkWriter()
 {
 	return mSinkWriter;
+}
+
+CComPtr<IMFMediaSink> SinkWriter::GetMediaSink()
+{
+	return m_pRep->GetMediaSink();
+}
+CComPtr<IMFMediaSink> SinkWriterRep::GetMediaSink()
+{
+	CComPtr<IMFMediaSink> mediaSink = NULL;
+	OnERR_return_NULL(mSinkWriter->GetServiceForStream(MF_SINK_WRITER_MEDIASINK, GUID_NULL, IID_IMFMediaSink, (LPVOID*)&mediaSink));
+	return mediaSink;
 }

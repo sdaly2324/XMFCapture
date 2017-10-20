@@ -12,7 +12,8 @@
 struct IMFMediaSession;
 struct IMFTopology;
 struct IMFActivate;
-class MediaSource;
+struct IMFMediaSource;
+class SinkWriter;
 class TopologyRep;
 class MediaFoundationTDD_API Topology
 {
@@ -20,14 +21,25 @@ public:
 	Topology();
 	~Topology();
 
-	HRESULT								GetLastHRESULT();
+	HRESULT GetLastHRESULT();
 
-	void								CreateAudioPassthroughTopology(std::shared_ptr<MediaSource> audioSource, CComPtr<IMFActivate> audioRenderer);
-	void								CreateVideoPassthroughTopology(std::shared_ptr<MediaSource> videoSource, CComPtr<IMFActivate> videoRenderer);
-	void								ResolveTopology();
-	void								SetTopology(CComPtr<IMFMediaSession> mediaSession);
+	void CreatePassthroughTopology
+	(
+		CComPtr<IMFMediaSource> mediaSource,
+		CComPtr<IMFActivate> videoRenderer,
+		CComPtr<IMFActivate> audioRenderer
+	);
+	void CreateCaptureAndPassthroughTopology
+	(
+		CComPtr<IMFMediaSource> mediaSource,
+		CComPtr<IMFActivate> videoRenderer,
+		CComPtr<IMFActivate> audioRenderer,
+		std::shared_ptr<SinkWriter> sinkWriter
+	);
+	void ResolveTopology();
+	void SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
-	CComPtr<IMFTopology>				GetTopology();
+	CComPtr<IMFTopology> GetTopology();
 
 private:
 #pragma warning(push)

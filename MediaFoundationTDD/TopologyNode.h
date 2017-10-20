@@ -13,20 +13,30 @@
 struct IMFMediaSource;
 struct IMFTopologyNode;
 struct IMFActivate;
+struct IMFPresentationDescriptor;
+struct IMFStreamDescriptor;
+class SinkWriter;
 class TopologyNodeRep;
 class MediaFoundationTDD_API TopologyNode
 {
 public:
-	TopologyNode(CComPtr<IMFMediaSource> mediaSource);
-	TopologyNode(CComPtr<IMFActivate> device);
+	TopologyNode();
+	TopologyNode
+	(
+		CComPtr<IMFMediaSource> mediaSource,
+		CComPtr<IMFPresentationDescriptor> presentationDescriptor,
+		CComPtr<IMFStreamDescriptor> streamDescriptor,
+		CComPtr<IMFActivate> renderer
+	);
+	TopologyNode(std::shared_ptr<SinkWriter> sinkWriter);
 	~TopologyNode();
 
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFTopologyNode>			GetTopologyNode();
+	CComPtr<IMFTopologyNode>			GetTopologyRendererNode();
 
 private:
-	TopologyNode();
 #pragma warning(push)
 #pragma warning(disable:4251)
 	std::unique_ptr<TopologyNodeRep> m_pRep = 0;
