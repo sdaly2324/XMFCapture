@@ -12,6 +12,7 @@
 
 struct IMFActivate;
 struct IMFMediaSource;
+struct IMFMediaType;
 class MediaSourceRep;
 class MediaFoundationTDD_API MediaSource
 {
@@ -23,6 +24,8 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFMediaSource>				GetMediaSource();
+	CComPtr<IMFMediaType>				GetVideoMediaType();
+	CComPtr<IMFMediaType>				GetAudioMediaType();
 
 private:
 	MediaSource();

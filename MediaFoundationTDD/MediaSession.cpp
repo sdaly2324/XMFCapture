@@ -1,11 +1,11 @@
 #include "MediaSession.h"
-#include "IMFWrapper.h"
+#include "MFUtils.h"
 
 #include <mfapi.h>
 #include <atlbase.h>
 #include <mfidl.h>
 
-class MediaSessionRep : public IMFAsyncCallback, public IMFWrapper
+class MediaSessionRep : public IMFAsyncCallback, public MFUtils
 {
 public:
 	MediaSessionRep(std::shared_ptr<OnTopologyReadyCallback> onTopologyReadyCallback);
@@ -28,7 +28,7 @@ public:
 	CComPtr<IMFMediaSession>			GetMediaSession();
 
 private:
-	void								ProcessMediaEvent(CComPtr<IMFMediaEvent>& pMediaEvent);
+	void								ProcessMediaEvent(CComPtr<IMFMediaEvent>& mediaEvent);
 
 	CComAutoCriticalSection						mCritSec;
 	CComPtr<IMFMediaSession>					mMediaSession				= NULL;
@@ -73,7 +73,7 @@ HRESULT MediaSession::GetLastHRESULT()
 }
 HRESULT MediaSessionRep::GetLastHRESULT()
 {
-	return IMFWrapper::GetLastHRESULT();
+	return MFUtils::GetLastHRESULT();
 }
 
 CComPtr<IMFMediaSession> MediaSession::GetMediaSession()
@@ -143,23 +143,70 @@ ULONG MediaSessionRep::Release()
 	return uCount;
 }
 
-void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& pMediaEvent)
+void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& mediaEvent)
 {
 	HRESULT hrStatus = S_OK;            // Event status
 	HRESULT hr = S_OK;
 	UINT32 TopoStatus = MF_TOPOSTATUS_INVALID;
 
 	MediaEventType eventType;
-	OnERR_return(pMediaEvent->GetType(&eventType));
-	OnERR_return(pMediaEvent->GetStatus(&hrStatus));
+	OnERR_return(mediaEvent->GetType(&eventType));
+	OnERR_return(mediaEvent->GetStatus(&hrStatus));
 	if (IsHRError(hrStatus))
 	{
+		if (eventType == MESessionTopologySet)
+		{
+			PROPVARIANT var;
+			PropVariantInit(&var);
+			hr = mediaEvent->GetValue(&var);
+			CComPtr<IMFTopology> topology = NULL;
+			hr = var.punkVal->QueryInterface(__uuidof(IMFTopology), (void**)&topology);
+
+			//CComPtr<IMFCollection> sourceNodeCollection = NULL;
+			//hr = topology->GetSourceNodeCollection(&sourceNodeCollection);
+			//DWORD sourceElements = 0;
+			//hr = sourceNodeCollection->GetElementCount(&sourceElements);
+			//CComPtr<IMFCollection> outputNodeCollection = NULL;
+			//hr = topology->GetOutputNodeCollection(&outputNodeCollection);
+			//DWORD outputElements = 0;
+			//hr = outputNodeCollection->GetElementCount(&outputElements);
+
+			WORD nodeCount = 0;
+			hr = topology->GetNodeCount(&nodeCount);
+			for (int i = 0; i < nodeCount; i++)
+			{
+				CComPtr<IMFTopologyNode> node;
+				hr = topology->GetNode(i, &node);
+				DumpAttr(node, L"IMFTopologyNode" , std::to_wstring(i));
+				DWORD inputs = 0;
+				hr = node->GetInputCount(&inputs);
+				for (unsigned int inIndex = 0; inIndex < inputs; inIndex++)
+				{
+					CComPtr<IMFMediaType> inputPrefType = NULL;
+					if (!IsHRError(node->GetInputPrefType(inIndex, &inputPrefType)))
+					{
+						DumpAttr(inputPrefType, L"node " + std::to_wstring(i), L"input " + std::to_wstring(inIndex));
+					}
+				}
+				DWORD outputs = 0;
+				hr = node->GetOutputCount(&outputs);
+				for (unsigned int outIndex = 0; outIndex < outputs; outIndex++)
+				{
+					CComPtr<IMFMediaType> outputPrefType = NULL;
+					if (!IsHRError(node->GetOutputPrefType(outIndex, &outputPrefType)))
+					{
+						DumpAttr(outputPrefType, L"node " + std::to_wstring(i), L"output " + std::to_wstring(outIndex));
+					}
+				}
+				OutputDebugStringW(L"\n");
+			}
+		}
 		SetLastHR_Fail();
 		return;
 	}
 	if (eventType == MESessionTopologyStatus)
 	{
-		OnERR_return(pMediaEvent->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, (UINT32*)&TopoStatus));
+		OnERR_return(mediaEvent->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, (UINT32*)&TopoStatus));
 		if (TopoStatus == MF_TOPOSTATUS_READY && mOnTopologyReadyCallback)
 		{
 			mOnTopologyReadyCallback->OnTopologyReady(mMediaSession);

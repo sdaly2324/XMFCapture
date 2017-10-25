@@ -2,14 +2,14 @@
 #include "TopologyNode.h"
 #include "MediaSource.h"
 #include "PresentationDescriptor.h"
-#include "IMFWrapper.h"
-#include "Devices.h"
+#include "MFUtils.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
 #include <memory>
+#include <vector>
 
-class TopologyRep : public IMFWrapper
+class TopologyRep : public MFUtils
 {
 public:
 	TopologyRep();
@@ -28,7 +28,7 @@ public:
 		CComPtr<IMFMediaSource> mediaSource,
 		CComPtr<IMFActivate> videoRenderer,
 		CComPtr<IMFActivate> audioRenderer,
-		std::shared_ptr<SinkWriter> sinkWriter
+		std::shared_ptr<FileSink> mediaSink
 	);
 	void ResolveTopology();
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);
@@ -40,9 +40,11 @@ private:
 	void											UpdateSourceNodeMediaTypes(CComPtr<IMFTopologyNode> node);
 	bool											IsNodeTypeSource(CComPtr<IMFTopologyNode> node);
 	CComPtr<IMFTopology>							ResolveMultiSourceTopology(CComPtr<IMFTopology> topology);
+	void											BindOutputNode(CComPtr<IMFTopologyNode> node);
+	void											BindOutputNodes(CComPtr<IMFTopology> topology);
 	void											InspectNodeConections(CComPtr<IMFTopology> topology);
 	std::shared_ptr<TopologyNode>					CreateTeeNode();
-	std::shared_ptr<TopologyNode>					CreateSinkNode(std::shared_ptr<SinkWriter> sinkWriter);
+	std::shared_ptr<TopologyNode>					CreateSinkNode(std::shared_ptr<FileSink> mediaSink);
 	std::vector< std::shared_ptr< TopologyNode> >	CreateSourceNodes
 													(
 														CComPtr<IMFMediaSource> mediaSource, 
@@ -100,7 +102,7 @@ HRESULT Topology::GetLastHRESULT()
 }
 HRESULT TopologyRep::GetLastHRESULT()
 {
-	return IMFWrapper::GetLastHRESULT();
+	return MFUtils::GetLastHRESULT();
 }
 
 
@@ -167,9 +169,9 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateTeeNode()
 	return teeNode;
 }
 
-std::shared_ptr<TopologyNode> TopologyRep::CreateSinkNode(std::shared_ptr<SinkWriter> sinkWriter)
+std::shared_ptr<TopologyNode> TopologyRep::CreateSinkNode(std::shared_ptr<FileSink> mediaSink)
 {
-	std::shared_ptr<TopologyNode> sinkNode(new TopologyNode(sinkWriter));
+	std::shared_ptr<TopologyNode> sinkNode(new TopologyNode(mediaSink));
 	if (sinkNode->GetLastHRESULT() != S_OK)
 	{
 		return NULL;
@@ -187,7 +189,7 @@ std::vector< std::shared_ptr< TopologyNode> > TopologyRep::CreateSourceNodes
 	std::vector< std::shared_ptr< TopologyNode> > retVal;
 
 	std::shared_ptr<PresentationDescriptor> mediaSourcePresentationDescriptor(new PresentationDescriptor(mediaSource));
-
+	DumpAttr(mediaSourcePresentationDescriptor->GetPresentationDescriptor(), L"", L"");
 	std::shared_ptr<TopologyNode> audioSourceNode = CreateAudioSourceNode(mediaSource, mediaSourcePresentationDescriptor, audioRenderer);
 	if (audioSourceNode)
 	{
@@ -208,20 +210,20 @@ void Topology::CreateCaptureAndPassthroughTopology
 	CComPtr<IMFMediaSource> mediaSource,
 	CComPtr<IMFActivate> videoRenderer,
 	CComPtr<IMFActivate> audioRenderer,
-	std::shared_ptr<SinkWriter> sinkWriter
+	std::shared_ptr<FileSink> mediaSink
 )
 {
-	m_pRep->CreateCaptureAndPassthroughTopology(mediaSource, videoRenderer, audioRenderer, sinkWriter);
+	m_pRep->CreateCaptureAndPassthroughTopology(mediaSource, videoRenderer, audioRenderer, mediaSink);
 }
 void TopologyRep::CreateCaptureAndPassthroughTopology
 (
 	CComPtr<IMFMediaSource> mediaSource,
 	CComPtr<IMFActivate> videoRenderer,
 	CComPtr<IMFActivate> audioRenderer,
-	std::shared_ptr<SinkWriter> sinkWriter
+	std::shared_ptr<FileSink> mediaSink
 )
 {
-	CComPtr<IMFTopologyNode> sinkNode = CreateSinkNode(sinkWriter)->GetTopologyNode();
+	CComPtr<IMFTopologyNode> sinkNode = CreateSinkNode(mediaSink)->GetNode();
 	if (!sinkNode)
 	{
 		SetLastHR_Fail();
@@ -235,21 +237,23 @@ void TopologyRep::CreateCaptureAndPassthroughTopology
 	}
 	for (auto& sourceNode : sourceNodes)
 	{
-		CComPtr<IMFTopologyNode> teeNode = CreateTeeNode()->GetTopologyNode();
-		if (!teeNode)
-		{
-			SetLastHR_Fail();
-			return;
-		}
-		CComPtr<IMFTopologyNode> rendererNode = sourceNode->GetTopologyRendererNode();
+		//CComPtr<IMFTopologyNode> teeNode = CreateTeeNode()->GetNode();
+		//if (!teeNode)
+		//{
+		//	SetLastHR_Fail();
+		//	return;
+		//}
+		CComPtr<IMFTopologyNode> rendererNode = sourceNode->GetRendererNode();
 		if (!rendererNode)
 		{
 			SetLastHR_Fail();
 			return;
 		}
-		OnERR_return(AddAndConnect2Nodes(sourceNode->GetTopologyNode(), teeNode, 0));
-		OnERR_return(AddAndConnect2Nodes(teeNode, rendererNode, 0));
-		OnERR_return(AddAndConnect2Nodes(teeNode, sinkNode, 1));
+		//OnERR_return(AddAndConnect2Nodes(sourceNode->GetNode(), teeNode, 0));
+		//OnERR_return(AddAndConnect2Nodes(teeNode, sinkNode, 0));
+		//OnERR_return(AddAndConnect2Nodes(teeNode, rendererNode, 1));
+
+		OnERR_return(AddAndConnect2Nodes(sourceNode->GetNode(), sinkNode, 0));
 	}
 }
 
@@ -272,13 +276,13 @@ void TopologyRep::CreatePassthroughTopology
 	std::vector< std::shared_ptr< TopologyNode> > sourceNodes = CreateSourceNodes(mediaSource, videoRenderer, audioRenderer);
 	for (auto& sourceNode : sourceNodes)
 	{
-		CComPtr<IMFTopologyNode> rendererNode = sourceNode->GetTopologyRendererNode();
+		CComPtr<IMFTopologyNode> rendererNode = sourceNode->GetRendererNode();
 		if (!rendererNode)
 		{
 			SetLastHR_Fail();
 			return;
 		}
-		OnERR_return(AddAndConnect2Nodes(sourceNode->GetTopologyNode(), rendererNode, 0));
+		OnERR_return(AddAndConnect2Nodes(sourceNode->GetNode(), rendererNode, 0));
 	}
 }
 
@@ -358,6 +362,51 @@ void TopologyRep::UpdateSourceNodeMediaTypes(CComPtr<IMFTopologyNode> node)
 	}
 }
 
+void TopologyRep::BindOutputNode(CComPtr<IMFTopologyNode> node)
+{
+	CComPtr<IUnknown> nodeObject = NULL;
+	OnERR_return(node->GetObject(&nodeObject));
+	CComPtr<IMFActivate> activate = NULL;
+	HRESULT hr = nodeObject->QueryInterface(IID_PPV_ARGS(&activate));
+	CComPtr<IMFStreamSink> streamSink = NULL;
+	if (SUCCEEDED(hr))
+	{
+		CComPtr<IMFMediaSink> mediaSink = NULL;
+		OnERR_return(activate->ActivateObject(IID_PPV_ARGS(&mediaSink)));
+		DWORD streamID = MFGetAttributeUINT32(node, MF_TOPONODE_STREAMID, 0);
+		hr = mediaSink->GetStreamSinkById(streamID, &streamSink);
+		if (FAILED(hr))
+		{
+			OnERR_return(mediaSink->AddStreamSink(streamID, NULL, &streamSink));
+			hr = S_OK;
+		}
+		if (SUCCEEDED(hr))
+		{
+			OnERR_return(node->SetObject(streamSink));
+		}
+	}
+	else
+	{
+		OnERR_return(nodeObject->QueryInterface(IID_PPV_ARGS(&streamSink)));
+	}
+}
+
+void TopologyRep::BindOutputNodes(CComPtr<IMFTopology> topology)
+{
+	CComPtr<IMFCollection> collection = NULL;
+	OnERR_return(topology->GetOutputNodeCollection(&collection));
+	DWORD outputNodes = 0;
+	OnERR_return(collection->GetElementCount(&outputNodes));
+	for (WORD nodeNumber = 0; nodeNumber < outputNodes; nodeNumber++)
+	{
+		CComPtr<IUnknown> unknown = NULL;
+		OnERR_return(collection->GetElement(nodeNumber, &unknown));
+		CComPtr<IMFTopologyNode> node = NULL;
+		OnERR_return(unknown->QueryInterface(IID_IMFTopologyNode, (void**)&node));
+		BindOutputNode(node);
+	}
+}
+
 void TopologyRep::InspectNodeConections(CComPtr<IMFTopology> topology)
 {
 	WORD connectedNodes = 0;
@@ -417,6 +466,7 @@ void TopologyRep::ResolveTopology()
 	CComPtr<IMFTopology> topologyClone = NULL;
 	OnERR_return(MFCreateTopology(&topologyClone));
 	OnERR_return(topologyClone->CloneFrom(mTopology));
+	//BindOutputNodes(topologyClone);
 	InspectNodeConections(topologyClone);
 	if (LastHR_OK() && mHaveAudioSourceNode && mHaveVideoSourceNode)
 	{

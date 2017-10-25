@@ -1,14 +1,13 @@
 #include "TopologyNode.h"
-#include "IMFWrapper.h"
-#include "SourceReader.h"
+#include "MFUtils.h"
 #include "PresentationDescriptor.h"
-#include "SinkWriter.h"
+#include "FileSink.h"
 
 #include <mfidl.h>
 #include <mfapi.h>
 #include <mfreadwrite.h>
 
-class TopologyNodeRep : public IMFWrapper
+class TopologyNodeRep : public MFUtils
 {
 public:
 	TopologyNodeRep();
@@ -19,13 +18,13 @@ public:
 		CComPtr<IMFStreamDescriptor> streamDescriptor,
 		CComPtr<IMFActivate> renderer
 	);
-	TopologyNodeRep(std::shared_ptr<SinkWriter> sinkWriter);
+	TopologyNodeRep(std::shared_ptr<FileSink> mediaSink);
 	virtual ~TopologyNodeRep();
 
 	HRESULT								GetLastHRESULT();
 
-	CComPtr<IMFTopologyNode>			GetTopologyNode();
-	CComPtr<IMFTopologyNode>			GetTopologyRendererNode();
+	CComPtr<IMFTopologyNode>			GetNode();
+	CComPtr<IMFTopologyNode>			GetRendererNode();
 
 private:
 	void CreateRendereNode(CComPtr<IMFActivate> device);
@@ -70,20 +69,24 @@ TopologyNodeRep::TopologyNodeRep
 	}
 }
 
-TopologyNode::TopologyNode(std::shared_ptr<SinkWriter> sinkWriter)
+TopologyNode::TopologyNode(std::shared_ptr<FileSink> mediaSink)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(sinkWriter));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(mediaSink));
 }
-TopologyNodeRep::TopologyNodeRep(std::shared_ptr<SinkWriter> sinkWriter)
+TopologyNodeRep::TopologyNodeRep(std::shared_ptr<FileSink> mediaSink)
 {
 	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
-	OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, sinkWriter->GetMediaSink()));
+	OnERR_return(mTopologyNode->SetObject(mediaSink->GetVideoStreamSink()));
+	OnERR_return(mTopologyNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, TRUE));
 }
 
 void TopologyNodeRep::CreateRendereNode(CComPtr<IMFActivate> device)
 {
 	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mRendererNode));
 	OnERR_return(mRendererNode->SetObject(device));
+	OnERR_return(mRendererNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, FALSE));
+	CComPtr<IMFMediaTypeHandler> mediaTypeHandler = NULL;
+
 }
 
 TopologyNode::~TopologyNode()
@@ -99,23 +102,23 @@ HRESULT TopologyNode::GetLastHRESULT()
 }
 HRESULT TopologyNodeRep::GetLastHRESULT()
 {
-	return IMFWrapper::GetLastHRESULT();
+	return MFUtils::GetLastHRESULT();
 }
 
-CComPtr<IMFTopologyNode> TopologyNode::GetTopologyNode()
+CComPtr<IMFTopologyNode> TopologyNode::GetNode()
 {
-	return m_pRep->GetTopologyNode();
+	return m_pRep->GetNode();
 }
-CComPtr<IMFTopologyNode> TopologyNodeRep::GetTopologyNode()
+CComPtr<IMFTopologyNode> TopologyNodeRep::GetNode()
 {
 	return mTopologyNode;
 }
 
-CComPtr<IMFTopologyNode> TopologyNode::GetTopologyRendererNode()
+CComPtr<IMFTopologyNode> TopologyNode::GetRendererNode()
 {
-	return m_pRep->GetTopologyRendererNode();
+	return m_pRep->GetRendererNode();
 }
-CComPtr<IMFTopologyNode> TopologyNodeRep::GetTopologyRendererNode()
+CComPtr<IMFTopologyNode> TopologyNodeRep::GetRendererNode()
 {
 	return mRendererNode;
 }

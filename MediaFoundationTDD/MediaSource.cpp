@@ -1,10 +1,12 @@
 #include "MediaSource.h"
-#include "IMFWrapper.h"
+#include "MFUtils.h"
+#include "SourceReader.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
+#include <mfreadwrite.h>
 
-class MediaSourceRep : public IMFWrapper
+class MediaSourceRep : public MFUtils
 {
 public:
 	MediaSourceRep(CComPtr<IMFActivate> singleDevice);
@@ -14,11 +16,16 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFMediaSource>				GetMediaSource();
+	CComPtr<IMFMediaType>				GetVideoMediaType();
+	CComPtr<IMFMediaType>				GetAudioMediaType();
 
 private:
 	CComPtr<IMFMediaSource>		CreateMediaSource(CComPtr<IMFActivate> singleDevice);
 	MediaSourceRep();
 	CComPtr<IMFMediaSource>		mMediaSource = NULL;
+	CComPtr<IMFActivate>		mVideoDevice = NULL;
+	CComPtr<IMFActivate>		mAudioDevice = NULL;
+	std::unique_ptr<SourceReader>	mSourceReader = NULL;
 };
 
 MediaSource::MediaSource(CComPtr<IMFActivate> singleDevice)
@@ -64,7 +71,7 @@ HRESULT MediaSource::GetLastHRESULT()
 }
 HRESULT MediaSourceRep::GetLastHRESULT()
 {
-	return IMFWrapper::GetLastHRESULT();
+	return MFUtils::GetLastHRESULT();
 }
 
 CComPtr<IMFMediaSource>	MediaSourceRep::CreateMediaSource(CComPtr<IMFActivate> singleDevice)
@@ -81,4 +88,32 @@ CComPtr<IMFMediaSource> MediaSource::GetMediaSource()
 CComPtr<IMFMediaSource> MediaSourceRep::GetMediaSource()
 {
 	return mMediaSource;
+}
+
+CComPtr<IMFMediaType> MediaSource::GetVideoMediaType()
+{
+	return m_pRep->GetVideoMediaType();
+}
+CComPtr<IMFMediaType> MediaSourceRep::GetVideoMediaType()
+{
+	std::unique_ptr<SourceReader> sourceReader = std::make_unique<SourceReader>(mMediaSource);
+	if (sourceReader)
+	{
+		return sourceReader->GetVideoMediaType();
+	}
+	return NULL;
+}
+
+CComPtr<IMFMediaType> MediaSource::GetAudioMediaType()
+{
+	return m_pRep->GetAudioMediaType();
+}
+CComPtr<IMFMediaType> MediaSourceRep::GetAudioMediaType()
+{
+	std::unique_ptr<SourceReader> sourceReader = std::make_unique<SourceReader>(mMediaSource);
+	if (sourceReader)
+	{
+		return sourceReader->GetAudioMediaType();
+	}
+	return NULL;
 }

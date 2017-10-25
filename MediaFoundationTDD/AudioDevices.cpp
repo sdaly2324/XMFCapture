@@ -1,12 +1,12 @@
 #include "AudioDevices.h"
 #include "AttributesFactory.h"
 #include "Devices.h"
-#include "IMFWrapper.h"
+#include "MFUtils.h"
 
 #include <mfobjects.h>
 #include <mfidl.h>
 
-class AudioDevicesRep : public IMFWrapper , public Devices
+class AudioDevicesRep : public MFUtils , public Devices
 {
 public:
 	AudioDevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer);
@@ -22,7 +22,7 @@ AudioDevices::AudioDevices()
 	if (SUCCEEDED(hr))
 	{
 		AttributesFactory attributesFactory;
-		m_pRep = std::unique_ptr<AudioDevicesRep>(new AudioDevicesRep(attributesFactory.CreateAudioDeviceAttributes(), renderer));
+		m_pRep = std::unique_ptr<AudioDevicesRep>(new AudioDevicesRep(attributesFactory.CreateADeviceAttrs(), renderer));
 	}
 }
 AudioDevicesRep::AudioDevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer) : Devices(attributesPtr, renderer)
@@ -37,7 +37,7 @@ AudioDevicesRep::~AudioDevicesRep()
 
 HRESULT AudioDevices::GetLastHRESULT()
 {
-	return m_pRep->IMFWrapper::GetLastHRESULT();
+	return m_pRep->MFUtils::GetLastHRESULT();
 }
 
 CComPtr<IMFActivate> AudioDevices::GetCaptureAudioDevice(std::wstring audioDeviceName)

@@ -38,7 +38,7 @@ private:
 		return hr;
 	}
 
-	CComPtr<IMFMediaType> GetAudioEncodingMediaType(CComPtr<IMFMediaType> pAudioInputMediaType);
+	CComPtr<IMFMediaType> GetAudioEncodingMediaType();
 	CComPtr<IMFMediaType> GetVideoEncodingMediaType(CComPtr<IMFMediaType> pInputMediaType);
 	HRESULT CopyAttribute(CComPtr<IMFAttributes> pSrc, CComPtr<IMFAttributes> pDest, const GUID& key);
 	HRESULT CreateOutTypeUsingInTypeAttrs(CComPtr<IMFMediaType> pInputMediaType, CComPtr<IMFMediaType>& apNewMediaType);
@@ -97,7 +97,7 @@ HRESULT XMFCaptureEngineWrapperRep::SetupWriter(PCWSTR pszDestinationFile)
 	CComPtr<IMFMediaType> pAudioOutputMediaType;
 	if (SUCCEEDED_Xb(hr))
 	{
-		pAudioOutputMediaType = GetAudioEncodingMediaType(m_pIXMFCaptureEngine->GetAudioMTypeFromSource());
+		pAudioOutputMediaType = GetAudioEncodingMediaType();
 	}
 	if (pAudioOutputMediaType)
 	{
@@ -218,7 +218,7 @@ bool XMFCaptureEngineWrapperRep::IsRecording() const
 {
 	return m_pIXMFCaptureEngine->IsRecording();
 }
-CComPtr<IMFMediaType> XMFCaptureEngineWrapperRep::GetAudioEncodingMediaType(CComPtr<IMFMediaType> pAudioInputMediaType)
+CComPtr<IMFMediaType> XMFCaptureEngineWrapperRep::GetAudioEncodingMediaType()
 {
 	HRESULT hr = S_OK;
 	CComPtr<IMFAttributes> pAttributes = NULL;
@@ -239,17 +239,17 @@ CComPtr<IMFMediaType> XMFCaptureEngineWrapperRep::GetAudioEncodingMediaType(CCom
 	if (SUCCEEDED_Xb(hr))
 	{
 		// DUMP available AAC formats
-		//DWORD dwMTCount = 0;
-		//hr = pAvailableTypes->GetElementCount(&dwMTCount);
-		//for (DWORD i = 0; i < dwMTCount; i++)
-		//{
-		//	CComPtr<IMFMediaType> pMediaType = NULL;
-		//	hr = GetCollectionObject(pAvailableTypes, i, &pMediaType);
-		//	WCHAR count[1024];
-		//	swprintf_s(count, 1024, L"%d", i);
-		//	DumpAttr(pMediaType, L"AUDIO AAC", count);
-		//	OutputDebugStringW(L"\n");
-		//}
+		DWORD dwMTCount = 0;
+		hr = pAvailableTypes->GetElementCount(&dwMTCount);
+		for (DWORD i = 0; i < dwMTCount; i++)
+		{
+			CComPtr<IMFMediaType> pMediaType = NULL;
+			hr = GetCollectionObject(pAvailableTypes, i, &pMediaType);
+			WCHAR count[1024];
+			swprintf_s(count, 1024, L"%d", i);
+			DumpAttr(pMediaType, L"AUDIO AAC", count);
+			OutputDebugStringW(L"\n");
+		}
 
 		// 43 is 
 		//MF_MT_AUDIO_SAMPLES_PER_SECOND	48000

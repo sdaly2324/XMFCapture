@@ -21,7 +21,7 @@ VideoDevices::VideoDevices(HWND windowForVideo)
 	if (SUCCEEDED(hr))
 	{
 		AttributesFactory attributesFactory;
-		m_pRep = std::unique_ptr<VideoDevicesRep>(new VideoDevicesRep(attributesFactory.CreateVideoDeviceAttributes(), renderer));
+		m_pRep = std::unique_ptr<VideoDevicesRep>(new VideoDevicesRep(attributesFactory.CreateVDeviceAttrs(), renderer));
 	}
 }
 VideoDevicesRep::VideoDevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer) : Devices(attributesPtr, renderer)

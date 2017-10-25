@@ -103,7 +103,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mfplat.lib;mf.lib;mfreadwrite.lib;Shlwapi.lib;mfuuid.lib;Strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mfplat.lib;mf.lib;mfreadwrite.lib;Shlwapi.lib;mfuuid.lib;Strmiids.lib;wmcodecdspuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -166,12 +166,14 @@
     <ClInclude Include="AudioDevices.h" />
     <ClInclude Include="AttributesFactory.h" />
     <ClInclude Include="Devices.h" />
-    <ClInclude Include="IMFWrapper.h" />
+    <ClInclude Include="MFAttrToStrHelper.h" />
+    <ClInclude Include="MFUtils.h" />
     <ClInclude Include="MediaFoundationTDD.h" />
     <ClInclude Include="MediaSession.h" />
     <ClInclude Include="MediaSource.h" />
+    <ClInclude Include="MediaTypeFactory.h" />
     <ClInclude Include="PresentationDescriptor.h" />
-    <ClInclude Include="SinkWriter.h" />
+    <ClInclude Include="FileSink.h" />
     <ClInclude Include="SourceReader.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Topology.h" />
@@ -184,11 +186,13 @@
     <ClCompile Include="AudioDevices.cpp" />
     <ClCompile Include="Devices.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="IMFWrapper.cpp" />
+    <ClCompile Include="MFAttrToStrHelper.cpp" />
+    <ClCompile Include="MFUtils.cpp" />
     <ClCompile Include="MediaSession.cpp" />
     <ClCompile Include="MediaSource.cpp" />
+    <ClCompile Include="MediaTypeFactory.cpp" />
     <ClCompile Include="PresentationDescriptor.cpp" />
-    <ClCompile Include="SinkWriter.cpp" />
+    <ClCompile Include="FileSink.cpp" />
     <ClCompile Include="SourceReader.cpp" />
     <ClCompile Include="Topology.cpp" />
     <ClCompile Include="TopologyNode.cpp" />

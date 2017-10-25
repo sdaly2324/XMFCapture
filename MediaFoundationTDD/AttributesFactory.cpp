@@ -1,11 +1,11 @@
 #include "AttributesFactory.h"
-#include "IMFWrapper.h"
+#include "MFUtils.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
 
-class AttributesFactoryRep : public IMFWrapper
+class AttributesFactoryRep : public MFUtils
 {
 public:
 	AttributesFactoryRep();
@@ -13,12 +13,15 @@ public:
 
 	HRESULT GetLastHRESULT();
 
-	CComPtr<IMFAttributes>	CreateVideoDeviceAttributes();
-	CComPtr<IMFAttributes>	CreateAudioDeviceAttributes();
-	CComPtr<IMFAttributes>	CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack);
-	CComPtr<IMFAttributes>	CreateSinkWriterAttributes();
+	CComPtr<IMFAttributes>	CreateVDeviceAttrs();
+	CComPtr<IMFAttributes>	CreateADeviceAttrs();
+	CComPtr<IMFAttributes>	CreateSReaderCbAttrs(IUnknown* callBack);
+	CComPtr<IMFAttributes>	CreateFSinkAttrs();
+	CComPtr<IMFAttributes>	CreateVOutAttrs(CComPtr<IMFAttributes> vInAttrs);
+	CComPtr<IMFAttributes>	CreateAOutAttrs();
 
 private:
+	HRESULT					CopyAttribute(CComPtr<IMFAttributes> sourceAttribute, CComPtr<IMFAttributes> destinationAttribute, const GUID& attributeGUID);
 };
 AttributesFactory::AttributesFactory()
 {
@@ -40,14 +43,14 @@ HRESULT AttributesFactory::GetLastHRESULT()
 }
 HRESULT AttributesFactoryRep::GetLastHRESULT()
 {
-	return IMFWrapper::GetLastHRESULT();
+	return MFUtils::GetLastHRESULT();
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateVideoDeviceAttributes()
+CComPtr<IMFAttributes> AttributesFactory::CreateVDeviceAttrs()
 {
-	return m_pRep->CreateVideoDeviceAttributes();
+	return m_pRep->CreateVDeviceAttrs();
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoDeviceAttributes()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateVDeviceAttrs()
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
@@ -55,11 +58,11 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoDeviceAttributes()
 	return retVal;
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateAudioDeviceAttributes()
+CComPtr<IMFAttributes> AttributesFactory::CreateADeviceAttrs()
 {
-	return m_pRep->CreateAudioDeviceAttributes();
+	return m_pRep->CreateADeviceAttrs();
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioDeviceAttributes()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateADeviceAttrs()
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
@@ -67,11 +70,11 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioDeviceAttributes()
 	return retVal;
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack)
+CComPtr<IMFAttributes> AttributesFactory::CreateSReaderCbAttrs(IUnknown* callBack)
 {
-	return m_pRep->CreateSourceReaderAsycCallbackAttributes(callBack);
+	return m_pRep->CreateSReaderCbAttrs(callBack);
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateSourceReaderAsycCallbackAttributes(IUnknown* callBack)
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateSReaderCbAttrs(IUnknown* callBack)
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
@@ -80,16 +83,62 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateSourceReaderAsycCallbackAttri
 	return retVal;
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateSinkWriterAttributes()
+CComPtr<IMFAttributes> AttributesFactory::CreateFSinkAttrs()
 {
-	return m_pRep->CreateSinkWriterAttributes();
+	return m_pRep->CreateFSinkAttrs();
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateSinkWriterAttributes()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateFSinkAttrs()
 {
 	CComPtr<IMFAttributes> attributes = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
-	OnERR_return_NULL(attributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
+	//OnERR_return_NULL(attributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
 	OnERR_return_NULL(attributes->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Stream));
 	OnERR_return_NULL(attributes->SetGUID(MF_MT_SUBTYPE, MFStreamFormat_MPEG2Transport));
 	return attributes;
+}
+
+CComPtr<IMFAttributes> AttributesFactory::CreateAOutAttrs()
+{
+	return m_pRep->CreateAOutAttrs();
+}
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateAOutAttrs()
+{
+	CComPtr<IMFAttributes> attributes = NULL;
+	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
+	OnERR_return_NULL(attributes->SetUINT32(MF_LOW_LATENCY, TRUE));
+	return attributes;
+}
+
+HRESULT AttributesFactoryRep::CopyAttribute(CComPtr<IMFAttributes> sourceAttribute, CComPtr<IMFAttributes> destinationAttribute, const GUID& attributeGUID)
+{
+	PROPVARIANT var;
+	PropVariantInit(&var);
+	HRESULT hr = sourceAttribute->GetItem(attributeGUID, &var);
+	if (SUCCEEDED(hr))
+	{
+		hr = destinationAttribute->SetItem(attributeGUID, var);
+		PropVariantClear(&var);
+	}
+	return hr;
+}
+CComPtr<IMFAttributes> AttributesFactory::CreateVOutAttrs(CComPtr<IMFAttributes> vInAttrs)
+{
+	return m_pRep->CreateVOutAttrs(vInAttrs);
+}
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateVOutAttrs(CComPtr<IMFAttributes> vInAttrs)
+{
+	CComPtr<IMFAttributes> retVal = NULL;
+	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
+	OnERR_return_NULL(retVal->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+	OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_FRAME_SIZE));
+	OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_FRAME_RATE));
+	OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_PIXEL_ASPECT_RATIO));
+	OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_INTERLACE_MODE));
+	OnERR_return_NULL(retVal->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
+	OnERR_return_NULL(retVal->SetUINT32(MF_MT_VIDEO_PROFILE, 100));
+	OnERR_return_NULL(retVal->SetUINT32(MF_MT_VIDEO_LEVEL, 41));
+	//OnERR_return_NULL(retVal->SetUINT32(MF_MT_MAX_KEYFRAME_SPACING, 30); // FIXED IN XMFSinkWriterRep::BeginWriting // DOES NOT WORK WITH IMFCaptureEngine
+	OnERR_return_NULL(retVal->SetUINT32(MF_MT_AVG_BITRATE, 6000000)); // 6 megabits
+
+	return retVal;
 }

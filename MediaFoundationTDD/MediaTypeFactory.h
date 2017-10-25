@@ -1,4 +1,5 @@
 #pragma once
+
 #include <windows.h>
 #include <atlcomcli.h>
 #include <memory>
@@ -9,25 +10,23 @@
 #define MediaFoundationTDD_API __declspec(dllimport)
 #endif
 
-struct IMFMediaSource;
-struct IMFSourceReader;
+struct IMFActivate;
 struct IMFMediaType;
-class SourceReaderRep;
-class MediaFoundationTDD_API SourceReader
+class MediaTypeFactoryRep;
+class MediaFoundationTDD_API MediaTypeFactory
 {
 public:
-	SourceReader(CComPtr<IMFMediaSource> mediaSource);
-	~SourceReader();
+	MediaTypeFactory();
+	~MediaTypeFactory();
 
 	HRESULT								GetLastHRESULT();
 
-	CComPtr<IMFSourceReader>			GetSourceReader();
-	CComPtr<IMFMediaType>				GetVideoMediaType();
-	CComPtr<IMFMediaType>				GetAudioMediaType();
+	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFMediaType> vInMType);
+	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
 
 private:
 #pragma warning(push)
 #pragma warning(disable:4251)
-	std::unique_ptr<SourceReaderRep> m_pRep = 0;
+	std::unique_ptr<MediaTypeFactoryRep> m_pRep = 0;
 #pragma warning(pop)
 };

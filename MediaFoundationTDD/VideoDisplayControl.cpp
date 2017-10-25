@@ -1,13 +1,14 @@
 #include "VideoDisplayControl.h"
-#include "IMFWrapper.h"
+#include "MFUtils.h"
 
 #include <evr.h>
 
-class VideoDisplayControlRep : public IMFWrapper
+class VideoDisplayControlRep : public MFUtils
 {
 public:
 	VideoDisplayControlRep();
 	~VideoDisplayControlRep();
+	void SetIsParticipating(bool isParticipating);
 
 	void								OnTopologyReady(CComPtr<IMFMediaSession> mediaSession);
 
@@ -17,6 +18,7 @@ public:
 
 private:
 	CComPtr<IMFVideoDisplayControl>		mVideoDisplayControl = NULL;
+	bool mIsParticipating = true;
 };
 
 VideoDisplayControl::VideoDisplayControl()
@@ -39,7 +41,7 @@ HRESULT VideoDisplayControl::GetLastHRESULT()
 }
 HRESULT VideoDisplayControlRep::GetLastHRESULT()
 {
-	return IMFWrapper::GetLastHRESULT();
+	return MFUtils::GetLastHRESULT();
 }
 
 CComPtr<IMFVideoDisplayControl> VideoDisplayControl::GetVideoDisplayControl()
@@ -57,6 +59,18 @@ void VideoDisplayControl::OnTopologyReady(CComPtr<IMFMediaSession> mediaSession)
 }
 void VideoDisplayControlRep::OnTopologyReady(CComPtr<IMFMediaSession> mediaSession)
 {
-	mVideoDisplayControl.Release();
-	OnERR_return(MFGetService(mediaSession, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl, (void**)&mVideoDisplayControl));
+	if (mIsParticipating)
+	{
+		mVideoDisplayControl.Release();
+		OnERR_return(MFGetService(mediaSession, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl, (void**)&mVideoDisplayControl));
+	}
+}
+
+void VideoDisplayControl::SetIsParticipating(bool isParticipating)
+{
+	m_pRep->SetIsParticipating(isParticipating);
+}
+void VideoDisplayControlRep::SetIsParticipating(bool isParticipating)
+{
+	mIsParticipating = isParticipating;
 }

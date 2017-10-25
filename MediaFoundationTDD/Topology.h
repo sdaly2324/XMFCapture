@@ -13,7 +13,7 @@ struct IMFMediaSession;
 struct IMFTopology;
 struct IMFActivate;
 struct IMFMediaSource;
-class SinkWriter;
+class FileSink;
 class TopologyRep;
 class MediaFoundationTDD_API Topology
 {
@@ -34,7 +34,7 @@ public:
 		CComPtr<IMFMediaSource> mediaSource,
 		CComPtr<IMFActivate> videoRenderer,
 		CComPtr<IMFActivate> audioRenderer,
-		std::shared_ptr<SinkWriter> sinkWriter
+		std::shared_ptr<FileSink> mediaSink
 	);
 	void ResolveTopology();
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);

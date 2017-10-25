@@ -1,5 +1,5 @@
 #include "SourceReader.h"
-#include "IMFWrapper.h"
+#include "MFUtils.h"
 #include "AttributesFactory.h"
 
 #include <mfidl.h>
@@ -7,7 +7,7 @@
 #include <mfreadwrite.h>
 #include <Shlwapi.h>
 
-class SourceReaderRep : public IMFSourceReaderCallback, public IMFWrapper
+class SourceReaderRep : public IMFSourceReaderCallback, public MFUtils
 {
 public:
 	SourceReaderRep(CComPtr<IMFMediaSource> mediaSource);
@@ -16,6 +16,8 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFSourceReader>			GetSourceReader();
+	CComPtr<IMFMediaType>				GetVideoMediaType();
+	CComPtr<IMFMediaType>				GetAudioMediaType();
 
 	// IUnknown methods
 	STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
@@ -38,7 +40,7 @@ SourceReader::SourceReader(CComPtr<IMFMediaSource> mediaSource)
 SourceReaderRep::SourceReaderRep(CComPtr<IMFMediaSource> mediaSource)
 {
 	AttributesFactory* attributesFactory = new AttributesFactory();
-	CComPtr<IMFAttributes> sourceReaderAsycCallbackAttributes = attributesFactory->CreateSourceReaderAsycCallbackAttributes(this);
+	CComPtr<IMFAttributes> sourceReaderAsycCallbackAttributes = attributesFactory->CreateSReaderCbAttrs(this);
 
 	OnERR_return(MFCreateSourceReaderFromMediaSource(mediaSource, sourceReaderAsycCallbackAttributes, &mSourceReader));
 }
@@ -55,7 +57,7 @@ HRESULT SourceReader::GetLastHRESULT()
 }
 HRESULT SourceReaderRep::GetLastHRESULT()
 {
-	return IMFWrapper::GetLastHRESULT();
+	return MFUtils::GetLastHRESULT();
 }
 
 CComPtr<IMFSourceReader> SourceReader::GetSourceReader()
@@ -109,4 +111,28 @@ ULONG SourceReaderRep::Release()
 {
 	ULONG uCount = InterlockedDecrement(&mRefCount);
 	return uCount;
+}
+
+CComPtr<IMFMediaType> SourceReader::GetVideoMediaType()
+{
+	return m_pRep->GetVideoMediaType();
+}
+CComPtr<IMFMediaType> SourceReaderRep::GetVideoMediaType()
+{
+	DWORD formatWeWant = 64;	// MXL is 64 for 720p 5994 YUY2
+	CComPtr<IMFMediaType> retval = NULL;
+	OnERR_return_NULL(mSourceReader->GetNativeMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, formatWeWant, &retval));
+	return retval;
+}
+
+CComPtr<IMFMediaType> SourceReader::GetAudioMediaType()
+{
+	return m_pRep->GetAudioMediaType();
+}
+CComPtr<IMFMediaType> SourceReaderRep::GetAudioMediaType()
+{
+	DWORD formatWeWant = 0;		// 2 channels 48k 16 bit PCM
+	CComPtr<IMFMediaType> retval = NULL;
+	OnERR_return_NULL(mSourceReader->GetNativeMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, formatWeWant, &retval));
+	return retval;
 }

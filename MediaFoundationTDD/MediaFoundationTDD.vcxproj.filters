@@ -4,9 +4,6 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IMFWrapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Devices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -40,7 +37,16 @@
     <ClCompile Include="VideoDisplayControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SinkWriter.cpp">
+    <ClCompile Include="MediaTypeFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MFUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MFAttrToStrHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,7 +74,6 @@
     </ClInclude>
     <ClInclude Include="AttributesFactory.h" />
     <ClInclude Include="Devices.h" />
-    <ClInclude Include="IMFWrapper.h" />
     <ClInclude Include="MediaFoundationTDD.h" />
     <ClInclude Include="MediaSource.h">
       <Filter>Header Files</Filter>
@@ -79,7 +84,14 @@
     <ClInclude Include="VideoDisplayControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SinkWriter.h">
+    <ClInclude Include="MediaTypeFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MFUtils.h" />
+    <ClInclude Include="MFAttrToStrHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

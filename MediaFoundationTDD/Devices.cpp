@@ -1,10 +1,10 @@
 #include "Devices.h"
-#include "IMFWrapper.h"
+#include "MFUtils.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
 
-class DevicesRep : public IMFWrapper
+class DevicesRep : public MFUtils
 {
 public:
 	DevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer);
@@ -44,7 +44,7 @@ HRESULT Devices::GetLastHRESULT()
 }
 HRESULT DevicesRep::GetLastHRESULT()
 {
-	return IMFWrapper::GetLastHRESULT();
+	return MFUtils::GetLastHRESULT();
 }
 
 std::vector<std::wstring> DevicesRep::GetCaptureDeviceNames()

@@ -21,6 +21,8 @@ public:
 	VideoDisplayControl();
 	~VideoDisplayControl();
 
+	void SetIsParticipating(bool isParticipating);
+
 	//OnTopologyReadyCallback
 	virtual void						OnTopologyReady(CComPtr<IMFMediaSession> mediaSession);
 

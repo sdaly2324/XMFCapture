@@ -9,23 +9,25 @@
 #define MediaFoundationTDD_API __declspec(dllimport)
 #endif
 
-struct IMFSinkWriter;
 struct IMFMediaSink;
-class SinkWriterRep;
-class MediaFoundationTDD_API SinkWriter
+struct IMFStreamSink;
+class MediaSource;
+class FileSinkRep;
+class MediaFoundationTDD_API FileSink
 {
 public:
-	SinkWriter(LPCWSTR fullFilePath);
-	~SinkWriter();
+	FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoSource);
+	~FileSink();
 
 	HRESULT							GetLastHRESULT();
 
-	CComPtr<IMFSinkWriter>			GetSinkWriter();
 	CComPtr<IMFMediaSink>			GetMediaSink();
+	CComPtr<IMFStreamSink>			GetAudioStreamSink();
+	CComPtr<IMFStreamSink>			GetVideoStreamSink();
 
 private:
 #pragma warning(push)
 #pragma warning(disable:4251)
-	std::unique_ptr<SinkWriterRep> m_pRep = 0;
+	std::unique_ptr<FileSinkRep> m_pRep = 0;
 #pragma warning(pop)
 };

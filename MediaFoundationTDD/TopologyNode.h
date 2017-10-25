@@ -15,7 +15,7 @@ struct IMFTopologyNode;
 struct IMFActivate;
 struct IMFPresentationDescriptor;
 struct IMFStreamDescriptor;
-class SinkWriter;
+class FileSink;
 class TopologyNodeRep;
 class MediaFoundationTDD_API TopologyNode
 {
@@ -28,13 +28,13 @@ public:
 		CComPtr<IMFStreamDescriptor> streamDescriptor,
 		CComPtr<IMFActivate> renderer
 	);
-	TopologyNode(std::shared_ptr<SinkWriter> sinkWriter);
+	TopologyNode(std::shared_ptr<FileSink> mediaSink);
 	~TopologyNode();
 
 	HRESULT								GetLastHRESULT();
 
-	CComPtr<IMFTopologyNode>			GetTopologyNode();
-	CComPtr<IMFTopologyNode>			GetTopologyRendererNode();
+	CComPtr<IMFTopologyNode>			GetNode();
+	CComPtr<IMFTopologyNode>			GetRendererNode();
 
 private:
 #pragma warning(push)
