@@ -49,6 +49,9 @@
     <ClCompile Include="FileSink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TranscodeProfileFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -92,6 +95,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileSink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TranscodeProfileFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

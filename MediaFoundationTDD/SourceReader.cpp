@@ -40,7 +40,7 @@ SourceReader::SourceReader(CComPtr<IMFMediaSource> mediaSource)
 SourceReaderRep::SourceReaderRep(CComPtr<IMFMediaSource> mediaSource)
 {
 	AttributesFactory* attributesFactory = new AttributesFactory();
-	CComPtr<IMFAttributes> sourceReaderAsycCallbackAttributes = attributesFactory->CreateSReaderCbAttrs(this);
+	CComPtr<IMFAttributes> sourceReaderAsycCallbackAttributes = attributesFactory->CreateSInkReaderCbAttrs(this);
 
 	OnERR_return(MFCreateSourceReaderFromMediaSource(mediaSource, sourceReaderAsycCallbackAttributes, &mSourceReader));
 }

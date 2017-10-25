@@ -3,9 +3,12 @@
 #include "MediaSource.h"
 #include "PresentationDescriptor.h"
 #include "MFUtils.h"
+#include "TranscodeProfileFactory.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
+#include <strmif.h>
+#include <codecapi.h>
 #include <memory>
 #include <vector>
 
@@ -30,12 +33,16 @@ public:
 		CComPtr<IMFActivate> audioRenderer,
 		std::shared_ptr<FileSink> mediaSink
 	);
+	void CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
+	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
 	void ResolveTopology();
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
 	CComPtr<IMFTopology> GetTopology();
 
 private:
+	void FixGOPSize(CComPtr<IMFTopology> topology);
+
 	GUID											GetTopSourceNodeMediaType(CComPtr<IMFTopologyNode> topSourceNode);
 	void											UpdateSourceNodeMediaTypes(CComPtr<IMFTopologyNode> node);
 	bool											IsNodeTypeSource(CComPtr<IMFTopologyNode> node);
@@ -87,7 +94,6 @@ Topology::Topology()
 }
 TopologyRep::TopologyRep()
 {
-	OnERR_return(MFCreateTopology(&mTopology));
 }
 Topology::~Topology()
 {
@@ -223,6 +229,10 @@ void TopologyRep::CreateCaptureAndPassthroughTopology
 	std::shared_ptr<FileSink> mediaSink
 )
 {
+	if (!mTopology)
+	{
+		OnERR_return(MFCreateTopology(&mTopology));
+	}
 	CComPtr<IMFTopologyNode> sinkNode = CreateSinkNode(mediaSink)->GetNode();
 	if (!sinkNode)
 	{
@@ -273,6 +283,10 @@ void TopologyRep::CreatePassthroughTopology
 	CComPtr<IMFActivate> audioRenderer
 )
 {
+	if (!mTopology)
+	{
+		OnERR_return(MFCreateTopology(&mTopology));
+	}
 	std::vector< std::shared_ptr< TopologyNode> > sourceNodes = CreateSourceNodes(mediaSource, videoRenderer, audioRenderer);
 	for (auto& sourceNode : sourceNodes)
 	{
@@ -533,4 +547,28 @@ void TopologyRep::SetTopology(CComPtr<IMFMediaSession> mediaSession)
 	OnERR_return(mTopology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE));
 	OnERR_return(mTopology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL));
 	OnERR_return(mediaSession->SetTopology(0, mTopology));
+}
+
+void Topology::CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite)
+{
+	m_pRep->CreateVideoOnlyCaptureTopology(mediaSource, fileToWrite);
+}
+void TopologyRep::CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite)
+{
+	TranscodeProfileFactory transcodeProfileFactory;
+	CComPtr<IMFAttributes> attrs = NULL; 
+	//attrs = mediaSource->GetVideoMediaType();
+	CComPtr<IMFTranscodeProfile> transcodeProfile = transcodeProfileFactory.CreateVideoOnlyTranscodeProfile(attrs);
+	OnERR_return(MFCreateTranscodeTopology(mediaSource->GetMediaSource(), fileToWrite.c_str(), transcodeProfile, &mTopology));
+}
+
+void Topology::CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite)
+{
+	m_pRep->CreateAudioOnlyCaptureTopology(mediaSource, fileToWrite);
+}
+void TopologyRep::CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite)
+{
+	TranscodeProfileFactory transcodeProfileFactory;
+	CComPtr<IMFTranscodeProfile> transcodeProfile = transcodeProfileFactory.CreateAudioOnlyTranscodeProfile();
+	OnERR_return(MFCreateTranscodeTopology(mediaSource->GetMediaSource(), fileToWrite.c_str(), transcodeProfile, &mTopology));
 }

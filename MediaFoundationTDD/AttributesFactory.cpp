@@ -13,12 +13,12 @@ public:
 
 	HRESULT GetLastHRESULT();
 
-	CComPtr<IMFAttributes>	CreateVDeviceAttrs();
-	CComPtr<IMFAttributes>	CreateADeviceAttrs();
-	CComPtr<IMFAttributes>	CreateSReaderCbAttrs(IUnknown* callBack);
-	CComPtr<IMFAttributes>	CreateFSinkAttrs();
-	CComPtr<IMFAttributes>	CreateVOutAttrs(CComPtr<IMFAttributes> vInAttrs);
-	CComPtr<IMFAttributes>	CreateAOutAttrs();
+	CComPtr<IMFAttributes>	CreateVideoDeviceAttrs();
+	CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
+	CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
+	CComPtr<IMFAttributes>	CreateFileSinkAttrs();
+	CComPtr<IMFAttributes>	CreateVideoOutAttrs(CComPtr<IMFAttributes> vInAttrs);
+	CComPtr<IMFAttributes>	CreateAudioOutAttrs();
 
 private:
 	HRESULT					CopyAttribute(CComPtr<IMFAttributes> sourceAttribute, CComPtr<IMFAttributes> destinationAttribute, const GUID& attributeGUID);
@@ -46,11 +46,11 @@ HRESULT AttributesFactoryRep::GetLastHRESULT()
 	return MFUtils::GetLastHRESULT();
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateVDeviceAttrs()
+CComPtr<IMFAttributes> AttributesFactory::CreateVideoDeviceAttrs()
 {
-	return m_pRep->CreateVDeviceAttrs();
+	return m_pRep->CreateVideoDeviceAttrs();
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateVDeviceAttrs()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoDeviceAttrs()
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
@@ -58,11 +58,11 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateVDeviceAttrs()
 	return retVal;
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateADeviceAttrs()
+CComPtr<IMFAttributes> AttributesFactory::CreateAudioDeviceAttrs()
 {
-	return m_pRep->CreateADeviceAttrs();
+	return m_pRep->CreateAudioDeviceAttrs();
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateADeviceAttrs()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioDeviceAttrs()
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
@@ -70,11 +70,11 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateADeviceAttrs()
 	return retVal;
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateSReaderCbAttrs(IUnknown* callBack)
+CComPtr<IMFAttributes> AttributesFactory::CreateSInkReaderCbAttrs(IUnknown* callBack)
 {
-	return m_pRep->CreateSReaderCbAttrs(callBack);
+	return m_pRep->CreateSInkReaderCbAttrs(callBack);
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateSReaderCbAttrs(IUnknown* callBack)
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateSInkReaderCbAttrs(IUnknown* callBack)
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
@@ -83,25 +83,27 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateSReaderCbAttrs(IUnknown* call
 	return retVal;
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateFSinkAttrs()
+CComPtr<IMFAttributes> AttributesFactory::CreateFileSinkAttrs()
 {
-	return m_pRep->CreateFSinkAttrs();
+	return m_pRep->CreateFileSinkAttrs();
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateFSinkAttrs()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateFileSinkAttrs()
 {
 	CComPtr<IMFAttributes> attributes = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
 	//OnERR_return_NULL(attributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
-	OnERR_return_NULL(attributes->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Stream));
-	OnERR_return_NULL(attributes->SetGUID(MF_MT_SUBTYPE, MFStreamFormat_MPEG2Transport));
+	//OnERR_return_NULL(attributes->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Stream));
+	//OnERR_return_NULL(attributes->SetGUID(MF_MT_SUBTYPE, MFStreamFormat_MPEG2Transport));
+	OnERR_return_NULL(attributes->SetGUID(MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_MPEG2));
+	OnERR_return_NULL(attributes->SetUINT32(MF_TRANSCODE_ADJUST_PROFILE, MF_TRANSCODE_ADJUST_PROFILE_DEFAULT));
 	return attributes;
 }
 
-CComPtr<IMFAttributes> AttributesFactory::CreateAOutAttrs()
+CComPtr<IMFAttributes> AttributesFactory::CreateAudioOutAttrs()
 {
-	return m_pRep->CreateAOutAttrs();
+	return m_pRep->CreateAudioOutAttrs();
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateAOutAttrs()
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioOutAttrs()
 {
 	CComPtr<IMFAttributes> attributes = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
@@ -121,23 +123,34 @@ HRESULT AttributesFactoryRep::CopyAttribute(CComPtr<IMFAttributes> sourceAttribu
 	}
 	return hr;
 }
-CComPtr<IMFAttributes> AttributesFactory::CreateVOutAttrs(CComPtr<IMFAttributes> vInAttrs)
+CComPtr<IMFAttributes> AttributesFactory::CreateVideoOutAttrs(CComPtr<IMFAttributes> vInAttrs)
 {
-	return m_pRep->CreateVOutAttrs(vInAttrs);
+	return m_pRep->CreateVideoOutAttrs(vInAttrs);
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateVOutAttrs(CComPtr<IMFAttributes> vInAttrs)
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoOutAttrs(CComPtr<IMFAttributes> vInAttrs)
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
+	if (vInAttrs)
+	{
+		OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_FRAME_SIZE));
+		OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_FRAME_RATE));
+		OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_PIXEL_ASPECT_RATIO));
+		OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_INTERLACE_MODE));
+	}
+	else
+	{
+		// assume 720p5994
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_FRAME_SIZE, 5497558139600));
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_FRAME_RATE, 257698037761001));
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_PIXEL_ASPECT_RATIO, 4294967297));
+		OnERR_return_NULL(retVal->SetUINT32(MF_MT_INTERLACE_MODE, 2));
+	}
 	OnERR_return_NULL(retVal->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
-	OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_FRAME_SIZE));
-	OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_FRAME_RATE));
-	OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_PIXEL_ASPECT_RATIO));
-	OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_INTERLACE_MODE));
 	OnERR_return_NULL(retVal->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_VIDEO_PROFILE, 100));
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_VIDEO_LEVEL, 41));
-	//OnERR_return_NULL(retVal->SetUINT32(MF_MT_MAX_KEYFRAME_SPACING, 30); // FIXED IN XMFSinkWriterRep::BeginWriting // DOES NOT WORK WITH IMFCaptureEngine
+	//OnERR_return_NULL(retVal->SetUINT32(MF_MT_MAX_KEYFRAME_SPACING, 30)); // FIXED IN XMFSinkWriterRep::BeginWriting // DOES NOT WORK WITH IMFCaptureEngine
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_AVG_BITRATE, 6000000)); // 6 megabits
 
 	return retVal;

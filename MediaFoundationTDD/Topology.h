@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <atlcomcli.h>
 #include <memory>
+#include <string>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -15,6 +16,7 @@ struct IMFActivate;
 struct IMFMediaSource;
 class FileSink;
 class TopologyRep;
+class MediaSource;
 class MediaFoundationTDD_API Topology
 {
 public:
@@ -36,6 +38,8 @@ public:
 		CComPtr<IMFActivate> audioRenderer,
 		std::shared_ptr<FileSink> mediaSink
 	);
+	void CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
+	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
 	void ResolveTopology();
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);
 

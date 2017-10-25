@@ -37,7 +37,7 @@ FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> vide
 {
 	bool addStreamInWriter = false;
 	AttributesFactory attributesFactory;
-	CComPtr<IMFAttributes> attributes = attributesFactory.CreateFSinkAttrs();
+	CComPtr<IMFAttributes> attributes = attributesFactory.CreateFileSinkAttrs();
 	if (attributes)
 	{
 		CComPtr<IMFByteStream> outputByteStream = NULL;
@@ -56,8 +56,8 @@ FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> vide
 		//}
 		//else
 		//{
-			CComPtr<IMFMediaType> sourceVideoMediaType = videoSource->GetVideoMediaType();
-			OnERR_return(mMediaSink->AddStreamSink(mVideoStreamIndex, mediaTypeFactory.CreateVideoEncodingMediaType(sourceVideoMediaType), &mVideoStreamSink));
+			CComPtr<IMFAttributes> sourceVideoMediaAttrs = videoSource->GetVideoMediaType();
+			OnERR_return(mMediaSink->AddStreamSink(mVideoStreamIndex, mediaTypeFactory.CreateVideoEncodingMediaType(sourceVideoMediaAttrs), &mVideoStreamSink));
 			//OnERR_return(mMediaSink->AddStreamSink(mAudioStreamIndex, mediaTypeFactory.CreateAudioEncodingMediaType(), &mAudioStreamSink));
 		//}
 	}

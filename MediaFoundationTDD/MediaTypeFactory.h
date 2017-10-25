@@ -12,6 +12,7 @@
 
 struct IMFActivate;
 struct IMFMediaType;
+struct IMFAttributes;
 class MediaTypeFactoryRep;
 class MediaFoundationTDD_API MediaTypeFactory
 {
@@ -21,7 +22,7 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFMediaType> vInMType);
+	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
 	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
 
 private:

@@ -14,7 +14,7 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
-	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFMediaType> vInMType);
+	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
 
 private:
 	template <class T>
@@ -64,7 +64,7 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioEncodingMediaType()
 {
 	CComPtr<IMFMediaType> retVal = NULL;
 	AttributesFactory attributesFactory;
-	CComPtr<IMFAttributes> attributes = attributesFactory.CreateAOutAttrs();
+	CComPtr<IMFAttributes> attributes = attributesFactory.CreateAudioOutAttrs();
 	if (attributes)
 	{
 		CComPtr<IMFCollection> availableTypes = NULL;
@@ -96,20 +96,14 @@ void MediaTypeFactoryRep::DumpAvailableAACFormats(CComPtr<IMFCollection> availab
 	}
 }
 
-CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoEncodingMediaType(CComPtr<IMFMediaType> vInMType)
+CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs)
 {
-	return m_pRep->CreateVideoEncodingMediaType(vInMType);
+	return m_pRep->CreateVideoEncodingMediaType(inAttrs);
 }
-CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoEncodingMediaType(CComPtr<IMFMediaType> vInMType)
+CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs)
 {
 	AttributesFactory attributesFactory;
-	CComPtr<IMFAttributes> inAttrs = vInMType;
-	if (!inAttrs)
-	{
-		SetLastHR_Fail();
-		return NULL;
-	}
-	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVOutAttrs(inAttrs);
+	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoOutAttrs(inAttrs);
 	if (!outAttrs)
 	{
 		SetLastHR_Fail();

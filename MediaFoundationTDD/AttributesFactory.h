@@ -19,12 +19,12 @@ public:
 
 	HRESULT GetLastHRESULT();
 
-	CComPtr<IMFAttributes>	CreateVDeviceAttrs();
-	CComPtr<IMFAttributes>	CreateADeviceAttrs();
-	CComPtr<IMFAttributes>	CreateSReaderCbAttrs(IUnknown* callBack);
-	CComPtr<IMFAttributes>	CreateFSinkAttrs();
-	CComPtr<IMFAttributes>	CreateVOutAttrs(CComPtr<IMFAttributes> videoInputAttributes);
-	CComPtr<IMFAttributes>	CreateAOutAttrs();
+	CComPtr<IMFAttributes>	CreateVideoDeviceAttrs();
+	CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
+	CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
+	CComPtr<IMFAttributes>	CreateFileSinkAttrs();
+	CComPtr<IMFAttributes>	CreateVideoOutAttrs(CComPtr<IMFAttributes> videoInputAttributes);
+	CComPtr<IMFAttributes>	CreateAudioOutAttrs();
 
 private:
 #pragma warning(push)
