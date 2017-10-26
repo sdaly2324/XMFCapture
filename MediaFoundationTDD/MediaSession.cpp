@@ -172,33 +172,31 @@ void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& mediaEvent)
 			//hr = outputNodeCollection->GetElementCount(&outputElements);
 
 			WORD nodeCount = 0;
-			hr = topology->GetNodeCount(&nodeCount);
+			OnERR_return(topology->GetNodeCount(&nodeCount));
 			for (int i = 0; i < nodeCount; i++)
 			{
 				CComPtr<IMFTopologyNode> node;
-				hr = topology->GetNode(i, &node);
-				DumpAttr(node, L"IMFTopologyNode" , std::to_wstring(i));
-				DWORD inputs = 0;
-				hr = node->GetInputCount(&inputs);
-				for (unsigned int inIndex = 0; inIndex < inputs; inIndex++)
+				OnERR_return(topology->GetNode(i, &node));
+				MF_TOPOLOGY_TYPE nodeType = MF_TOPOLOGY_MAX;
+				OnERR_return(node->GetNodeType(&nodeType));
+
+				GUID guid;
+				HRESULT hr = node->GetGUID(MF_TOPONODE_ERROR_MAJORTYPE, &guid);
+				if (SUCCEEDED(hr))
 				{
-					CComPtr<IMFMediaType> inputPrefType = NULL;
-					if (!IsHRError(node->GetInputPrefType(inIndex, &inputPrefType)))
-					{
-						DumpAttr(inputPrefType, L"node " + std::to_wstring(i), L"input " + std::to_wstring(inIndex));
-					}
+					OutputDebugStringW(L"");
 				}
-				DWORD outputs = 0;
-				hr = node->GetOutputCount(&outputs);
-				for (unsigned int outIndex = 0; outIndex < outputs; outIndex++)
+				hr = node->GetGUID(MF_TOPONODE_ERROR_SUBTYPE, &guid);
+				if (SUCCEEDED(hr))
 				{
-					CComPtr<IMFMediaType> outputPrefType = NULL;
-					if (!IsHRError(node->GetOutputPrefType(outIndex, &outputPrefType)))
-					{
-						DumpAttr(outputPrefType, L"node " + std::to_wstring(i), L"output " + std::to_wstring(outIndex));
-					}
+					OutputDebugStringW(L"");
 				}
-				OutputDebugStringW(L"\n");
+				UINT32 value32 = 0;
+				hr = node->GetUINT32(MF_TOPONODE_ERRORCODE, &value32);
+				if (SUCCEEDED(hr))
+				{
+					OutputDebugStringW(L"");
+				}
 			}
 		}
 		SetLastHR_Fail();

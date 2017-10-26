@@ -21,6 +21,7 @@ class MediaFoundationTDD_API TopologyNode
 {
 public:
 	TopologyNode();
+	TopologyNode(CComPtr<IMFActivate> renderDevice);
 	TopologyNode
 	(
 		CComPtr<IMFMediaSource> mediaSource,

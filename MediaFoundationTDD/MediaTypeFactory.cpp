@@ -91,7 +91,7 @@ void MediaTypeFactoryRep::DumpAvailableAACFormats(CComPtr<IMFCollection> availab
 		hr = GetCollectionObject(availableTypes, i, &pMediaType);
 		WCHAR count[1024];
 		swprintf_s(count, 1024, L"%d", i);
-		DumpAttr(pMediaType, L"AUDIO AAC", count);
+		//DumpAttr(pMediaType, L"AUDIO AAC", count);
 		OutputDebugStringW(L"\n");
 	}
 }

@@ -11,6 +11,7 @@ class TopologyNodeRep : public MFUtils
 {
 public:
 	TopologyNodeRep();
+	TopologyNodeRep(CComPtr<IMFActivate> renderDevice);
 	TopologyNodeRep
 	(
 		CComPtr<IMFMediaSource> mediaSource, 
@@ -27,7 +28,7 @@ public:
 	CComPtr<IMFTopologyNode>			GetRendererNode();
 
 private:
-	void CreateRendereNode(CComPtr<IMFActivate> device);
+	void CreateRendereNode(CComPtr<IMFActivate> renderDevice);
 	CComPtr<IMFTopologyNode>	mTopologyNode	= NULL;
 	CComPtr<IMFTopologyNode>	mRendererNode	= NULL;
 };
@@ -39,6 +40,16 @@ TopologyNode::TopologyNode()
 TopologyNodeRep::TopologyNodeRep()
 {
 	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_TEE_NODE, &mTopologyNode));
+}
+
+TopologyNode::TopologyNode(CComPtr<IMFActivate> renderDevice)
+{
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(renderDevice));
+}
+TopologyNodeRep::TopologyNodeRep(CComPtr<IMFActivate> renderDevice)
+{
+	CreateRendereNode(renderDevice);
+	mTopologyNode = mRendererNode;
 }
 
 TopologyNode::TopologyNode
@@ -56,10 +67,10 @@ TopologyNodeRep::TopologyNodeRep
 	CComPtr<IMFMediaSource> mediaSource,
 	CComPtr<IMFPresentationDescriptor> presentationDescriptor,
 	CComPtr<IMFStreamDescriptor> streamDescriptor,
-	CComPtr<IMFActivate> renderer
+	CComPtr<IMFActivate> renderDevice
 )
 {
-	CreateRendereNode(renderer);
+	CreateRendereNode(renderDevice);
 	if (LastHR_OK())
 	{
 		OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_SOURCESTREAM_NODE, &mTopologyNode));

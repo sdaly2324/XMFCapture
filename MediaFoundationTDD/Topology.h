@@ -40,6 +40,12 @@ public:
 	);
 	void CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
 	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
+	void CreateAudioOnlyCaptureAndPassthroughTopology
+	(
+		std::shared_ptr<MediaSource> mediaSource, 
+		const std::wstring& fileToWrite,
+		CComPtr<IMFActivate> audioRenderer
+	);
 	void ResolveTopology();
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
