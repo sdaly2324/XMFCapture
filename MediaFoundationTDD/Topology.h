@@ -39,12 +39,19 @@ public:
 		std::shared_ptr<FileSink> mediaSink
 	);
 	void CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
+	void CreateVideoOnlyCaptureAndPassthroughTopology
+	(
+		std::shared_ptr<MediaSource> mediaSource,
+		const std::wstring& fileToWrite,
+		CComPtr<IMFActivate> videoRendererDevice
+	);
+
 	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
 	void CreateAudioOnlyCaptureAndPassthroughTopology
 	(
 		std::shared_ptr<MediaSource> mediaSource, 
 		const std::wstring& fileToWrite,
-		CComPtr<IMFActivate> audioRenderer
+		CComPtr<IMFActivate> audioRendererDevice
 	);
 	void ResolveTopology();
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);

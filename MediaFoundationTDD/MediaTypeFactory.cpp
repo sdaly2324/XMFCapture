@@ -4,6 +4,10 @@
 
 #include <mfapi.h>
 #include <mfidl.h>
+#include <mfreadwrite.h>
+#include <evr.h>
+#include <d3d9.h>
+#include <Dxva2api.h>
 
 class MediaTypeFactoryRep : public MFUtils
 {
@@ -15,6 +19,7 @@ public:
 
 	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
 	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
+	CComPtr<IMFMediaType>				AddD3D(CComPtr<IMFMediaType> inType, CComPtr<IMFActivate> videoRendererDevice);
 
 private:
 	template <class T>
@@ -113,4 +118,26 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoEncodingMediaType(CComPtr<
 	OnERR_return_NULL(MFCreateMediaType(&retVal));
 	OnERR_return_NULL(outAttrs->CopyAllItems(retVal));
 	return retVal;
+}
+
+CComPtr<IMFMediaType> MediaTypeFactory::AddD3D(CComPtr<IMFMediaType> inType, CComPtr<IMFActivate> videoRendererDevice)
+{
+	return m_pRep->AddD3D(inType, videoRendererDevice);
+}
+CComPtr<IMFMediaType> MediaTypeFactoryRep::AddD3D(CComPtr<IMFMediaType> inType, CComPtr<IMFActivate> videoRendererDevice)
+{
+	if (!videoRendererDevice || !inType)
+	{
+		return NULL;
+	}
+	CComPtr<IMFMediaType> videoReaderOutType = nullptr;
+	OnERR_return_NULL(MFCreateMediaType(&videoReaderOutType));
+	OnERR_return_NULL(inType->CopyAllItems(videoReaderOutType));
+
+	CComPtr<IMFMediaSink> videoRendererSink = nullptr;
+	CComPtr<IDirect3DDeviceManager9> pD3DManager = nullptr;
+	OnERR_return_NULL(videoRendererDevice->ActivateObject(IID_IMFMediaSink, (void**)&videoRendererSink));
+	OnERR_return_NULL(MFGetService(videoRendererSink, MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(&pD3DManager)));
+	OnERR_return_NULL(videoReaderOutType->SetUnknown(MF_SOURCE_READER_D3D_MANAGER, pD3DManager));
+	return videoReaderOutType;
 }

@@ -26,6 +26,8 @@ public:
 	CComPtr<IMFMediaSource>				GetMediaSource();
 	CComPtr<IMFMediaType>				GetVideoMediaType();
 	CComPtr<IMFMediaType>				GetAudioMediaType();
+	void								SetVideoMediaType(CComPtr<IMFMediaType> mediaType);
+	void								FixVideoMediaType();
 
 private:
 	MediaSource();

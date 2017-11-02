@@ -4,6 +4,7 @@
 #include "PresentationDescriptor.h"
 #include "MFUtils.h"
 #include "TranscodeProfileFactory.h"
+#include "MediaTypeFactory.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
@@ -34,6 +35,13 @@ public:
 		std::shared_ptr<FileSink> mediaSink
 	);
 	void CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
+	void CreateVideoOnlyCaptureAndPassthroughTopology
+	(
+		std::shared_ptr<MediaSource> mediaSource,
+		const std::wstring& fileToWrite,
+		CComPtr<IMFActivate> videoRendererDevice
+	);
+
 	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
 	void CreateAudioOnlyCaptureAndPassthroughTopology
 	(
@@ -47,7 +55,8 @@ public:
 	CComPtr<IMFTopology> GetTopology();
 
 private:
-	void						InsertTEEAudioRenderer(CComPtr<IMFActivate> audioRendererDevice);
+	void						FixFormat(std::shared_ptr<MediaSource> mediaSource, CComPtr<IMFActivate> videoRendererDevice);
+	void						InsertTEERenderer(CComPtr<IMFActivate> rendererDevice);
 	CComPtr<IMFTopologyNode>	GetFirstNodeTypeFromTopology(MF_TOPOLOGY_TYPE nodeType);
 	CComPtr<IMFTopologyNode>	GetSourceNodeFromTopology();
 	CComPtr<IMFTopologyNode>	GetTransformNodeFromTopology();
@@ -578,7 +587,7 @@ void TopologyRep::CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> me
 {
 	TranscodeProfileFactory transcodeProfileFactory;
 	CComPtr<IMFAttributes> attrs = NULL; 
-	//attrs = mediaSource->GetVideoMediaType();
+	attrs = mediaSource->GetVideoMediaType();
 	CComPtr<IMFTranscodeProfile> transcodeProfile = transcodeProfileFactory.CreateVideoOnlyTranscodeProfile(attrs);
 	OnERR_return(MFCreateTranscodeTopology(mediaSource->GetMediaSource(), fileToWrite.c_str(), transcodeProfile, &mTopology));
 }
@@ -592,6 +601,40 @@ void TopologyRep::CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> me
 	TranscodeProfileFactory transcodeProfileFactory;
 	CComPtr<IMFTranscodeProfile> transcodeProfile = transcodeProfileFactory.CreateAudioOnlyTranscodeProfile();
 	OnERR_return(MFCreateTranscodeTopology(mediaSource->GetMediaSource(), fileToWrite.c_str(), transcodeProfile, &mTopology));
+}
+
+void Topology::CreateVideoOnlyCaptureAndPassthroughTopology
+(
+	std::shared_ptr<MediaSource> mediaSource,
+	const std::wstring& fileToWrite,
+	CComPtr<IMFActivate> videoRendererDevice
+)
+{
+	m_pRep->CreateVideoOnlyCaptureAndPassthroughTopology(mediaSource, fileToWrite, videoRendererDevice);
+}
+void TopologyRep::CreateVideoOnlyCaptureAndPassthroughTopology
+(
+	std::shared_ptr<MediaSource> mediaSource,
+	const std::wstring& fileToWrite,
+	CComPtr<IMFActivate> videoRendererDevice
+)
+{
+	FixFormat(mediaSource, videoRendererDevice);
+	CreateVideoOnlyCaptureTopology(mediaSource, fileToWrite);
+	OnERR_return(GetLastHRESULT());
+
+	InsertTEERenderer(videoRendererDevice);
+}
+
+void TopologyRep::FixFormat(std::shared_ptr<MediaSource> mediaSource, CComPtr<IMFActivate> videoRendererDevice)
+{
+	mediaSource->FixVideoMediaType();
+	MediaTypeFactory mediaTypeFactory;
+	CComPtr<IMFMediaType> videoReaderMediaType = mediaTypeFactory.AddD3D(mediaSource->GetVideoMediaType(), videoRendererDevice);
+	if (videoReaderMediaType)
+	{
+		mediaSource->SetVideoMediaType(videoReaderMediaType);
+	}
 }
 
 void Topology::CreateAudioOnlyCaptureAndPassthroughTopology
@@ -612,7 +655,7 @@ void TopologyRep::CreateAudioOnlyCaptureAndPassthroughTopology
 {
 	CreateAudioOnlyCaptureTopology(mediaSource, fileToWrite);
 	OnERR_return(GetLastHRESULT());
-	InsertTEEAudioRenderer(audioRendererDevice);
+	InsertTEERenderer(audioRendererDevice);
 }
 
 CComPtr<IMFTopologyNode> TopologyRep::GetFirstNodeTypeFromTopology(MF_TOPOLOGY_TYPE nodeTypeToFind)
@@ -647,13 +690,16 @@ CComPtr<IMFTopologyNode> TopologyRep::GetOutputNodeFromTopology()
 	return GetFirstNodeTypeFromTopology(MF_TOPOLOGY_OUTPUT_NODE);
 }
 
-void TopologyRep::InsertTEEAudioRenderer(CComPtr<IMFActivate> audioRendererDevice)
+void TopologyRep::InsertTEERenderer(CComPtr<IMFActivate> rendererDevice)
 {
 	CComPtr<IMFTopologyNode> sourceNode = GetSourceNodeFromTopology();
+	//OnERR_return(sourceNode->SetUINT64(MF_TOPONODE_MEDIASTART, 0));
 	OnERR_return(GetLastHRESULT());
+	//OnERR_return(sourceNode->DisconnectOutput(0));
 
 	CComPtr<IMFTopologyNode> transformNode = GetTransformNodeFromTopology();
 	OnERR_return(GetLastHRESULT());
+	//OnERR_return(transformNode->DisconnectOutput(0));
 
 	CComPtr<IMFTopologyNode> outputNode = GetOutputNodeFromTopology();
 	OnERR_return(GetLastHRESULT());
@@ -661,11 +707,11 @@ void TopologyRep::InsertTEEAudioRenderer(CComPtr<IMFActivate> audioRendererDevic
 	std::shared_ptr<TopologyNode> teeNode = CreateTeeNode();
 	OnERR_return(mTopology->AddNode(teeNode->GetNode()));
 
-	std::shared_ptr<TopologyNode> audioRendererNode = CreateRendererNode(audioRendererDevice);
-	OnERR_return(mTopology->AddNode(audioRendererNode->GetNode()));
+	std::shared_ptr<TopologyNode> rendererNode = CreateRendererNode(rendererDevice);
+	OnERR_return(mTopology->AddNode(rendererNode->GetNode()));
 
 	OnERR_return(AddAndConnect2Nodes(sourceNode, teeNode->GetNode(), 0));
 	OnERR_return(AddAndConnect2Nodes(teeNode->GetNode(), transformNode, 0));
 	OnERR_return(AddAndConnect2Nodes(transformNode, outputNode, 0));
-	OnERR_return(AddAndConnect2Nodes(teeNode->GetNode(), audioRendererNode->GetNode(), 1));
+	OnERR_return(AddAndConnect2Nodes(teeNode->GetNode(), rendererNode->GetNode(), 1));
 }

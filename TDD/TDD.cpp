@@ -18,6 +18,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include <evr.h>
 #include <memory>
 
+const WCHAR CLASS_NAME[] = L"CaptureTEST Window Class";
+const WCHAR WINDOW_NAME[] = L"CaptureTEST Sample Application";
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -46,9 +48,24 @@ namespace MediaFoundationTesing
 		CComPtr<IMFActivate> mVideoRenderer = NULL;
 		HWND mVideoWindow = NULL;
 
+		void InitializeWindow()
+		{
+			WNDCLASS wc = { 0 };
+			wc.lpfnWndProc = WindowProc;
+			wc.hInstance = GetModuleHandle(NULL);
+			wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+			wc.lpszClassName = CLASS_NAME;
+			Assert::IsTrue(RegisterClass(&wc));
+
+			mVideoWindow = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, NULL, NULL, GetModuleHandle(NULL), NULL);
+			Assert::IsTrue(mVideoWindow);
+
+			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
+			UpdateWindow(mVideoWindow);
+		}
 		void InitVideoDevices()
 		{
-			auto videoDevices = std::make_unique<VideoDevices>((HWND)NULL);
+			auto videoDevices = std::make_unique<VideoDevices>(mVideoWindow);
 			Assert::AreEqual(videoDevices->GetLastHRESULT(), S_OK);
 
 			mVideoCaptureDevice = videoDevices->GetCaptureVideoDevice(myVideoDeviceName);
@@ -115,6 +132,7 @@ namespace MediaFoundationTesing
 	public:
 		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
+			InitializeWindow();
 			InitMediaSession();
 			InitTopology();
 			InitAudioDevices();
@@ -234,6 +252,8 @@ namespace MediaFoundationTesing
 			Assert::IsTrue(mVideoDisplayControl->GetVideoDisplayControl());
 			Assert::AreEqual(mVideoDisplayControl->GetLastHRESULT(), S_OK);
 
+			Sleep(5000);
+
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 		}
@@ -340,7 +360,7 @@ namespace MediaFoundationTesing
 			mMediaSession->Start();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 
-			::Sleep(1000);
+			::Sleep(3000);
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
@@ -383,6 +403,33 @@ namespace MediaFoundationTesing
 			// Topology
 			std::wstring fileToWrite = myCaptureFilePath + L"AudioOnlyCaptureAndPassthrough.ts";
 			mTopology->CreateAudioOnlyCaptureAndPassthroughTopology(audioSource, fileToWrite, mAudioRenderer);
+			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
+
+			mTopology->ResolveTopology();
+			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
+
+			// Start
+			mTopology->SetTopology(mMediaSession->GetMediaSession());
+			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
+			mMediaSession->Start();
+			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+
+			::Sleep(1000);
+
+			mMediaSession->Stop();
+			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+		}
+		TEST_METHOD(VideoOnlyCaptureAndPassthrough)
+		{
+			mVideoDisplayControl->SetIsParticipating(true);
+
+			// source
+			auto videoSource = std::make_shared<MediaSource>(mVideoCaptureDevice);
+			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
+
+			// Topology
+			std::wstring fileToWrite = myCaptureFilePath + L"VideoOnlyCaptureAndPassthrough.ts";
+			mTopology->CreateVideoOnlyCaptureAndPassthroughTopology(videoSource, fileToWrite, mVideoRenderer);
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 
 			mTopology->ResolveTopology();

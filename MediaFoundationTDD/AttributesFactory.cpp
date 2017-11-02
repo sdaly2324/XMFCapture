@@ -129,24 +129,15 @@ CComPtr<IMFAttributes> AttributesFactory::CreateVideoOutAttrs(CComPtr<IMFAttribu
 }
 CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoOutAttrs(CComPtr<IMFAttributes> vInAttrs)
 {
+	if (!vInAttrs)
+	{
+		return nullptr;
+	}
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
-	if (vInAttrs)
-	{
-		OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_FRAME_SIZE));
-		OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_FRAME_RATE));
-		OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_PIXEL_ASPECT_RATIO));
-		OnERR_return_NULL(CopyAttribute(vInAttrs, retVal, MF_MT_INTERLACE_MODE));
-	}
-	else
-	{
-		// assume 720p5994
-		OnERR_return_NULL(retVal->SetUINT64(MF_MT_FRAME_SIZE, 5497558139600));
-		OnERR_return_NULL(retVal->SetUINT64(MF_MT_FRAME_RATE, 257698037761001));
-		OnERR_return_NULL(retVal->SetUINT64(MF_MT_PIXEL_ASPECT_RATIO, 4294967297));
-		OnERR_return_NULL(retVal->SetUINT32(MF_MT_INTERLACE_MODE, 2));
-	}
-	OnERR_return_NULL(retVal->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+	
+	OnERR_return_NULL(vInAttrs->CopyAllItems(retVal));
+
 	OnERR_return_NULL(retVal->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_VIDEO_PROFILE, 100));
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_VIDEO_LEVEL, 41));
