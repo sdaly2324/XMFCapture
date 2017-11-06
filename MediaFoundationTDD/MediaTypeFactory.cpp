@@ -108,7 +108,7 @@ CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoEncodingMediaType(CComPtr<IMF
 CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs)
 {
 	AttributesFactory attributesFactory;
-	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoOutAttrs(inAttrs);
+	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoEncodeAttrs(inAttrs);
 	if (!outAttrs)
 	{
 		SetLastHR_Fail();

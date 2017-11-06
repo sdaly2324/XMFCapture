@@ -14,6 +14,7 @@ struct IMFMediaSession;
 struct IMFTopology;
 struct IMFActivate;
 struct IMFMediaSource;
+struct IMFMediaEvent;
 class FileSink;
 class TopologyRep;
 class MediaSource;
@@ -21,6 +22,7 @@ class MediaFoundationTDD_API Topology
 {
 public:
 	Topology();
+	Topology(CComPtr<IMFMediaEvent> mediaEvent);
 	~Topology();
 
 	HRESULT GetLastHRESULT();
@@ -47,16 +49,12 @@ public:
 	);
 
 	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
-	void CreateAudioOnlyCaptureAndPassthroughTopology
-	(
-		std::shared_ptr<MediaSource> mediaSource, 
-		const std::wstring& fileToWrite,
-		CComPtr<IMFActivate> audioRendererDevice
-	);
+
 	void ResolveTopology();
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
 	CComPtr<IMFTopology> GetTopology();
+	void DumpTopology();
 
 private:
 #pragma warning(push)

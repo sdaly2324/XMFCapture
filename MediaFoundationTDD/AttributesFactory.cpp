@@ -17,7 +17,7 @@ public:
 	CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
 	CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
 	CComPtr<IMFAttributes>	CreateFileSinkAttrs();
-	CComPtr<IMFAttributes>	CreateVideoOutAttrs(CComPtr<IMFAttributes> vInAttrs);
+	CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> vInAttrs);
 	CComPtr<IMFAttributes>	CreateAudioOutAttrs();
 
 private:
@@ -123,20 +123,27 @@ HRESULT AttributesFactoryRep::CopyAttribute(CComPtr<IMFAttributes> sourceAttribu
 	}
 	return hr;
 }
-CComPtr<IMFAttributes> AttributesFactory::CreateVideoOutAttrs(CComPtr<IMFAttributes> vInAttrs)
+CComPtr<IMFAttributes> AttributesFactory::CreateVideoEncodeAttrs(CComPtr<IMFAttributes> vInAttrs)
 {
-	return m_pRep->CreateVideoOutAttrs(vInAttrs);
+	return m_pRep->CreateVideoEncodeAttrs(vInAttrs);
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoOutAttrs(CComPtr<IMFAttributes> vInAttrs)
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoEncodeAttrs(CComPtr<IMFAttributes> vInAttrs)
 {
-	if (!vInAttrs)
-	{
-		return nullptr;
-	}
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
-	
-	OnERR_return_NULL(vInAttrs->CopyAllItems(retVal));
+	if (!vInAttrs)
+	{
+		// assume 720p5994
+		OnERR_return_NULL(retVal->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_FRAME_SIZE, 5497558139600));
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_FRAME_RATE, 257698037761001));
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_PIXEL_ASPECT_RATIO, 4294967297));
+		OnERR_return_NULL(retVal->SetUINT32(MF_MT_INTERLACE_MODE, 2));
+	}
+	else
+	{
+		OnERR_return_NULL(vInAttrs->CopyAllItems(retVal));
+	}
 
 	OnERR_return_NULL(retVal->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_VIDEO_PROFILE, 100));

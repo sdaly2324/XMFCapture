@@ -19,7 +19,7 @@ public:
 	{
 		if (pComType == NULL)
 		{
-			OutputDebugStringW(L"DumpAttr CALLED WITH NULL COM OBJECT!!");
+			OutputDebugStringW(L"DumpAttr CALLED WITH NULL COM OBJECT!!\n");
 			return;
 		}
 
@@ -31,7 +31,7 @@ public:
 		}
 		else
 		{
-			OutputDebugStringW(L"DumpAttr CALLED WITH non IMFAttributes COM OBJECT!!");
+			OutputDebugStringW(L"DumpAttr CALLED WITH non IMFAttributes COM OBJECT!!\n");
 		}
 	}
 private:

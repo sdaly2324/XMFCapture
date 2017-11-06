@@ -15,13 +15,17 @@ struct IMFTopologyNode;
 struct IMFActivate;
 struct IMFPresentationDescriptor;
 struct IMFStreamDescriptor;
+struct IMFTransform;
+struct IMFMediaType;
 class FileSink;
 class TopologyNodeRep;
 class MediaFoundationTDD_API TopologyNode
 {
 public:
 	TopologyNode();
-	TopologyNode(CComPtr<IMFActivate> renderDevice);
+	TopologyNode(CComPtr<IMFTransform> transform);
+	TopologyNode(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
+	TopologyNode(CComPtr<IMFTopologyNode> node);
 	TopologyNode
 	(
 		CComPtr<IMFMediaSource> mediaSource,
@@ -36,6 +40,8 @@ public:
 
 	CComPtr<IMFTopologyNode>			GetNode();
 	CComPtr<IMFTopologyNode>			GetRendererNode();
+	CComPtr<IMFMediaType>				GetOutputPrefType();
+	CComPtr<IMFMediaType>				GetInputPrefType();
 
 private:
 #pragma warning(push)

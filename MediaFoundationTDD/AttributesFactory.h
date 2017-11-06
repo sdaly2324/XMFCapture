@@ -23,7 +23,7 @@ public:
 	CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
 	CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
 	CComPtr<IMFAttributes>	CreateFileSinkAttrs();
-	CComPtr<IMFAttributes>	CreateVideoOutAttrs(CComPtr<IMFAttributes> videoInputAttributes);
+	CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes);
 	CComPtr<IMFAttributes>	CreateAudioOutAttrs();
 
 private:

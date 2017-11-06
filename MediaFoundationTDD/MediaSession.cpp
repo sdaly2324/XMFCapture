@@ -1,5 +1,6 @@
 #include "MediaSession.h"
 #include "MFUtils.h"
+#include "Topology.h"
 
 #include <mfapi.h>
 #include <atlbase.h>
@@ -28,7 +29,9 @@ public:
 	CComPtr<IMFMediaSession>			GetMediaSession();
 
 private:
-	void								ProcessMediaEvent(CComPtr<IMFMediaEvent>& mediaEvent);
+	void								ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent);
+
+	void DumpTopologyFailed(CComPtr<IMFMediaEvent> mediaEvent);
 
 	CComAutoCriticalSection						mCritSec;
 	CComPtr<IMFMediaSession>					mMediaSession				= NULL;
@@ -143,7 +146,13 @@ ULONG MediaSessionRep::Release()
 	return uCount;
 }
 
-void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& mediaEvent)
+void MediaSessionRep::DumpTopologyFailed(CComPtr<IMFMediaEvent> mediaEvent)
+{
+	auto topology = std::make_unique<Topology>(mediaEvent);
+	topology->DumpTopology();
+}
+
+void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent)
 {
 	HRESULT hrStatus = S_OK;            // Event status
 	HRESULT hr = S_OK;
@@ -156,48 +165,7 @@ void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent>& mediaEvent)
 	{
 		if (eventType == MESessionTopologySet)
 		{
-			PROPVARIANT var;
-			PropVariantInit(&var);
-			hr = mediaEvent->GetValue(&var);
-			CComPtr<IMFTopology> topology = NULL;
-			hr = var.punkVal->QueryInterface(__uuidof(IMFTopology), (void**)&topology);
-
-			//CComPtr<IMFCollection> sourceNodeCollection = NULL;
-			//hr = topology->GetSourceNodeCollection(&sourceNodeCollection);
-			//DWORD sourceElements = 0;
-			//hr = sourceNodeCollection->GetElementCount(&sourceElements);
-			//CComPtr<IMFCollection> outputNodeCollection = NULL;
-			//hr = topology->GetOutputNodeCollection(&outputNodeCollection);
-			//DWORD outputElements = 0;
-			//hr = outputNodeCollection->GetElementCount(&outputElements);
-
-			WORD nodeCount = 0;
-			OnERR_return(topology->GetNodeCount(&nodeCount));
-			for (int i = 0; i < nodeCount; i++)
-			{
-				CComPtr<IMFTopologyNode> node;
-				OnERR_return(topology->GetNode(i, &node));
-				MF_TOPOLOGY_TYPE nodeType = MF_TOPOLOGY_MAX;
-				OnERR_return(node->GetNodeType(&nodeType));
-
-				GUID guid;
-				HRESULT hr = node->GetGUID(MF_TOPONODE_ERROR_MAJORTYPE, &guid);
-				if (SUCCEEDED(hr))
-				{
-					OutputDebugStringW(L"");
-				}
-				hr = node->GetGUID(MF_TOPONODE_ERROR_SUBTYPE, &guid);
-				if (SUCCEEDED(hr))
-				{
-					OutputDebugStringW(L"");
-				}
-				UINT32 value32 = 0;
-				hr = node->GetUINT32(MF_TOPONODE_ERRORCODE, &value32);
-				if (SUCCEEDED(hr))
-				{
-					OutputDebugStringW(L"");
-				}
-			}
+			DumpTopologyFailed(mediaEvent);
 		}
 		SetLastHR_Fail();
 		return;

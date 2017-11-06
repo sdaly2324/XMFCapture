@@ -252,7 +252,7 @@ namespace MediaFoundationTesing
 			Assert::IsTrue(mVideoDisplayControl->GetVideoDisplayControl());
 			Assert::AreEqual(mVideoDisplayControl->GetLastHRESULT(), S_OK);
 
-			Sleep(5000);
+			Sleep(3000);
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
@@ -394,30 +394,7 @@ namespace MediaFoundationTesing
 		}
 		TEST_METHOD(AudioOnlyCaptureAndPassthrough)
 		{
-			mVideoDisplayControl->SetIsParticipating(false);
 
-			// source
-			auto audioSource = std::make_shared<MediaSource>(mAudioCaptureDevice);
-			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
-
-			// Topology
-			std::wstring fileToWrite = myCaptureFilePath + L"AudioOnlyCaptureAndPassthrough.ts";
-			mTopology->CreateAudioOnlyCaptureAndPassthroughTopology(audioSource, fileToWrite, mAudioRenderer);
-			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
-
-			mTopology->ResolveTopology();
-			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
-
-			// Start
-			mTopology->SetTopology(mMediaSession->GetMediaSession());
-			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
-			mMediaSession->Start();
-			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
-
-			::Sleep(1000);
-
-			mMediaSession->Stop();
-			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 		}
 		TEST_METHOD(VideoOnlyCaptureAndPassthrough)
 		{
@@ -441,7 +418,7 @@ namespace MediaFoundationTesing
 			mMediaSession->Start();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 
-			::Sleep(1000);
+			::Sleep(3000);
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);

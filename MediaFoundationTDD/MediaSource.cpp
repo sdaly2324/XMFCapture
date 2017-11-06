@@ -141,12 +141,17 @@ void MediaSourceRep::GetVideoMediaTypeHandler()
 	mVideoMediaTypeHandler = NULL;
 	CComPtr<IMFPresentationDescriptor> presentationDescriptor = NULL;
 	OnERR_return(mMediaSource->CreatePresentationDescriptor(&presentationDescriptor));
-
-	// EEW assuming 1 stream descriptor!
+	DWORD descriptorCount = 0;
+	OnERR_return(presentationDescriptor->GetStreamDescriptorCount(&descriptorCount));
+	if (descriptorCount > 1)
+	{
+		OutputDebugStringW(L"GetStreamDescriptorCount found more than 1 descriptor\n");
+		SetLastHR_Fail();
+		return;
+	}
 	CComPtr<IMFStreamDescriptor> streamDescriptor = NULL;
 	BOOL selected = FALSE;
 	OnERR_return(presentationDescriptor->GetStreamDescriptorByIndex(0, &selected, &streamDescriptor));
-
 	OnERR_return(streamDescriptor->GetMediaTypeHandler(&mVideoMediaTypeHandler))
 }
 
