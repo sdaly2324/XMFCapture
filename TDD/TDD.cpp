@@ -316,7 +316,7 @@ namespace MediaFoundationTesing
 
 			// file sink
 			std::wstring fileToWrite = myCaptureFilePath + L"TSFileSink.ts";
-			auto fileSink = std::make_unique<FileSink>(fileToWrite.c_str(), videoSource);
+			auto fileSink = std::make_unique<FileSink>(fileToWrite.c_str(), videoSource, nullptr);
 			Assert::AreEqual(fileSink->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(fileSink->GetMediaSink());
 		}
@@ -407,6 +407,59 @@ namespace MediaFoundationTesing
 			// Topology
 			std::wstring fileToWrite = myCaptureFilePath + L"VideoOnlyCaptureAndPassthrough.ts";
 			mTopology->CreateVideoOnlyCaptureAndPassthroughTopology(videoSource, fileToWrite, mVideoRenderer);
+			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
+
+			mTopology->ResolveTopology();
+			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
+
+			// Start
+			mTopology->SetTopology(mMediaSession->GetMediaSession());
+			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
+			mMediaSession->Start();
+			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+
+			::Sleep(3000);
+
+			mMediaSession->Stop();
+			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
+		}
+		TEST_METHOD(VideoAndAudioCaptureAndPassthrough)
+		{
+			bool useAudio = true;
+			bool useVideo = true;
+			mVideoDisplayControl->SetIsParticipating(useVideo);
+
+			// source
+			std::shared_ptr<MediaSource> aggregateMediaSource = nullptr;
+			std::shared_ptr<MediaSource> videoMediaSource = nullptr;
+			std::shared_ptr<MediaSource> audioMediaSource = nullptr;
+			if (!useAudio && useVideo)
+			{
+				videoMediaSource = std::make_shared<MediaSource>(mVideoCaptureDevice);
+				Assert::AreEqual(videoMediaSource->GetLastHRESULT(), S_OK);
+			}
+			else if (useAudio && !useVideo)
+			{
+				audioMediaSource = std::make_shared<MediaSource>(mAudioCaptureDevice);
+				Assert::AreEqual(audioMediaSource->GetLastHRESULT(), S_OK);
+			}
+			else if (useAudio && useVideo)
+			{
+				//aggregateMediaSource = std::make_shared<MediaSource>(mVideoCaptureDevice, mAudioCaptureDevice);
+				//Assert::AreEqual(aggregateMediaSource->GetLastHRESULT(), S_OK);
+				videoMediaSource = std::make_shared<MediaSource>(mVideoCaptureDevice);
+				Assert::AreEqual(videoMediaSource->GetLastHRESULT(), S_OK);
+				audioMediaSource = std::make_shared<MediaSource>(mAudioCaptureDevice);
+				Assert::AreEqual(audioMediaSource->GetLastHRESULT(), S_OK);
+			}
+			else
+			{
+				return;
+			}
+
+			// Topology
+			std::wstring fileToWrite = myCaptureFilePath + L"VideoAndAdudioCaptureAndPassthrough.ts";
+			mTopology->CreateVideoAndAudioCaptureAndPassthroughTopology(videoMediaSource, audioMediaSource, aggregateMediaSource, fileToWrite, mVideoRenderer, mAudioRenderer);
 			Assert::AreEqual(mTopology->GetLastHRESULT(), S_OK);
 
 			mTopology->ResolveTopology();

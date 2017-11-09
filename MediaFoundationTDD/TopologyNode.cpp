@@ -10,18 +10,19 @@
 class TopologyNodeRep : public MFUtils
 {
 public:
-	TopologyNodeRep();
-	TopologyNodeRep(CComPtr<IMFTransform> transform);
-	TopologyNodeRep(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
-	TopologyNodeRep(CComPtr<IMFTopologyNode> node);
+	TopologyNodeRep(std::wstring name);
+	TopologyNodeRep(std::wstring name, CComPtr<IMFTransform> transform);
+	TopologyNodeRep(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
+	TopologyNodeRep(std::wstring name, CComPtr<IMFTopologyNode> node);
 	TopologyNodeRep
 	(
+		std::wstring name,
 		CComPtr<IMFMediaSource> mediaSource, 
 		CComPtr<IMFPresentationDescriptor> presentationDescriptor,
 		CComPtr<IMFStreamDescriptor> streamDescriptor,
 		CComPtr<IMFActivate> renderer
 	);
-	TopologyNodeRep(std::shared_ptr<FileSink> mediaSink);
+	TopologyNodeRep(std::wstring name, std::shared_ptr<FileSink> mediaSink);
 	virtual ~TopologyNodeRep();
 
 	HRESULT								GetLastHRESULT();
@@ -32,80 +33,134 @@ public:
 	CComPtr<IMFMediaType>				GetInputPrefType();
 
 private:
+	void DumpFormats();
 	CComPtr<IMFTransform> GetTransform();
 	CComPtr<IMFMediaTypeHandler> GetMediaTypeHandler(CComPtr<IMFTopologyNode> node);
 	CComPtr<IMFMediaType> GetCurrentMediaType(CComPtr<IMFTopologyNode> node);
 	void CreateRendereNode(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
+
+	std::wstring				mName = L"";
 	CComPtr<IMFTopologyNode>	mTopologyNode	= NULL;
 	CComPtr<IMFTopologyNode>	mRendererNode	= NULL;
+
+	bool mDumpFormats = false;
 };
 
-TopologyNode::TopologyNode()
+void TopologyNodeRep::DumpFormats()
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep());
+	if (!mDumpFormats)
+	{
+		return;
+	}
+	CComPtr<IMFMediaType> mediaType = nullptr;
+	mTopologyNode->GetInputPrefType(0, &mediaType);
+	if (mediaType)
+	{
+		DumpAttr(mediaType, mName, L"GetInputPrefType");
+	}
+	mediaType = nullptr;
+	mTopologyNode->GetOutputPrefType(0, &mediaType);
+	if (mediaType)
+	{
+		DumpAttr(mediaType, mName, L"GetOutputPrefType");
+	}
+
+	CComPtr<IMFMediaTypeHandler> mediaTypeHandler = GetMediaTypeHandler(mTopologyNode);
+	if (mediaTypeHandler)
+	{
+		mediaType = nullptr;
+		mediaTypeHandler->GetCurrentMediaType(&mediaType);
+		if (mediaType)
+		{
+			DumpAttr(mediaType, mName, L"GetCurrentMediaType");
+		}
+	}
+	else
+	{
+		CComPtr<IMFTransform> transform = GetTransform();
+		if (transform)
+		{
+			mediaType = nullptr;
+			transform->GetInputCurrentType(0, &mediaType);
+			if (mediaType)
+			{
+				DumpAttr(mediaType, mName, L"GetInputCurrentType");
+			}
+			mediaType = nullptr;
+			transform->GetOutputCurrentType(0, &mediaType);
+			if (mediaType)
+			{
+				DumpAttr(mediaType, mName, L"GetOutputCurrentType");
+			}
+		}
+	}
 }
-TopologyNodeRep::TopologyNodeRep()
+
+TopologyNode::TopologyNode(std::wstring name)
+{
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name));
+}
+TopologyNodeRep::TopologyNodeRep(std::wstring name) :
+	mName(name)
 {
 	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_TEE_NODE, &mTopologyNode));
+	DumpFormats();
 }
 
-TopologyNode::TopologyNode(CComPtr<IMFTopologyNode> node)
+TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFTopologyNode> node)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(node));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, node));
 }
-TopologyNodeRep::TopologyNodeRep(CComPtr<IMFTopologyNode> node)
+TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFTopologyNode> node) :
+	mName(name)
 {
 	mTopologyNode = node;
+	DumpFormats();
 }
-TopologyNode::TopologyNode(CComPtr<IMFTransform> transform)
+TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFTransform> transform)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(transform));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, transform));
 }
-TopologyNodeRep::TopologyNodeRep(CComPtr<IMFTransform> transform/*, CComPtr<IMFMediaType> inMediaType, CComPtr<IMFMediaType> outMediaType*/)
+TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFTransform> transform) :
+	mName(name)
 {
-	//CComPtr<IMFAttributes> attributes = nullptr;
-	//HRESULT hr = transform->GetInputStreamAttributes(0, &attributes);
-	//DumpAttr(attributes, L"", L"");
 	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &mTopologyNode));
 	OnERR_return(mTopologyNode->SetObject(transform));
-
-	//DWORD inputs = 0;
-	//hr = mTopologyNode->GetInputCount(&inputs);
-
-	//DWORD outputs = 0;
-	//hr = mTopologyNode->GetOutputCount(&outputs);
-
-	//hr = mTopologyNode->SetInputPrefType(0, inMediaType);
-	//hr = mTopologyNode->SetOutputPrefType(0, outMediaType);
+	DumpFormats();
 }
 
-TopologyNode::TopologyNode(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice)
+TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(prefMediaType, renderDevice));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, prefMediaType, renderDevice));
 }
-TopologyNodeRep::TopologyNodeRep(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice)
+TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice) :
+	mName(name)
 {
 	CreateRendereNode(prefMediaType, renderDevice);
 	mTopologyNode = mRendererNode;
+	DumpFormats();
 }
 
 TopologyNode::TopologyNode
 (
+	std::wstring name,
 	CComPtr<IMFMediaSource> mediaSource,
 	CComPtr<IMFPresentationDescriptor> presentationDescriptor,
 	CComPtr<IMFStreamDescriptor> streamDescriptor,
 	CComPtr<IMFActivate> renderer
 )
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(mediaSource, presentationDescriptor, streamDescriptor, renderer));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, mediaSource, presentationDescriptor, streamDescriptor, renderer));
 }
 TopologyNodeRep::TopologyNodeRep
 (
+	std::wstring name,
 	CComPtr<IMFMediaSource> mediaSource,
 	CComPtr<IMFPresentationDescriptor> presentationDescriptor,
 	CComPtr<IMFStreamDescriptor> streamDescriptor,
 	CComPtr<IMFActivate> renderDevice
-)
+) :
+	mName(name)
 {
 	CreateRendereNode(NULL, renderDevice);
 	if (LastHR_OK())
@@ -115,17 +170,20 @@ TopologyNodeRep::TopologyNodeRep
 		OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, presentationDescriptor));
 		OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, streamDescriptor));
 	}
+	DumpFormats();
 }
 
-TopologyNode::TopologyNode(std::shared_ptr<FileSink> mediaSink)
+TopologyNode::TopologyNode(std::wstring name, std::shared_ptr<FileSink> mediaSink)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(mediaSink));
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, mediaSink));
 }
-TopologyNodeRep::TopologyNodeRep(std::shared_ptr<FileSink> mediaSink)
+TopologyNodeRep::TopologyNodeRep(std::wstring name, std::shared_ptr<FileSink> mediaSink) :
+	mName(name)
 {
 	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
 	OnERR_return(mTopologyNode->SetObject(mediaSink->GetVideoStreamSink()));
 	OnERR_return(mTopologyNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, TRUE));
+	DumpFormats();
 }
 
 void TopologyNodeRep::CreateRendereNode(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> device)
@@ -134,10 +192,26 @@ void TopologyNodeRep::CreateRendereNode(CComPtr<IMFMediaType> prefMediaType, CCo
 	OnERR_return(mRendererNode->SetObject(device));
 	OnERR_return(mRendererNode->SetUINT32(MF_TOPONODE_STREAMID, 0));
 	OnERR_return(mRendererNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, FALSE));
+
+
+	CComPtr<IMFMediaTypeHandler> mediaTypeHandler = GetMediaTypeHandler(mRendererNode);
+
+	//if (mediaTypeHandler)
+	//{
+	//	DWORD count = 0;
+	//	mediaTypeHandler->GetMediaTypeCount(&count);
+	//	for (DWORD index = 0; index < count; index++)
+	//	{
+	//		CComPtr<IMFMediaType> mediaType = nullptr;
+	//		OnERR_return(mediaTypeHandler->GetMediaTypeByIndex(index, &mediaType));
+	//		DumpAttr(mediaType, L"CreateRendereNode", std::to_wstring(index));
+	//	}
+	//}
+
 	if (prefMediaType)
 	{
 		OnERR_return(mRendererNode->SetInputPrefType(0, prefMediaType));
-		CComPtr<IMFMediaTypeHandler> mediaTypeHandler = GetMediaTypeHandler(mRendererNode);
+		//CComPtr<IMFMediaTypeHandler> mediaTypeHandler = GetMediaTypeHandler(mRendererNode);
 		if (mediaTypeHandler)
 		{
 			OnERR_return(mediaTypeHandler->SetCurrentMediaType(prefMediaType));
@@ -184,8 +258,12 @@ CComPtr<IMFTransform> TopologyNodeRep::GetTransform()
 {
 	CComPtr<IMFTransform> retVal;
 	CComPtr<IUnknown> unknown;
-	OnERR_return_NULL(mTopologyNode->GetObject(&unknown));
-	HRESULT hr = unknown->QueryInterface(IID_IMFTransform, (void**)&retVal);
+	HRESULT hr = mTopologyNode->GetObject(&unknown);
+	if (!SUCCEEDED(hr))
+	{
+		return nullptr;
+	}
+	hr = unknown->QueryInterface(IID_IMFTransform, (void**)&retVal);
 	if (!SUCCEEDED(hr))
 	{
 		CComPtr<IMFActivate> activate;

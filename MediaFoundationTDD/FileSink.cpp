@@ -12,7 +12,7 @@
 class FileSinkRep : public MFUtils
 {
 public:
-	FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoSource);
+	FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> mediaSource, std::shared_ptr<MediaSource> audioMediaSource);
 	~FileSinkRep();
 
 	HRESULT					GetLastHRESULT();
@@ -26,40 +26,46 @@ private:
 	CComPtr<IMFMediaSink>	mMediaSink = NULL;
 	DWORD mVideoStreamIndex = 0;
 	CComPtr<IMFStreamSink>	mVideoStreamSink = NULL;
-	DWORD mAudioStreamIndex = 1;
+	DWORD mAudioStreamIndex = 0;
 	CComPtr<IMFStreamSink>	mAudioStreamSink = NULL;
 };
-FileSink::FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoSource)
+FileSink::FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoMediaSource, std::shared_ptr<MediaSource> audioMediaSource)
 {
-	m_pRep = std::unique_ptr<FileSinkRep>(new FileSinkRep(fullFilePath, videoSource));
+	m_pRep = std::unique_ptr<FileSinkRep>(new FileSinkRep(fullFilePath, videoMediaSource, audioMediaSource));
 }
-FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoSource)
+FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoMediaSource, std::shared_ptr<MediaSource> audioMediaSource)
 {
-	bool addStreamInWriter = false;
 	AttributesFactory attributesFactory;
 	CComPtr<IMFAttributes> attributes = attributesFactory.CreateFileSinkAttrs();
 	if (attributes)
 	{
 		CComPtr<IMFByteStream> outputByteStream = NULL;
 		OnERR_return(MFCreateFile(MF_ACCESSMODE_WRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NONE, fullFilePath, &outputByteStream));
-		OnERR_return(MFCreateMuxSink(MFStreamFormat_MPEG2Transport, NULL, outputByteStream, &mMediaSink));
+		OnERR_return(MFCreateMuxSink(MFStreamFormat_MPEG2Transport, attributes, outputByteStream, &mMediaSink));
 
-		//OnERR_return(MFCreateSinkWriterFromURL(fullFilePath, NULL, attributes, &mSinkWriter));
-
-		//// GetServiceForStream only works for .ts, .aac and .mp4 both fail with "The object does not support the specified service" c00d36ba MF_E_UNSUPPORTED_SERVICE
-		//OnERR_return(mSinkWriter->GetServiceForStream(MF_SINK_WRITER_MEDIASINK, GUID_NULL, IID_IMFMediaSink, (LPVOID*)&mMediaSink));
 		MediaTypeFactory mediaTypeFactory;
-		//if (addStreamInWriter)
-		//{
-		//	OnERR_return(mSinkWriter->AddStream(mediaTypeFactory.CreateAudioEncodingMediaType(), &mAudioStreamIndex));
-		//	OnERR_return(mMediaSink->GetStreamSinkByIndex(mAudioStreamIndex, &mAudioStreamSink));
-		//}
-		//else
-		//{
-			CComPtr<IMFAttributes> sourceVideoMediaAttrs = videoSource->GetVideoMediaType();
-			OnERR_return(mMediaSink->AddStreamSink(mVideoStreamIndex, mediaTypeFactory.CreateVideoEncodingMediaType(sourceVideoMediaAttrs), &mVideoStreamSink));
-			//OnERR_return(mMediaSink->AddStreamSink(mAudioStreamIndex, mediaTypeFactory.CreateAudioEncodingMediaType(), &mAudioStreamSink));
-		//}
+		DWORD newStreamIndex = 0;
+		if (videoMediaSource)
+		{
+			CComPtr<IMFAttributes> sourceVideoMediaAttrs = videoMediaSource->GetVideoMediaType();
+			if (sourceVideoMediaAttrs)
+			{
+				OnERR_return(mMediaSink->AddStreamSink(newStreamIndex, mediaTypeFactory.CreateVideoEncodingMediaType(sourceVideoMediaAttrs), &mVideoStreamSink));
+				mVideoStreamIndex = newStreamIndex;
+				newStreamIndex++;
+			}
+		}
+
+		if (audioMediaSource)
+		{
+			CComPtr<IMFAttributes> sourceAudioMediaAttrs = audioMediaSource->GetAudioMediaType();
+			if (sourceAudioMediaAttrs)
+			{
+				OnERR_return(mMediaSink->AddStreamSink(newStreamIndex, mediaTypeFactory.CreateAudioEncodingMediaType(), &mAudioStreamSink));
+				mAudioStreamIndex = newStreamIndex;
+				newStreamIndex++;
+			}
+		}
 	}
 }
 FileSink::~FileSink()

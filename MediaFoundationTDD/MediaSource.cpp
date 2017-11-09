@@ -18,18 +18,22 @@ public:
 	CComPtr<IMFMediaSource>				GetMediaSource();
 	CComPtr<IMFMediaType>				GetVideoMediaType();
 	CComPtr<IMFMediaType>				GetAudioMediaType();
-	void								SetVideoMediaType(CComPtr<IMFMediaType> mediaType);
-	void								FixVideoMediaType();
+	void								SetCurrentMediaTypes();
 
 private:
-	void GetVideoMediaTypeHandler();
-	CComPtr<IMFMediaSource>		CreateMediaSource(CComPtr<IMFActivate> singleDevice);
-	MediaSourceRep();
-	CComPtr<IMFMediaSource>		mMediaSource = NULL;
-	CComPtr<IMFActivate>		mVideoDevice = NULL;
-	CComPtr<IMFActivate>		mAudioDevice = NULL;
-	std::unique_ptr<SourceReader>	mSourceReader = NULL;
-	CComPtr<IMFMediaTypeHandler> mVideoMediaTypeHandler = NULL;
+	void							SetCurrentVideoMediaType();
+	void							SetCurrentAudioMediaType();
+	CComPtr<IMFMediaTypeHandler>	GetMediaTypeHandler(GUID mediaTypeGUIDWeWant);
+	void							SetVideoMediaTypeHandler();
+	void							SetAudioMediaTypeHandler();
+	CComPtr<IMFMediaSource>			CreateMediaSource(CComPtr<IMFActivate> singleDevice);
+
+	CComPtr<IMFMediaSource>			mMediaSource = nullptr;
+	CComPtr<IMFActivate>			mVideoDevice = nullptr;
+	CComPtr<IMFActivate>			mAudioDevice = nullptr;
+	std::unique_ptr<SourceReader>	mSourceReader = nullptr;
+	CComPtr<IMFMediaTypeHandler>	mVideoMediaTypeHandler = nullptr;
+	CComPtr<IMFMediaTypeHandler>	mAudioMediaTypeHandler = nullptr;
 };
 
 MediaSource::MediaSource(CComPtr<IMFActivate> singleDevice)
@@ -39,6 +43,8 @@ MediaSource::MediaSource(CComPtr<IMFActivate> singleDevice)
 MediaSourceRep::MediaSourceRep(CComPtr<IMFActivate> singleDevice)
 {
 	mMediaSource = CreateMediaSource(singleDevice);
+	SetAudioMediaTypeHandler();
+	SetVideoMediaTypeHandler();
 }
 MediaSource::MediaSource(CComPtr<IMFActivate> videoDevice, CComPtr<IMFActivate> audioDevice)
 {
@@ -46,21 +52,23 @@ MediaSource::MediaSource(CComPtr<IMFActivate> videoDevice, CComPtr<IMFActivate> 
 }
 MediaSourceRep::MediaSourceRep(CComPtr<IMFActivate> videoDevice, CComPtr<IMFActivate> audioDevice)
 {
-	CComPtr<IMFMediaSource>	 videoSource = NULL;
+	CComPtr<IMFMediaSource>	 videoSource = nullptr;
 	videoSource = CreateMediaSource(videoDevice);
-	CComPtr<IMFMediaSource>	 audioSource = NULL;
+	CComPtr<IMFMediaSource>	 audioSource = nullptr;
 	if (LastHR_OK())
 	{
 		audioSource = CreateMediaSource(audioDevice);
 	}
 	if (LastHR_OK())
 	{
-		CComPtr<IMFCollection> collection = NULL;
+		CComPtr<IMFCollection> collection = nullptr;
 		OnERR_return(MFCreateCollection(&collection));
 		OnERR_return(collection->AddElement(videoSource));
 		OnERR_return(collection->AddElement(audioSource));
 		OnERR_return(MFCreateAggregateSource(collection, &mMediaSource));
 	}
+	SetAudioMediaTypeHandler();
+	SetVideoMediaTypeHandler();
 }
 MediaSource::~MediaSource()
 {
@@ -80,7 +88,7 @@ HRESULT MediaSourceRep::GetLastHRESULT()
 
 CComPtr<IMFMediaSource>	MediaSourceRep::CreateMediaSource(CComPtr<IMFActivate> singleDevice)
 {
-	CComPtr<IMFMediaSource> retVal = NULL;
+	CComPtr<IMFMediaSource> retVal = nullptr;
 	OnERR_return_NULL(singleDevice->ActivateObject(__uuidof(IMFMediaSource), (void**)&retVal));
 	return retVal;
 }
@@ -94,19 +102,6 @@ CComPtr<IMFMediaSource> MediaSourceRep::GetMediaSource()
 	return mMediaSource;
 }
 
-void MediaSource::SetVideoMediaType(CComPtr<IMFMediaType> mediaType)
-{
-	m_pRep->SetVideoMediaType(mediaType);
-}
-void MediaSourceRep::SetVideoMediaType(CComPtr<IMFMediaType> mediaType)
-{
-	if (!mVideoMediaTypeHandler)
-	{
-		GetVideoMediaTypeHandler();
-	}
-	OnERR_return(mVideoMediaTypeHandler->SetCurrentMediaType(mediaType));
-}
-
 CComPtr<IMFMediaType> MediaSource::GetVideoMediaType()
 {
 	return m_pRep->GetVideoMediaType();
@@ -115,9 +110,9 @@ CComPtr<IMFMediaType> MediaSourceRep::GetVideoMediaType()
 {
 	if (!mVideoMediaTypeHandler)
 	{
-		GetVideoMediaTypeHandler();
+		return nullptr;
 	}
-	CComPtr<IMFMediaType> currentMediaType = NULL;
+	CComPtr<IMFMediaType> currentMediaType = nullptr;
 	OnERR_return_NULL(mVideoMediaTypeHandler->GetCurrentMediaType(&currentMediaType));
 	return currentMediaType;
 }
@@ -128,45 +123,79 @@ CComPtr<IMFMediaType> MediaSource::GetAudioMediaType()
 }
 CComPtr<IMFMediaType> MediaSourceRep::GetAudioMediaType()
 {
-	std::unique_ptr<SourceReader> sourceReader = std::make_unique<SourceReader>(mMediaSource);
-	if (sourceReader)
+	if (!mAudioMediaTypeHandler)
 	{
-		return sourceReader->GetAudioMediaType();
+		return nullptr;
 	}
-	return NULL;
+	CComPtr<IMFMediaType> currentMediaType = nullptr;
+	OnERR_return_NULL(mAudioMediaTypeHandler->GetCurrentMediaType(&currentMediaType));
+	return currentMediaType;
 }
 
-void MediaSourceRep::GetVideoMediaTypeHandler()
+CComPtr<IMFMediaTypeHandler> MediaSourceRep::GetMediaTypeHandler(GUID mediaTypeGUIDWeWant)
 {
-	mVideoMediaTypeHandler = NULL;
-	CComPtr<IMFPresentationDescriptor> presentationDescriptor = NULL;
-	OnERR_return(mMediaSource->CreatePresentationDescriptor(&presentationDescriptor));
-	DWORD descriptorCount = 0;
-	OnERR_return(presentationDescriptor->GetStreamDescriptorCount(&descriptorCount));
-	if (descriptorCount > 1)
+	CComPtr<IMFMediaTypeHandler> retVal = nullptr;
+
+	CComPtr<IMFPresentationDescriptor> presentationDescriptor = nullptr;
+	OnERR_return_NULL(mMediaSource->CreatePresentationDescriptor(&presentationDescriptor));
+
+	DWORD streamDescriptorCount = 0;
+	OnERR_return_NULL(presentationDescriptor->GetStreamDescriptorCount(&streamDescriptorCount));
+	for (DWORD streamDescriptorIndex = 0; streamDescriptorIndex < streamDescriptorCount; streamDescriptorIndex++)
 	{
-		OutputDebugStringW(L"GetStreamDescriptorCount found more than 1 descriptor\n");
-		SetLastHR_Fail();
-		return;
+		BOOL selected = FALSE;
+		CComPtr<IMFStreamDescriptor> currentStreamDescriptor = nullptr;
+		OnERR_return_NULL(presentationDescriptor->GetStreamDescriptorByIndex(streamDescriptorIndex, &selected, &currentStreamDescriptor));
+		retVal = nullptr;
+		OnERR_return_NULL(currentStreamDescriptor->GetMediaTypeHandler(&retVal));
+		GUID currentMediaTypeGUID = GUID_NULL;
+		OnERR_return_NULL(retVal->GetMajorType(&currentMediaTypeGUID));
+		if (currentMediaTypeGUID == mediaTypeGUIDWeWant)
+		{
+			return retVal;
+		}
 	}
-	CComPtr<IMFStreamDescriptor> streamDescriptor = NULL;
-	BOOL selected = FALSE;
-	OnERR_return(presentationDescriptor->GetStreamDescriptorByIndex(0, &selected, &streamDescriptor));
-	OnERR_return(streamDescriptor->GetMediaTypeHandler(&mVideoMediaTypeHandler))
+	return nullptr;
+}
+void MediaSourceRep::SetAudioMediaTypeHandler()
+{
+	mAudioMediaTypeHandler = GetMediaTypeHandler(MFMediaType_Audio);
+}
+void MediaSourceRep::SetVideoMediaTypeHandler()
+{
+	mVideoMediaTypeHandler = GetMediaTypeHandler(MFMediaType_Video);
 }
 
-void MediaSource::FixVideoMediaType()
+void MediaSource::SetCurrentMediaTypes()
 {
-	m_pRep->FixVideoMediaType();
+	m_pRep->SetCurrentMediaTypes();
 }
-void MediaSourceRep::FixVideoMediaType()
+void MediaSourceRep::SetCurrentMediaTypes()
+{
+	SetCurrentVideoMediaType();
+	SetCurrentAudioMediaType();
+}
+
+void MediaSourceRep::SetCurrentVideoMediaType()
 {
 	if (!mVideoMediaTypeHandler)
 	{
-		GetVideoMediaTypeHandler();
+		return;
 	}
-	CComPtr<IMFMediaType> mediaType = NULL;
+	CComPtr<IMFMediaType> mediaType = nullptr;
 	DWORD formatWeWant = 64;	// MXL is 64 for 720p 5994 YUY2
 	OnERR_return(mVideoMediaTypeHandler->GetMediaTypeByIndex(formatWeWant, &mediaType));
 	OnERR_return(mVideoMediaTypeHandler->SetCurrentMediaType(mediaType));
+}
+void MediaSourceRep::SetCurrentAudioMediaType()
+{
+	if (!mAudioMediaTypeHandler)
+	{
+		return;
+	}
+	CComPtr<IMFMediaType> mediaType = nullptr;
+	DWORD formatWeWant = 0;		// 2 channels 48k 16 bit PCM
+	DWORD count = 0;
+	OnERR_return(mAudioMediaTypeHandler->GetMediaTypeByIndex(formatWeWant, &mediaType));
+	OnERR_return(mAudioMediaTypeHandler->SetCurrentMediaType(mediaType));
 }

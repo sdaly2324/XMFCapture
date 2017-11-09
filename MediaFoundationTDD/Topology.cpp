@@ -44,6 +44,15 @@ public:
 		const std::wstring& fileToWrite,
 		CComPtr<IMFActivate> videoRendererDevice
 	);
+	void CreateVideoAndAudioCaptureAndPassthroughTopology
+	(
+		std::shared_ptr<MediaSource> videoMediaSource,
+		std::shared_ptr<MediaSource> audioMediaSource,
+		std::shared_ptr<MediaSource> aggregateMediaSource,
+		const std::wstring& fileToWrite,
+		CComPtr<IMFActivate> videoRendererDevice,
+		CComPtr<IMFActivate> audioRendererDevice
+	);
 
 	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
 	void CreateAudioOnlyCaptureAndPassthroughTopology
@@ -56,54 +65,60 @@ public:
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
 	CComPtr<IMFTopology> GetTopology();
-	void DumpTopology();
+	void DumpTopology(CComPtr<IMFTopology> topology);
 
 private:
+	void DumpStreamDescriptor(CComPtr<IMFStreamDescriptor> streamDescriptor, std::wstring name);
+	void DumpPresentationDescriptor(CComPtr<IMFTopologyNode> node, CComPtr<IMFPresentationDescriptor> presentationDescriptor, std::wstring name);
+	std::shared_ptr<TopologyNode>		CreateAudioEncoderTransformNode(CComPtr<IMFMediaType> inputType);
+	std::shared_ptr<TopologyNode>		CreateVideoEncoderTransformNode(CComPtr<IMFMediaType> inputType, CComPtr<IMFMediaType> outputType);
+	CComPtr<IMFTransform>		GetEncoder(GUID guidMajorType, GUID guidSubtype, GUID mft_category, std::wstring contains1, std::wstring contains2);
 	CComPtr<IMFTransform>		GetVideoEncoder();
-	void						FixFormat(std::shared_ptr<MediaSource> mediaSource, CComPtr<IMFActivate> videoRendererDevice);
+	CComPtr<IMFTransform>		GetAudioEncoder();
 	CComPtr<IMFTopologyNode>	GetFirstNodeTypeFromTopology(MF_TOPOLOGY_TYPE nodeType);
 	CComPtr<IMFTopologyNode>	GetSourceNodeFromTopology();
 	CComPtr<IMFTopologyNode>	GetTransformNodeFromTopology();
 	CComPtr<IMFTopologyNode>	GetOutputNodeFromTopology();
 
-	GUID											GetTopSourceNodeMediaType(CComPtr<IMFTopologyNode> topSourceNode);
 	void											UpdateSourceNodeMediaTypes(CComPtr<IMFTopologyNode> node);
 	bool											IsNodeTypeSource(CComPtr<IMFTopologyNode> node);
 	CComPtr<IMFTopology>							ResolveMultiSourceTopology(CComPtr<IMFTopology> topology);
 	void											BindOutputNode(CComPtr<IMFTopologyNode> node);
 	void											BindOutputNodes(CComPtr<IMFTopology> topology);
 	void											InspectNodeConections(CComPtr<IMFTopology> topology);
-	std::shared_ptr<TopologyNode>					CreateTeeNode();
+	std::shared_ptr<TopologyNode>					CreateTeeNode(std::wstring name);
 	std::shared_ptr<TopologyNode>					CreateColorConverterNode(CComPtr<IMFMediaType> inputType, CComPtr<IMFMediaType> outputType);
+	std::shared_ptr<TopologyNode>					CreateAudioConverterNodeFloatToPCM(CComPtr<IMFMediaType> inputType);
 	std::shared_ptr<TopologyNode>					CreateSinkNode(std::shared_ptr<FileSink> mediaSink);
-	std::shared_ptr<TopologyNode>					CreateRendererNode(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
+	std::shared_ptr<TopologyNode>					CreateRendererNode(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
 	std::vector< std::shared_ptr< TopologyNode> >	CreateSourceNodes
-													(
-														CComPtr<IMFMediaSource> mediaSource, 
-														CComPtr<IMFActivate> videoRendererDevice,
-														CComPtr<IMFActivate> audioRendererDevice
-													);
+	(
+		CComPtr<IMFMediaSource> mediaSource,
+		CComPtr<IMFActivate> videoRendererDevice,
+		CComPtr<IMFActivate> audioRendererDevice
+	);
 	std::shared_ptr<TopologyNode>					CreateAudioSourceNode
-													(
-														CComPtr<IMFMediaSource> mediaSource, 
-														std::shared_ptr<PresentationDescriptor> presentationDescriptor,
-														CComPtr<IMFActivate> renderer
-													);
+	(
+		CComPtr<IMFMediaSource> mediaSource,
+		std::shared_ptr<PresentationDescriptor> presentationDescriptor,
+		CComPtr<IMFActivate> renderer
+	);
 	std::shared_ptr<TopologyNode>					CreateVideoSourceNode
-													(
-														CComPtr<IMFMediaSource> mediaSource, 
-														std::shared_ptr<PresentationDescriptor> presentationDescriptor,
-														CComPtr<IMFActivate> renderer
-													);
+	(
+		CComPtr<IMFMediaSource> mediaSource,
+		std::shared_ptr<PresentationDescriptor> presentationDescriptor,
+		CComPtr<IMFActivate> renderer
+	);
 	std::shared_ptr<TopologyNode>					CreateSourceNode
-													(
-														CComPtr<IMFMediaSource> mediaSource, 
-														CComPtr<IMFPresentationDescriptor> presentationDescriptor, 
-														CComPtr<IMFStreamDescriptor> streamDescriptor,
-														CComPtr<IMFActivate> renderer
-													);
+	(
+		std::wstring name,
+		CComPtr<IMFMediaSource> mediaSource,
+		CComPtr<IMFPresentationDescriptor> presentationDescriptor,
+		CComPtr<IMFStreamDescriptor> streamDescriptor,
+		CComPtr<IMFActivate> renderer
+	);
 	bool											NodeExists(CComPtr<IMFTopologyNode> node);
-	HRESULT											AddAndConnect2Nodes(CComPtr<IMFTopologyNode> inputNode, DWORD outputIndexOfTheInputNode, CComPtr<IMFTopologyNode> outputNode);
+	HRESULT											AddAndConnect2Nodes(CComPtr<IMFTopologyNode> inputNode, DWORD outputIndexOfTheInputNode, CComPtr<IMFTopologyNode> outputNode, DWORD inputIndexOfTheOutputNode);
 	bool											IsInputConnected(CComPtr<IMFTopologyNode> node);
 	bool											IsOutputConnected(CComPtr<IMFTopologyNode> node);
 	void											CleanOutErrors(CComPtr<IMFTopologyNode> node);
@@ -160,13 +175,14 @@ CComPtr<IMFTopology> TopologyRep::GetTopology()
 
 std::shared_ptr<TopologyNode> TopologyRep::CreateSourceNode
 (
-	CComPtr<IMFMediaSource> mediaSource, 
-	CComPtr<IMFPresentationDescriptor> presentationDescriptor, 
+	std::wstring name,
+	CComPtr<IMFMediaSource> mediaSource,
+	CComPtr<IMFPresentationDescriptor> presentationDescriptor,
 	CComPtr<IMFStreamDescriptor> streamDescriptor,
 	CComPtr<IMFActivate> renderer
 )
 {
-	std::shared_ptr<TopologyNode> mediaSourceNode(new TopologyNode(mediaSource, presentationDescriptor, streamDescriptor, renderer));
+	std::shared_ptr<TopologyNode> mediaSourceNode(new TopologyNode(name, mediaSource, presentationDescriptor, streamDescriptor, renderer));
 	if (mediaSourceNode->GetLastHRESULT() != S_OK)
 	{
 		return NULL;
@@ -175,7 +191,7 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateSourceNode
 }
 std::shared_ptr<TopologyNode> TopologyRep::CreateAudioSourceNode
 (
-	CComPtr<IMFMediaSource> mediaSource, 
+	CComPtr<IMFMediaSource> mediaSource,
 	std::shared_ptr<PresentationDescriptor> presentationDescriptor,
 	CComPtr<IMFActivate> renderer
 )
@@ -183,13 +199,13 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateAudioSourceNode
 	CComPtr<IMFStreamDescriptor> audioStreamDescriptor = presentationDescriptor->GetFirstAudioStreamDescriptor();
 	if (audioStreamDescriptor)
 	{
-		return CreateSourceNode(mediaSource, presentationDescriptor->GetPresentationDescriptor(), audioStreamDescriptor, renderer);
+		return CreateSourceNode(L"Audio Source", mediaSource, presentationDescriptor->GetPresentationDescriptor(), audioStreamDescriptor, renderer);
 	}
 	return NULL;
 }
 std::shared_ptr<TopologyNode> TopologyRep::CreateVideoSourceNode
 (
-	CComPtr<IMFMediaSource> mediaSource, 
+	CComPtr<IMFMediaSource> mediaSource,
 	std::shared_ptr<PresentationDescriptor> presentationDescriptor,
 	CComPtr<IMFActivate> renderer
 )
@@ -197,14 +213,14 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateVideoSourceNode
 	CComPtr<IMFStreamDescriptor> videoStreamDescriptor = presentationDescriptor->GetFirstVideoStreamDescriptor();
 	if (videoStreamDescriptor)
 	{
-		return CreateSourceNode(mediaSource, presentationDescriptor->GetPresentationDescriptor(), videoStreamDescriptor, renderer);
+		return CreateSourceNode(L"Video Source", mediaSource, presentationDescriptor->GetPresentationDescriptor(), videoStreamDescriptor, renderer);
 	}
 	return NULL;
 }
 
-std::shared_ptr<TopologyNode> TopologyRep::CreateTeeNode()
+std::shared_ptr<TopologyNode> TopologyRep::CreateTeeNode(std::wstring name)
 {
-	std::shared_ptr<TopologyNode> teeNode(new TopologyNode());
+	std::shared_ptr<TopologyNode> teeNode(new TopologyNode(name));
 	if (teeNode->GetLastHRESULT() != S_OK)
 	{
 		return NULL;
@@ -212,9 +228,9 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateTeeNode()
 	return teeNode;
 }
 
-std::shared_ptr<TopologyNode> TopologyRep::CreateRendererNode(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice)
+std::shared_ptr<TopologyNode> TopologyRep::CreateRendererNode(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice)
 {
-	std::shared_ptr<TopologyNode> rendererNode(new TopologyNode(prefMediaType, renderDevice));
+	std::shared_ptr<TopologyNode> rendererNode(new TopologyNode(name, prefMediaType, renderDevice));
 	if (rendererNode->GetLastHRESULT() != S_OK)
 	{
 		return NULL;
@@ -224,7 +240,7 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateRendererNode(CComPtr<IMFMediaTy
 
 std::shared_ptr<TopologyNode> TopologyRep::CreateSinkNode(std::shared_ptr<FileSink> mediaSink)
 {
-	std::shared_ptr<TopologyNode> sinkNode(new TopologyNode(mediaSink));
+	std::shared_ptr<TopologyNode> sinkNode(new TopologyNode(L"File Sink", mediaSink));
 	if (sinkNode->GetLastHRESULT() != S_OK)
 	{
 		return NULL;
@@ -234,7 +250,7 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateSinkNode(std::shared_ptr<FileSi
 
 std::vector< std::shared_ptr< TopologyNode> > TopologyRep::CreateSourceNodes
 (
-	CComPtr<IMFMediaSource> mediaSource, 
+	CComPtr<IMFMediaSource> mediaSource,
 	CComPtr<IMFActivate> videoRendererDevice,
 	CComPtr<IMFActivate> audioRendererDevice
 )
@@ -300,13 +316,13 @@ void TopologyRep::CreateCaptureAndPassthroughTopology
 			SetLastHR_Fail();
 			return;
 		}
-		OnERR_return(AddAndConnect2Nodes(sourceNode->GetNode(), 0, sinkNode));
+		OnERR_return(AddAndConnect2Nodes(sourceNode->GetNode(), 0, sinkNode, 0));
 	}
 }
 
 void Topology::CreatePassthroughTopology
 (
-	CComPtr<IMFMediaSource> mediaSource, 
+	CComPtr<IMFMediaSource> mediaSource,
 	CComPtr<IMFActivate> videoRendererDevice,
 	CComPtr<IMFActivate> audioRendererDevice
 )
@@ -315,7 +331,7 @@ void Topology::CreatePassthroughTopology
 }
 void TopologyRep::CreatePassthroughTopology
 (
-	CComPtr<IMFMediaSource> mediaSource, 
+	CComPtr<IMFMediaSource> mediaSource,
 	CComPtr<IMFActivate> videoRendererDevice,
 	CComPtr<IMFActivate> audioRendererDevice
 )
@@ -333,7 +349,7 @@ void TopologyRep::CreatePassthroughTopology
 			SetLastHR_Fail();
 			return;
 		}
-		OnERR_return(AddAndConnect2Nodes(sourceNode->GetNode(), 0, rendererNode));
+		OnERR_return(AddAndConnect2Nodes(sourceNode->GetNode(), 0, rendererNode, 0));
 	}
 }
 
@@ -349,7 +365,7 @@ bool TopologyRep::NodeExists(CComPtr<IMFTopologyNode> node)
 	}
 	return false;
 }
-HRESULT TopologyRep::AddAndConnect2Nodes(CComPtr<IMFTopologyNode> inputNode, DWORD outputIndexOfTheInputNode, CComPtr<IMFTopologyNode> outputNode)
+HRESULT TopologyRep::AddAndConnect2Nodes(CComPtr<IMFTopologyNode> inputNode, DWORD outputIndexOfTheInputNode, CComPtr<IMFTopologyNode> outputNode, DWORD inputIndexOfTheOutputNode)
 {
 	if (!NodeExists(inputNode))
 	{
@@ -374,39 +390,21 @@ bool TopologyRep::IsNodeTypeSource(CComPtr<IMFTopologyNode> node)
 	return false;
 }
 
-GUID TopologyRep::GetTopSourceNodeMediaType(CComPtr<IMFTopologyNode> topSourceNode)
-{
-	CComPtr<IMFMediaSource> mediaSource = NULL;
-	if (IsHRError(topSourceNode->GetUnknown(MF_TOPONODE_SOURCE, IID_IMFMediaSource, (void**)&mediaSource)))
-	{
-		return MFMediaType_Default;
-	}
-	std::unique_ptr<PresentationDescriptor> presentationDescriptor(new PresentationDescriptor(mediaSource));
-	if (presentationDescriptor->GetFirstAudioStreamDescriptor() && LastHR_OK())
-	{
-		return MFMediaType_Audio;
-	}
-	if (presentationDescriptor->GetFirstVideoStreamDescriptor() && LastHR_OK())
-	{
-		return MFMediaType_Video;
-	}
-	return MFMediaType_Default;
-}
-
 void TopologyRep::UpdateSourceNodeMediaTypes(CComPtr<IMFTopologyNode> node)
 {
 	if (IsNodeTypeSource(node))
 	{
-		GUID topSourceNodeMediaType = GetTopSourceNodeMediaType(node);
-		if (!LastHR_OK())
+		CComPtr<IMFMediaSource> mediaSource = NULL;
+		if (IsHRError(node->GetUnknown(MF_TOPONODE_SOURCE, IID_IMFMediaSource, (void**)&mediaSource)))
 		{
 			return;
 		}
-		if (topSourceNodeMediaType == MFMediaType_Audio)
+		std::unique_ptr<PresentationDescriptor> presentationDescriptor(new PresentationDescriptor(mediaSource));
+		if (presentationDescriptor->GetFirstAudioStreamDescriptor() && LastHR_OK())
 		{
 			mHaveAudioSourceNode = true;
 		}
-		else if (topSourceNodeMediaType == MFMediaType_Video)
+		if (presentationDescriptor->GetFirstVideoStreamDescriptor() && LastHR_OK())
 		{
 			mHaveVideoSourceNode = true;
 		}
@@ -491,11 +489,62 @@ void TopologyRep::InspectNodeConections(CComPtr<IMFTopology> topology)
 	}
 }
 
+void TopologyRep::DumpStreamDescriptor(CComPtr<IMFStreamDescriptor> streamDescriptor, std::wstring name)
+{
+	CComPtr<IMFMediaTypeHandler> mediaTypeHandler = nullptr;
+	OnERR_return(streamDescriptor->GetMediaTypeHandler(&mediaTypeHandler));
+	CComPtr<IMFMediaType> mediaType = nullptr;
+	OnERR_return(mediaTypeHandler->GetCurrentMediaType(&mediaType));
+	DumpAttr(mediaType, L"", name);
+	OutputDebugStringW(L"\n");
+}
+void TopologyRep::DumpPresentationDescriptor(CComPtr<IMFTopologyNode> node, CComPtr<IMFPresentationDescriptor> presentationDescriptor, std::wstring name)
+{
+	CComPtr<IMFStreamDescriptor> streamDescriptorFromNode = nullptr;
+	OnERR_return(node->GetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, IID_IMFStreamDescriptor, (void**)&streamDescriptorFromNode));
+	DumpStreamDescriptor(streamDescriptorFromNode, name + L" MF_TOPONODE_STREAM_DESCRIPTOR ");
+
+	DWORD streamDescriptorCount = 0;
+	OnERR_return(presentationDescriptor->GetStreamDescriptorCount(&streamDescriptorCount));
+	for (DWORD streamDescriptorIndex = 0; streamDescriptorIndex < streamDescriptorCount; streamDescriptorIndex++)
+	{
+		CComPtr<IMFStreamDescriptor> streamDescriptorFromPresIndex = nullptr;
+		BOOL selected = FALSE;
+		OnERR_return(presentationDescriptor->GetStreamDescriptorByIndex(streamDescriptorIndex, &selected, &streamDescriptorFromPresIndex));
+		DumpStreamDescriptor(streamDescriptorFromPresIndex, name + std::to_wstring(streamDescriptorIndex) + L"<-strDesIndex streamDescriptorFromPresIndex ");
+	}
+}
 CComPtr<IMFTopology> TopologyRep::ResolveMultiSourceTopology(CComPtr<IMFTopology> topology)
 {
 	CComPtr<IMFSequencerSource> sequencerSource = NULL;
 	OnERR_return_NULL(MFCreateSequencerSource(NULL, &sequencerSource));
 	MFSequencerElementId newMFSequencerElementId = 0;
+	//DumpTopology(topology);
+
+	CComPtr<IMFCollection> collection = nullptr;
+	topology->GetSourceNodeCollection(&collection);
+	DWORD outputNodes = 0;
+	OnERR_return_NULL(collection->GetElementCount(&outputNodes));
+	for (WORD nodeNumber = 0; nodeNumber < outputNodes; nodeNumber++)
+	{
+		CComPtr<IUnknown> unknown = NULL;
+		OnERR_return_NULL(collection->GetElement(nodeNumber, &unknown));
+		CComPtr<IMFTopologyNode> node = NULL;
+		OnERR_return_NULL(unknown->QueryInterface(IID_IMFTopologyNode, (void**)&node));
+
+		CComPtr<IMFMediaSource> mediaSource = nullptr;
+		OnERR_return_NULL(node->GetUnknown(MF_TOPONODE_SOURCE, IID_IMFMediaSource, (void**)&mediaSource));
+		CComPtr<IMFPresentationDescriptor> presentationDescriptorFromSource = nullptr;
+		OnERR_return_NULL(mediaSource->CreatePresentationDescriptor(&presentationDescriptorFromSource));
+		CComPtr<IMFPresentationDescriptor> presentationDescriptorFromNode = nullptr;
+		OnERR_return_NULL(node->GetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, IID_IMFPresentationDescriptor, (void**)&presentationDescriptorFromNode));
+
+		DumpPresentationDescriptor(node, presentationDescriptorFromNode, std::to_wstring(nodeNumber) + L"<-SourceNodeNumber MF_TOPONODE_PRESENTATION_DESCRIPTOR ");
+		DumpPresentationDescriptor(node, presentationDescriptorFromSource, std::to_wstring(nodeNumber) + L"<-SourceNodeNumber presentationDescriptorFromSource ");
+	}
+		
+	TOPOID topoID = 0;
+	OnERR_return_NULL(topology->GetTopologyID(&topoID));
 	OnERR_return_NULL(sequencerSource->AppendTopology(topology, SequencerTopologyFlags_Last, &newMFSequencerElementId));
 	CComPtr<IMFMediaSource> mediaSource = NULL;
 	OnERR_return_NULL(sequencerSource->QueryInterface(IID_IMFMediaSource, (void**)&mediaSource));
@@ -581,9 +630,9 @@ void Topology::SetTopology(CComPtr<IMFMediaSession> mediaSession)
 }
 void TopologyRep::SetTopology(CComPtr<IMFMediaSession> mediaSession)
 {
-	OnERR_return(mTopology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE));
-	OnERR_return(mTopology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL));
-	OnERR_return(mediaSession->SetTopology(0, mTopology));
+	//OnERR_return(mTopology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE));
+	//OnERR_return(mTopology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL));
+	OnERR_return(mediaSession->SetTopology(MFSESSION_SETTOPOLOGY_IMMEDIATE, mTopology));
 }
 
 void Topology::CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite)
@@ -593,7 +642,7 @@ void Topology::CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> media
 void TopologyRep::CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite)
 {
 	TranscodeProfileFactory transcodeProfileFactory;
-	CComPtr<IMFAttributes> attrs = NULL; 
+	CComPtr<IMFAttributes> attrs = NULL;
 	//attrs = mediaSource->GetVideoMediaType();
 	CComPtr<IMFTranscodeProfile> transcodeProfile = transcodeProfileFactory.CreateVideoOnlyTranscodeProfile(attrs);
 	OnERR_return(MFCreateTranscodeTopology(mediaSource->GetMediaSource(), fileToWrite.c_str(), transcodeProfile, &mTopology));
@@ -608,6 +657,149 @@ void TopologyRep::CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> me
 	TranscodeProfileFactory transcodeProfileFactory;
 	CComPtr<IMFTranscodeProfile> transcodeProfile = transcodeProfileFactory.CreateAudioOnlyTranscodeProfile();
 	OnERR_return(MFCreateTranscodeTopology(mediaSource->GetMediaSource(), fileToWrite.c_str(), transcodeProfile, &mTopology));
+}
+
+void Topology::CreateVideoAndAudioCaptureAndPassthroughTopology
+(
+	std::shared_ptr<MediaSource> videoMediaSource,
+	std::shared_ptr<MediaSource> audioMediaSource,
+	std::shared_ptr<MediaSource> aggregateMediaSource,
+	const std::wstring& fileToWrite,
+	CComPtr<IMFActivate> videoRendererDevice,
+	CComPtr<IMFActivate> audioRendererDevice
+)
+{
+	m_pRep->CreateVideoAndAudioCaptureAndPassthroughTopology(videoMediaSource, audioMediaSource, aggregateMediaSource, fileToWrite, videoRendererDevice, audioRendererDevice);
+}
+void TopologyRep::CreateVideoAndAudioCaptureAndPassthroughTopology
+(
+	std::shared_ptr<MediaSource> videoMediaSource,
+	std::shared_ptr<MediaSource> audioMediaSource,
+	std::shared_ptr<MediaSource> aggregateMediaSource,
+	const std::wstring& fileToWrite,
+	CComPtr<IMFActivate> videoRendererDevice,
+	CComPtr<IMFActivate> audioRendererDevice
+)
+{
+	if (!mTopology)
+	{
+		OnERR_return(MFCreateTopology(&mTopology));
+	}
+
+	if (aggregateMediaSource)
+	{
+		aggregateMediaSource->SetCurrentMediaTypes();
+		videoMediaSource = aggregateMediaSource;
+		audioMediaSource = aggregateMediaSource;
+	}
+	else
+	{
+		if (videoMediaSource)
+		{
+			videoMediaSource->SetCurrentMediaTypes();
+		}
+		if (audioMediaSource)
+		{
+			audioMediaSource->SetCurrentMediaTypes();
+		}
+	}
+
+	auto fileSink = std::make_shared<FileSink>(fileToWrite.c_str(), videoMediaSource, audioMediaSource);
+	auto fileNode = std::make_unique<TopologyNode>(L"File Sink", fileSink);
+
+	MediaTypeFactory mediaTypeFactory;
+	bool hasVideo = videoMediaSource && videoMediaSource->GetVideoMediaType() ? true : false;
+	bool hasAudio = audioMediaSource && audioMediaSource->GetAudioMediaType() ? true : false;
+	
+	if (hasVideo)
+	{
+		std::shared_ptr<PresentationDescriptor> videoMediaSourcePresentationDescriptor(new PresentationDescriptor(videoMediaSource->GetMediaSource()));
+
+		std::shared_ptr<TopologyNode> videoSourceNode = CreateVideoSourceNode(videoMediaSource->GetMediaSource(), videoMediaSourcePresentationDescriptor, videoRendererDevice);
+		std::shared_ptr<TopologyNode> videoRendererNode = CreateRendererNode(L"Video Renderer", videoSourceNode->GetOutputPrefType(), videoRendererDevice);
+
+		//std::shared_ptr<TopologyNode> colorConverterNode = CreateColorConverterNode(videoSourceNode->GetOutputPrefType(), videoRendererNode->GetInputPrefType());
+
+		CComPtr<IMFAttributes> videoSourceAttrs = videoMediaSource->GetVideoMediaType();
+		std::shared_ptr<TopologyNode> videoEncoderNode = CreateVideoEncoderTransformNode(videoRendererNode->GetInputPrefType(), mediaTypeFactory.CreateVideoEncodingMediaType(videoSourceAttrs));
+		std::shared_ptr<TopologyNode> videoTeeNode = CreateTeeNode(L"Video TEE");
+
+		OnERR_return(AddAndConnect2Nodes(videoSourceNode->GetNode(), 0, videoTeeNode->GetNode(), 0));
+		OnERR_return(AddAndConnect2Nodes(videoTeeNode->GetNode(), 0, videoRendererNode->GetNode(), 0));
+		OnERR_return(AddAndConnect2Nodes(videoTeeNode->GetNode(), 1, videoEncoderNode->GetNode(), 0));
+		OnERR_return(AddAndConnect2Nodes(videoEncoderNode->GetNode(), 0, fileNode->GetNode(), 0));
+	}
+	if (hasAudio)
+	{
+		std::shared_ptr<PresentationDescriptor> audioMediaSourcePresentationDescriptor(new PresentationDescriptor(audioMediaSource->GetMediaSource()));
+
+		std::shared_ptr<TopologyNode> audioSourceNode = CreateAudioSourceNode(audioMediaSource->GetMediaSource(), audioMediaSourcePresentationDescriptor, audioRendererDevice);
+		std::shared_ptr<TopologyNode> audioRendererNode = CreateRendererNode(L"Audio Renderer", audioSourceNode->GetOutputPrefType(), audioRendererDevice);
+
+		//std::shared_ptr<TopologyNode> audioFloatToPCMNode = CreateAudioConverterNodeFloatToPCM(audioSourceNode->GetOutputPrefType());
+		//std::shared_ptr<TopologyNode> audioEncoderNode = CreateAudioEncoderTransformNode(audioFloatToPCMNode->GetOutputPrefType());
+		
+		std::shared_ptr<TopologyNode> audioEncoderNode = CreateAudioEncoderTransformNode(mediaTypeFactory.CreateAudioInputMediaType());
+		std::shared_ptr<TopologyNode> audioTeeNode = CreateTeeNode(L"Audio Tee");
+
+		OnERR_return(AddAndConnect2Nodes(audioSourceNode->GetNode(), 0, audioTeeNode->GetNode(), 0));
+		OnERR_return(AddAndConnect2Nodes(audioTeeNode->GetNode(), 0, audioRendererNode->GetNode(), 0));
+		OnERR_return(AddAndConnect2Nodes(audioTeeNode->GetNode(), 1, audioEncoderNode->GetNode(), 0));
+		OnERR_return(AddAndConnect2Nodes(audioEncoderNode->GetNode(), 0, fileNode->GetNode(), 1));
+
+	}
+}
+
+std::shared_ptr<TopologyNode> TopologyRep::CreateAudioEncoderTransformNode(CComPtr<IMFMediaType> inputType)
+{
+	CComPtr<IMFTransform> transform = GetAudioEncoder();
+	if (!transform)
+	{
+		SetLastHR_Fail();
+		return nullptr;
+	}
+	CComPtr<IMFMediaType> outputMediaType = nullptr;
+	DWORD formatIndexWeWantForOutput = 43;
+	//	Audio AAC Output(43) ATTR 000 MF_MT_AUDIO_AVG_BYTES_PER_SECOND                         24000
+	//	Audio AAC Output(43) ATTR 001 MF_MT_AVG_BITRATE                                        192000
+	//	Audio AAC Output(43) ATTR 002 MF_MT_AUDIO_BLOCK_ALIGNMENT                              1
+	//	Audio AAC Output(43) ATTR 003 MF_MT_AUDIO_NUM_CHANNELS                                 2
+	//	Audio AAC Output(43) ATTR 004 MF_MT_COMPRESSED                                         1
+	//	Audio AAC Output(43) ATTR 005 MF_MT_MAJOR_TYPE                                         MFMediaType_Audio
+	//	Audio AAC Output(43) ATTR 006 MF_MT_AUDIO_SAMPLES_PER_SECOND                           48000
+	//	Audio AAC Output(43) ATTR 007 MF_MT_AM_FORMAT_TYPE                                     FORMAT_WaveFormatEx
+	//	Audio AAC Output(43) ATTR 008 MF_MT_AAC_AUDIO_PROFILE_LEVEL_INDICATION                 41
+	//	Audio AAC Output(43) ATTR 009 MF_MT_AUDIO_PREFER_WAVEFORMATEX                          1
+	//	Audio AAC Output(43) ATTR 010 MF_MT_USER_DATA                                          BLOB
+	//	Audio AAC Output(43) ATTR 011 MF_MT_FIXED_SIZE_SAMPLES                                 0
+	//	Audio AAC Output(43) ATTR 012 MF_MT_AAC_PAYLOAD_TYPE                                   1
+	//	Audio AAC Output(43) ATTR 013 MF_MT_AUDIO_BITS_PER_SAMPLE                              16
+	//	Audio AAC Output(43) ATTR 014 MF_MT_SUBTYPE                                            MFAudioFormat_AAC
+	OnERR_return_NULL(transform->GetOutputAvailableType(0, formatIndexWeWantForOutput, &outputMediaType));
+	OnERR_return_NULL(transform->SetOutputType(0, outputMediaType, 0));
+	OnERR_return_NULL(transform->SetInputType(0, inputType, 0));
+
+	return std::make_shared<TopologyNode>(L"Audio AAC Encoder", transform);
+}
+
+std::shared_ptr<TopologyNode> TopologyRep::CreateVideoEncoderTransformNode(CComPtr<IMFMediaType> inputType, CComPtr<IMFMediaType> outputType)
+{
+	CComPtr<IMFTransform> transform = GetVideoEncoder();
+	if (!transform)
+	{
+		SetLastHR_Fail();
+		return nullptr;
+	}
+	CComPtr<IMFAttributes> attributes = nullptr;
+	OnERR_return_NULL(transform->GetAttributes(&attributes));
+	OnERR_return_NULL(attributes->SetUINT32(MF_TRANSFORM_ASYNC_UNLOCK, TRUE));
+	OnERR_return_NULL(attributes->SetUINT32(MF_LOW_LATENCY, TRUE));
+
+	// must set out before in or in will fail
+	OnERR_return_NULL(transform->SetOutputType(0, outputType, 0));
+	OnERR_return_NULL(transform->SetInputType(0, inputType, 0));
+
+	return std::make_shared<TopologyNode>(L"Video H264 Encoder", transform);
 }
 
 void Topology::CreateVideoOnlyCaptureAndPassthroughTopology
@@ -630,50 +822,26 @@ void TopologyRep::CreateVideoOnlyCaptureAndPassthroughTopology
 	{
 		OnERR_return(MFCreateTopology(&mTopology));
 	}
-	FixFormat(mediaSource, videoRendererDevice);
+	mediaSource->SetCurrentMediaTypes();
 
+	MediaTypeFactory mediaTypeFactory;
 	std::shared_ptr<PresentationDescriptor> mediaSourcePresentationDescriptor(new PresentationDescriptor(mediaSource->GetMediaSource()));
 	std::shared_ptr<TopologyNode> videoSourceNode = CreateVideoSourceNode(mediaSource->GetMediaSource(), mediaSourcePresentationDescriptor, videoRendererDevice);
-	std::shared_ptr<TopologyNode> rendererNode = CreateRendererNode(videoSourceNode->GetOutputPrefType(), videoRendererDevice);
-	std::shared_ptr<TopologyNode> teeNode = CreateTeeNode();
-	std::shared_ptr<TopologyNode> colorConverterNode = CreateColorConverterNode(videoSourceNode->GetOutputPrefType(), rendererNode->GetInputPrefType());
-	
+	std::shared_ptr<TopologyNode> videoRendererNode = CreateRendererNode(L"Video Renderer", videoSourceNode->GetOutputPrefType(), videoRendererDevice);
+	std::shared_ptr<TopologyNode> teeNode = CreateTeeNode(L"Video TEE");
+	std::shared_ptr<TopologyNode> colorConverterNode = CreateColorConverterNode(videoSourceNode->GetOutputPrefType(), videoRendererNode->GetInputPrefType());
+
 	// encoder
-	CComPtr<IMFTransform> encoder = GetVideoEncoder();
-	if (!encoder)
-	{
-		SetLastHR_Fail();
-		return;
-	}
-	CComPtr<IMFAttributes> attributes = nullptr;
-	OnERR_return(encoder->GetAttributes(&attributes));
-	OnERR_return(attributes->SetUINT32(MF_TRANSFORM_ASYNC_UNLOCK, TRUE));
-	OnERR_return(attributes->SetUINT32(MF_LOW_LATENCY, TRUE));
-	MediaTypeFactory mediaTypeFactory;
-	CComPtr<IMFAttributes> sourceVideoMediaAttrs = mediaSource->GetVideoMediaType();
-	OnERR_return(encoder->SetOutputType(0, mediaTypeFactory.CreateVideoEncodingMediaType(sourceVideoMediaAttrs), 0));
-	OnERR_return(encoder->SetInputType(0, rendererNode->GetInputPrefType(), 0));
-	std::unique_ptr<TopologyNode> encoderNode = std::make_unique<TopologyNode>(encoder);
+	CComPtr<IMFAttributes> sourceAttrs = mediaSource->GetVideoMediaType();
+	std::shared_ptr<TopologyNode> encoderNode = CreateVideoEncoderTransformNode(videoRendererNode->GetInputPrefType(), mediaTypeFactory.CreateVideoEncodingMediaType(sourceAttrs));
+	auto fileSink = std::make_shared<FileSink>(fileToWrite.c_str(), mediaSource , nullptr);
+	auto fileNode = std::make_unique<TopologyNode>(L"File Sink", fileSink);
 
-	auto fileSink = std::make_shared<FileSink>(fileToWrite.c_str(), mediaSource);
-	auto fileNode = std::make_unique<TopologyNode>(fileSink);
-
-	OnERR_return(AddAndConnect2Nodes(videoSourceNode->GetNode(), 0, colorConverterNode->GetNode()));
-	OnERR_return(AddAndConnect2Nodes(colorConverterNode->GetNode(), 0, teeNode->GetNode()));
-	OnERR_return(AddAndConnect2Nodes(teeNode->GetNode(), 0, rendererNode->GetNode()));
-	OnERR_return(AddAndConnect2Nodes(teeNode->GetNode(), 1, encoderNode->GetNode()));
-	OnERR_return(AddAndConnect2Nodes(encoderNode->GetNode(), 0, fileNode->GetNode()));
-}
-
-void TopologyRep::FixFormat(std::shared_ptr<MediaSource> mediaSource, CComPtr<IMFActivate> videoRendererDevice)
-{
-	mediaSource->FixVideoMediaType();
-	MediaTypeFactory mediaTypeFactory;
-	CComPtr<IMFMediaType> videoReaderMediaType = mediaTypeFactory.AddD3D(mediaSource->GetVideoMediaType(), videoRendererDevice);
-	if (videoReaderMediaType)
-	{
-		mediaSource->SetVideoMediaType(videoReaderMediaType);
-	}
+	OnERR_return(AddAndConnect2Nodes(videoSourceNode->GetNode(), 0, colorConverterNode->GetNode(), 0));
+	OnERR_return(AddAndConnect2Nodes(colorConverterNode->GetNode(), 0, teeNode->GetNode(), 0));
+	OnERR_return(AddAndConnect2Nodes(teeNode->GetNode(), 0, videoRendererNode->GetNode(), 0));
+	OnERR_return(AddAndConnect2Nodes(teeNode->GetNode(), 1, encoderNode->GetNode(), 0));
+	OnERR_return(AddAndConnect2Nodes(encoderNode->GetNode(), 0, fileNode->GetNode(), 0));
 }
 
 CComPtr<IMFTopologyNode> TopologyRep::GetFirstNodeTypeFromTopology(MF_TOPOLOGY_TYPE nodeTypeToFind)
@@ -708,58 +876,83 @@ CComPtr<IMFTopologyNode> TopologyRep::GetOutputNodeFromTopology()
 	return GetFirstNodeTypeFromTopology(MF_TOPOLOGY_OUTPUT_NODE);
 }
 
-std::shared_ptr<TopologyNode>TopologyRep::CreateColorConverterNode(CComPtr<IMFMediaType> inputType, CComPtr<IMFMediaType> outputType)
+std::shared_ptr<TopologyNode> TopologyRep::CreateAudioConverterNodeFloatToPCM(CComPtr<IMFMediaType> inputType)
 {
 	CComPtr<IMFTransform> transform = nullptr;
-	//OnERR_return_NULL(CoCreateInstance(CLSID_VideoProcessorMFT, nullptr, CLSCTX_INPROC_SERVER, IID_IMFTransform, (void**)&transform));
+	OnERR_return_NULL(CoCreateInstance(CLSID_CResamplerMediaObject, nullptr, CLSCTX_INPROC, IID_IMFTransform, (void**)&transform));
+	OnERR_return_NULL(transform->SetInputType(0, inputType, 0));
+
+	CComPtr<IMFMediaType> outputMediaType = nullptr;
+	DWORD formatIndexWeWantForOutput = 3;
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 000 MF_MT_AUDIO_AVG_BYTES_PER_SECOND                         192000
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 001 MF_MT_AUDIO_BLOCK_ALIGNMENT                              4
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 002 MF_MT_AUDIO_NUM_CHANNELS                                 2
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 003 MF_MT_MAJOR_TYPE                                         MFMediaType_Audio
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 004 MF_MT_AUDIO_SAMPLES_PER_SECOND                           48000
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 005 MF_MT_AUDIO_PREFER_WAVEFORMATEX                          1
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 006 MF_MT_ALL_SAMPLES_INDEPENDENT                            1
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 007 MF_MT_AUDIO_BITS_PER_SAMPLE                              16
+	//	CLSID_CResamplerMediaObject GetOutputAvailableType(3) ATTR 008 MF_MT_SUBTYPE                                            MFAudioFormat_PCM
+	OnERR_return_NULL(transform->GetOutputAvailableType(0, formatIndexWeWantForOutput, &outputMediaType));
+	OnERR_return_NULL(transform->SetOutputType(0, outputMediaType, 0));
+
+	std::shared_ptr<TopologyNode> retVal(new TopologyNode(L"Audio Float to PCM", transform));
+	return retVal;
+}
+
+std::shared_ptr<TopologyNode> TopologyRep::CreateColorConverterNode(CComPtr<IMFMediaType> inputType, CComPtr<IMFMediaType> outputType)
+{
+	CComPtr<IMFTransform> transform = nullptr;
 	OnERR_return_NULL(CoCreateInstance(CLSID_CColorConvertDMO, nullptr, CLSCTX_INPROC, IID_IMFTransform, (void**)&transform));
 	OnERR_return_NULL(transform->SetInputType(0, inputType, 0));
 	OnERR_return_NULL(transform->SetOutputType(0, outputType, 0));
 
-	std::shared_ptr<TopologyNode> retVal(new TopologyNode(transform));
+	std::shared_ptr<TopologyNode> retVal(new TopologyNode(L"Color Converter", transform));
 	return retVal;
 }
 
-void Topology::DumpTopology()
+void Topology::DumpTopology(CComPtr<IMFTopology> topology)
 {
-	m_pRep->DumpTopology();
+	m_pRep->DumpTopology(topology);
 }
-void TopologyRep::DumpTopology()
+void TopologyRep::DumpTopology(CComPtr<IMFTopology> topology)
 {
+	if (!topology)
+	{
+		topology = mTopology;
+	}
 	WORD nodeCount = 0;
-	OnERR_return(mTopology->GetNodeCount(&nodeCount));
+	OnERR_return(topology->GetNodeCount(&nodeCount));
 	for (int i = 0; i < nodeCount; i++)
 	{
+		OutputDebugStringW(L"*******************************************************\n");
 		CComPtr<IMFTopologyNode> node;
-		OnERR_return(mTopology->GetNode(i, &node));
+		OnERR_return(topology->GetNode(i, &node));
 		MF_TOPOLOGY_TYPE nodeType = MF_TOPOLOGY_MAX;
 		OnERR_return(node->GetNodeType(&nodeType));
 		if (nodeType == MF_TOPOLOGY_SOURCESTREAM_NODE)
 		{
-			OutputDebugStringW(L"MF_TOPOLOGY_SOURCESTREAM_NODE\n");
-			auto srcNode = std::make_unique<TopologyNode>(node);
-			DumpAttr(srcNode->GetOutputPrefType(), L"MESessionTopologySet FAIL", L"srcNode");
-			OutputDebugStringW(L"\n");
+			OutputDebugStringW(L"MF_TOPOLOGY_SOURCESTREAM_NODE\n\n");
+			auto srcNode = std::make_unique<TopologyNode>(L"MF_TOPOLOGY_SOURCESTREAM_NODE", node);
+			DumpAttr(srcNode->GetOutputPrefType(), std::to_wstring(i), L"srcNode");
 		}
 		else if (nodeType == MF_TOPOLOGY_OUTPUT_NODE)
 		{
-			OutputDebugStringW(L"MF_TOPOLOGY_OUTPUT_NODE\n");
-			auto outputNode = std::make_unique<TopologyNode>(node);
-			DumpAttr(outputNode->GetInputPrefType(), L"MESessionTopologySet FAIL", L"outputNode");
-			OutputDebugStringW(L"\n");
+			OutputDebugStringW(L"MF_TOPOLOGY_OUTPUT_NODE\n\n");
+			auto outputNode = std::make_unique<TopologyNode>(L"MF_TOPOLOGY_OUTPUT_NODE", node);
+			DumpAttr(outputNode->GetInputPrefType(), std::to_wstring(i), L"outputNode");
 		}
 		else if (nodeType == MF_TOPOLOGY_TRANSFORM_NODE)
 		{
-			OutputDebugStringW(L"MF_TOPOLOGY_TRANSFORM_NODE\n");
-			auto transformNode = std::make_unique<TopologyNode>(node);
-			DumpAttr(transformNode->GetInputPrefType(), L"MESessionTopologySet FAIL", L"transformNode IN");
-			DumpAttr(transformNode->GetOutputPrefType(), L"MESessionTopologySet FAIL", L"transformNode OUT");
+			OutputDebugStringW(L"MF_TOPOLOGY_TRANSFORM_NODE\n\n");
+			auto transformNode = std::make_unique<TopologyNode>(L"MF_TOPOLOGY_TRANSFORM_NODE", node);
+			DumpAttr(transformNode->GetInputPrefType(), std::to_wstring(i), L"transformNode IN");
 			OutputDebugStringW(L"\n");
+			DumpAttr(transformNode->GetOutputPrefType(), std::to_wstring(i), L"transformNode OUT");
 		}
 		else if (nodeType == MF_TOPOLOGY_TEE_NODE)
 		{
-			OutputDebugStringW(L"MF_TOPOLOGY_TEE_NODE\n");
-			OutputDebugStringW(L"\n");
+			OutputDebugStringW(L"MF_TOPOLOGY_TEE_NODE\n\n");
 		}
 
 		GUID guid;
@@ -779,50 +972,59 @@ void TopologyRep::DumpTopology()
 		{
 			OutputDebugStringW(L"MF_TOPONODE_ERRORCODE\n");
 		}
-		OutputDebugStringW(L"*******************************************************\n");
+		OutputDebugStringW(L"\n");
 	}
 }
 
-CComPtr<IMFTransform> TopologyRep::GetVideoEncoder()
+CComPtr<IMFTransform> TopologyRep::GetEncoder(GUID guidMajorType, GUID guidSubtype, GUID mft_category, std::wstring contains1, std::wstring contains2)
 {
 	CComPtr<IMFTransform> retval = nullptr;
 
 	IMFActivate** codecList = 0;
 	UINT32 count = 0;
 	MFT_REGISTER_TYPE_INFO typeInfo;
-	typeInfo.guidMajorType = MFMediaType_Video;
-	typeInfo.guidSubtype = MFVideoFormat_H264;
+	typeInfo.guidMajorType = guidMajorType;
+	typeInfo.guidSubtype = guidSubtype;
 
 	OnERR_return_NULL(MFTEnumEx
 	(
-		MFT_CATEGORY_VIDEO_ENCODER,
+		mft_category,
 		MFT_ENUM_FLAG_SYNCMFT | MFT_ENUM_FLAG_ASYNCMFT | MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_SORTANDFILTER,
-		0, 
-		&typeInfo, 
-		&codecList, 
+		0,
+		&typeInfo,
+		&codecList,
 		&count
 	));
-	bool foundIntelH264 = false;
-	UINT32 intelIndex = 0;
-	for (; intelIndex < count && foundIntelH264 == false; intelIndex++)
+	bool foundEncoder = false;
+	UINT32 encoderIndex = 0;
+	for (; encoderIndex < count && foundEncoder == false; encoderIndex++)
 	{
 		LPWSTR name = 0;
-		OnERR_return_NULL(codecList[intelIndex]->GetAllocatedString(MFT_FRIENDLY_NAME_Attribute, &name, 0));
+		OnERR_return_NULL(codecList[encoderIndex]->GetAllocatedString(MFT_FRIENDLY_NAME_Attribute, &name, 0));
 		std::wstring namew(name);
-		if (namew.find(L"Intel") != std::string::npos && namew.find(L"264") != std::string::npos)
+		if (namew.find(contains1) != std::string::npos && namew.find(contains2) != std::string::npos)
 		{
-			foundIntelH264 = true;
+			foundEncoder = true;
 		}
 		CoTaskMemFree(name);
 	}
-	if (foundIntelH264)
+	if (foundEncoder)
 	{
-		codecList[intelIndex]->ActivateObject(IID_PPV_ARGS(&retval));
+		codecList[encoderIndex - 1]->ActivateObject(IID_PPV_ARGS(&retval));
 	}
 	for (UINT32 i = 0; i < count; i++)
 	{
 		codecList[i]->Release();
 	}
-		
+
 	return retval;
+}
+CComPtr<IMFTransform> TopologyRep::GetAudioEncoder()
+{
+	return GetEncoder(MFMediaType_Audio, MFAudioFormat_AAC, MFT_CATEGORY_AUDIO_ENCODER, L"Audio", L"AAC");
+}
+
+CComPtr<IMFTransform> TopologyRep::GetVideoEncoder()
+{
+	return GetEncoder(MFMediaType_Video, MFVideoFormat_H264, MFT_CATEGORY_VIDEO_ENCODER, L"H264", L"Encoder");
 }

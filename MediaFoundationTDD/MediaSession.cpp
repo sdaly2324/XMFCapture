@@ -149,7 +149,7 @@ ULONG MediaSessionRep::Release()
 void MediaSessionRep::DumpTopologyFailed(CComPtr<IMFMediaEvent> mediaEvent)
 {
 	auto topology = std::make_unique<Topology>(mediaEvent);
-	topology->DumpTopology();
+	topology->DumpTopology(nullptr);
 }
 
 void MediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent)

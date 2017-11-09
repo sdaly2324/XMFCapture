@@ -16,7 +16,7 @@ class FileSinkRep;
 class MediaFoundationTDD_API FileSink
 {
 public:
-	FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoSource);
+	FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoMediaSource, std::shared_ptr<MediaSource> audioMediaSource);
 	~FileSink();
 
 	HRESULT							GetLastHRESULT();

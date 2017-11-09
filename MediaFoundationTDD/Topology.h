@@ -47,6 +47,15 @@ public:
 		const std::wstring& fileToWrite,
 		CComPtr<IMFActivate> videoRendererDevice
 	);
+	void CreateVideoAndAudioCaptureAndPassthroughTopology
+	(
+		std::shared_ptr<MediaSource> videoMediaSource,
+		std::shared_ptr<MediaSource> audioMediaSource,
+		std::shared_ptr<MediaSource> aggregateMediaSource,
+		const std::wstring& fileToWrite,
+		CComPtr<IMFActivate> videoRendererDevice,
+		CComPtr<IMFActivate> audioRendererDevice
+	);
 
 	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
 
@@ -54,7 +63,7 @@ public:
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);
 
 	CComPtr<IMFTopology> GetTopology();
-	void DumpTopology();
+	void DumpTopology(CComPtr<IMFTopology> topology);
 
 private:
 #pragma warning(push)

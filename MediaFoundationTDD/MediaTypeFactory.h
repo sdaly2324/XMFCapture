@@ -23,8 +23,8 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
+	CComPtr<IMFMediaType>				CreateAudioInputMediaType();
 	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
-	CComPtr<IMFMediaType>				AddD3D(CComPtr<IMFMediaType> inType, CComPtr<IMFActivate> videoRendererDevice);
 
 private:
 #pragma warning(push)

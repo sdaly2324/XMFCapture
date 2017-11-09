@@ -22,18 +22,19 @@ class TopologyNodeRep;
 class MediaFoundationTDD_API TopologyNode
 {
 public:
-	TopologyNode();
-	TopologyNode(CComPtr<IMFTransform> transform);
-	TopologyNode(CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
-	TopologyNode(CComPtr<IMFTopologyNode> node);
+	TopologyNode(std::wstring name);
+	TopologyNode(std::wstring name, CComPtr<IMFTransform> transform);
+	TopologyNode(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
+	TopologyNode(std::wstring name, CComPtr<IMFTopologyNode> node);
 	TopologyNode
 	(
+		std::wstring name,
 		CComPtr<IMFMediaSource> mediaSource,
 		CComPtr<IMFPresentationDescriptor> presentationDescriptor,
 		CComPtr<IMFStreamDescriptor> streamDescriptor,
 		CComPtr<IMFActivate> renderer
 	);
-	TopologyNode(std::shared_ptr<FileSink> mediaSink);
+	TopologyNode(std::wstring name, std::shared_ptr<FileSink> mediaSink);
 	~TopologyNode();
 
 	HRESULT								GetLastHRESULT();

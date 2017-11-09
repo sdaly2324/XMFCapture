@@ -18,8 +18,8 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
+	CComPtr<IMFMediaType>				CreateAudioInputMediaType();
 	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
-	CComPtr<IMFMediaType>				AddD3D(CComPtr<IMFMediaType> inType, CComPtr<IMFActivate> videoRendererDevice);
 
 private:
 	template <class T>
@@ -59,6 +59,26 @@ HRESULT MediaTypeFactory::GetLastHRESULT()
 HRESULT MediaTypeFactoryRep::GetLastHRESULT()
 {
 	return MFUtils::GetLastHRESULT();
+}
+
+CComPtr<IMFMediaType> MediaTypeFactory::CreateAudioInputMediaType()
+{
+	return m_pRep->CreateAudioInputMediaType();
+}
+CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioInputMediaType()
+{
+	CComPtr<IMFAttributes> attributes = NULL;
+	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
+	OnERR_return_NULL(attributes->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio));
+	OnERR_return_NULL(attributes->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM));
+	OnERR_return_NULL(attributes->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16));
+	OnERR_return_NULL(attributes->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, 48000));
+	OnERR_return_NULL(attributes->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, 2));
+
+	CComPtr<IMFMediaType> retVal = NULL;
+	OnERR_return_NULL(MFCreateMediaType(&retVal));
+	OnERR_return_NULL(attributes->CopyAllItems(retVal));
+	return retVal;
 }
 
 CComPtr<IMFMediaType> MediaTypeFactory::CreateAudioEncodingMediaType()
@@ -118,26 +138,4 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoEncodingMediaType(CComPtr<
 	OnERR_return_NULL(MFCreateMediaType(&retVal));
 	OnERR_return_NULL(outAttrs->CopyAllItems(retVal));
 	return retVal;
-}
-
-CComPtr<IMFMediaType> MediaTypeFactory::AddD3D(CComPtr<IMFMediaType> inType, CComPtr<IMFActivate> videoRendererDevice)
-{
-	return m_pRep->AddD3D(inType, videoRendererDevice);
-}
-CComPtr<IMFMediaType> MediaTypeFactoryRep::AddD3D(CComPtr<IMFMediaType> inType, CComPtr<IMFActivate> videoRendererDevice)
-{
-	if (!videoRendererDevice || !inType)
-	{
-		return NULL;
-	}
-	CComPtr<IMFMediaType> videoReaderOutType = nullptr;
-	OnERR_return_NULL(MFCreateMediaType(&videoReaderOutType));
-	OnERR_return_NULL(inType->CopyAllItems(videoReaderOutType));
-
-	CComPtr<IMFMediaSink> videoRendererSink = nullptr;
-	CComPtr<IDirect3DDeviceManager9> pD3DManager = nullptr;
-	OnERR_return_NULL(videoRendererDevice->ActivateObject(IID_IMFMediaSink, (void**)&videoRendererSink));
-	OnERR_return_NULL(MFGetService(videoRendererSink, MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(&pD3DManager)));
-	OnERR_return_NULL(videoReaderOutType->SetUnknown(MF_SOURCE_READER_D3D_MANAGER, pD3DManager));
-	return videoReaderOutType;
 }
