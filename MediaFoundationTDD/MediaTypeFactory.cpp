@@ -96,12 +96,41 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioEncodingMediaType()
 		OnERR_return_NULL(MFTranscodeGetAudioOutputAvailableTypes(MFAudioFormat_AAC, MFT_ENUM_FLAG_ALL | MFT_ENUM_FLAG_SORTANDFILTER, attributes, &availableTypes));
 		
 		//DumpAvailableAACFormats(availableTypes);
-		// 43 is 
-		//MF_MT_AUDIO_SAMPLES_PER_SECOND	48000
-		//MF_MT_AUDIO_NUM_CHANNELS			2
-		//MF_MT_AVG_BITRATE					192000
 		
-		OnERR_return_NULL(GetCollectionObject(availableTypes, 43, &retVal)); // HARD CODED to format 43!!
+		//DWORD formatIndexWeWantForOutput = 43;
+		//	Audio AAC Output(43) ATTR 000 MF_MT_AUDIO_AVG_BYTES_PER_SECOND                         24000
+		//	Audio AAC Output(43) ATTR 001 MF_MT_AVG_BITRATE                                        192000
+		//	Audio AAC Output(43) ATTR 002 MF_MT_AUDIO_BLOCK_ALIGNMENT                              1
+		//	Audio AAC Output(43) ATTR 003 MF_MT_AUDIO_NUM_CHANNELS                                 2
+		//	Audio AAC Output(43) ATTR 004 MF_MT_COMPRESSED                                         1
+		//	Audio AAC Output(43) ATTR 005 MF_MT_MAJOR_TYPE                                         MFMediaType_Audio
+		//	Audio AAC Output(43) ATTR 006 MF_MT_AUDIO_SAMPLES_PER_SECOND                           48000
+		//	Audio AAC Output(43) ATTR 007 MF_MT_AM_FORMAT_TYPE                                     FORMAT_WaveFormatEx
+		//	Audio AAC Output(43) ATTR 008 MF_MT_AAC_AUDIO_PROFILE_LEVEL_INDICATION                 41
+		//	Audio AAC Output(43) ATTR 009 MF_MT_AUDIO_PREFER_WAVEFORMATEX                          1
+		//	Audio AAC Output(43) ATTR 010 MF_MT_USER_DATA                                          BLOB
+		//	Audio AAC Output(43) ATTR 011 MF_MT_FIXED_SIZE_SAMPLES                                 0
+		//	Audio AAC Output(43) ATTR 012 MF_MT_AAC_PAYLOAD_TYPE                                   1
+		//	Audio AAC Output(43) ATTR 013 MF_MT_AUDIO_BITS_PER_SAMPLE                              16
+		//	Audio AAC Output(43) ATTR 014 MF_MT_SUBTYPE                                            MFAudioFormat_AAC
+		DWORD formatIndexWeWantForOutput = 19;
+		//	Audio AAC Output(19) ATTR 000 MF_MT_AUDIO_AVG_BYTES_PER_SECOND                         24000
+		//	Audio AAC Output(19) ATTR 001 MF_MT_AVG_BITRATE                                        192000
+		//	Audio AAC Output(19) ATTR 002 MF_MT_AUDIO_BLOCK_ALIGNMENT                              1
+		//	Audio AAC Output(19) ATTR 003 MF_MT_AUDIO_NUM_CHANNELS                                 2
+		//	Audio AAC Output(19) ATTR 004 MF_MT_COMPRESSED                                         1
+		//	Audio AAC Output(19) ATTR 005 MF_MT_MAJOR_TYPE                                         MFMediaType_Audio
+		//	Audio AAC Output(19) ATTR 006 MF_MT_AUDIO_SAMPLES_PER_SECOND                           48000
+		//	Audio AAC Output(19) ATTR 007 MF_MT_AM_FORMAT_TYPE                                     FORMAT_WaveFormatEx
+		//	Audio AAC Output(19) ATTR 008 MF_MT_AAC_AUDIO_PROFILE_LEVEL_INDICATION                 41
+		//	Audio AAC Output(19) ATTR 009 MF_MT_AUDIO_PREFER_WAVEFORMATEX                          1
+		//	Audio AAC Output(19) ATTR 010 MF_MT_USER_DATA                                          BLOB
+		//	Audio AAC Output(19) ATTR 011 MF_MT_FIXED_SIZE_SAMPLES                                 0
+		//	Audio AAC Output(19) ATTR 012 MF_MT_AAC_PAYLOAD_TYPE                                   0
+		//	Audio AAC Output(19) ATTR 013 MF_MT_AUDIO_BITS_PER_SAMPLE                              16
+		//	Audio AAC Output(19) ATTR 014 MF_MT_SUBTYPE                                            MFAudioFormat_AAC
+
+		OnERR_return_NULL(GetCollectionObject(availableTypes, formatIndexWeWantForOutput, &retVal));
 	}
 	return retVal;
 }
@@ -116,7 +145,7 @@ void MediaTypeFactoryRep::DumpAvailableAACFormats(CComPtr<IMFCollection> availab
 		hr = GetCollectionObject(availableTypes, i, &pMediaType);
 		WCHAR count[1024];
 		swprintf_s(count, 1024, L"%d", i);
-		//DumpAttr(pMediaType, L"AUDIO AAC", count);
+		DumpAttr(pMediaType, L"AUDIO AAC", count);
 		OutputDebugStringW(L"\n");
 	}
 }

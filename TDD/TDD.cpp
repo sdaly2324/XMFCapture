@@ -425,9 +425,10 @@ namespace MediaFoundationTesing
 		}
 		TEST_METHOD(VideoAndAudioCaptureAndPassthrough)
 		{
+			//Sleep(5000);
 			bool useAudio = true;
 			bool useVideo = true;
-			mVideoDisplayControl->SetIsParticipating(useVideo);
+			mVideoDisplayControl->SetIsParticipating(false);//(useVideo);
 
 			// source
 			std::shared_ptr<MediaSource> aggregateMediaSource = nullptr;
@@ -445,12 +446,12 @@ namespace MediaFoundationTesing
 			}
 			else if (useAudio && useVideo)
 			{
-				//aggregateMediaSource = std::make_shared<MediaSource>(mVideoCaptureDevice, mAudioCaptureDevice);
-				//Assert::AreEqual(aggregateMediaSource->GetLastHRESULT(), S_OK);
-				videoMediaSource = std::make_shared<MediaSource>(mVideoCaptureDevice);
-				Assert::AreEqual(videoMediaSource->GetLastHRESULT(), S_OK);
-				audioMediaSource = std::make_shared<MediaSource>(mAudioCaptureDevice);
-				Assert::AreEqual(audioMediaSource->GetLastHRESULT(), S_OK);
+				aggregateMediaSource = std::make_shared<MediaSource>(mVideoCaptureDevice, mAudioCaptureDevice);
+				Assert::AreEqual(aggregateMediaSource->GetLastHRESULT(), S_OK);
+				//videoMediaSource = std::make_shared<MediaSource>(mVideoCaptureDevice);
+				//Assert::AreEqual(videoMediaSource->GetLastHRESULT(), S_OK);
+				//audioMediaSource = std::make_shared<MediaSource>(mAudioCaptureDevice);
+				//Assert::AreEqual(audioMediaSource->GetLastHRESULT(), S_OK);
 			}
 			else
 			{
@@ -471,7 +472,7 @@ namespace MediaFoundationTesing
 			mMediaSession->Start();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);
 
-			::Sleep(3000);
+			::Sleep(10000);
 
 			mMediaSession->Stop();
 			Assert::AreEqual(mMediaSession->GetLastHRESULT(), S_OK);

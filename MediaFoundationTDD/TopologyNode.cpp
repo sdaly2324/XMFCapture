@@ -169,6 +169,8 @@ TopologyNodeRep::TopologyNodeRep
 		OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_SOURCE, mediaSource));
 		OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_PRESENTATION_DESCRIPTOR, presentationDescriptor));
 		OnERR_return(mTopologyNode->SetUnknown(MF_TOPONODE_STREAM_DESCRIPTOR, streamDescriptor));
+		MFTIME mediastart = 0;
+		OnERR_return(mTopologyNode->SetUINT64(MF_TOPONODE_MEDIASTART, mediastart));
 	}
 	DumpFormats();
 }
