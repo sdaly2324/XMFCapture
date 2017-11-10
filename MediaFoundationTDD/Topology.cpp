@@ -371,7 +371,7 @@ HRESULT TopologyRep::AddAndConnect2Nodes(CComPtr<IMFTopologyNode> inputNode, DWO
 	{
 		OnERR_return_HR(mTopology->AddNode(outputNode));
 	}
-	OnERR_return_HR(inputNode->ConnectOutput(outputIndexOfTheInputNode, outputNode, 0));
+	OnERR_return_HR(inputNode->ConnectOutput(outputIndexOfTheInputNode, outputNode, inputIndexOfTheOutputNode));
 	return S_OK;
 }
 
@@ -543,6 +543,7 @@ CComPtr<IMFTopology> TopologyRep::ResolveMultiSourceTopology(CComPtr<IMFTopology
 	//DumpSourceNodes(topology);
 	TOPOID topoID = 0;
 	OnERR_return_NULL(topology->GetTopologyID(&topoID));
+	//DumpTopology(mTopology);
 	OnERR_return_NULL(sequencerSource->AppendTopology(topology, SequencerTopologyFlags_Last, &newMFSequencerElementId));
 	CComPtr<IMFMediaSource> mediaSource = NULL;
 	OnERR_return_NULL(sequencerSource->QueryInterface(IID_IMFMediaSource, (void**)&mediaSource));
@@ -964,8 +965,12 @@ void TopologyRep::DumpTopology(CComPtr<IMFTopology> topology)
 		else if (nodeType == MF_TOPOLOGY_OUTPUT_NODE)
 		{
 			OutputDebugStringW(L"MF_TOPOLOGY_OUTPUT_NODE\n\n");
+			DWORD inputCount = 0;
+			node->GetInputCount(&inputCount);
+			DWORD outputCount = 0;
+			node->GetOutputCount(&outputCount);
 			auto outputNode = std::make_unique<TopologyNode>(L"MF_TOPOLOGY_OUTPUT_NODE", node);
-			DumpAttr(outputNode->GetInputPrefType(), std::to_wstring(i), L"outputNode");
+			DumpAttr(outputNode->GetInputPrefType(), std::to_wstring(i), L"outputNode ins=" + std::to_wstring(inputCount) + L" outs=" + std::to_wstring(outputCount));
 		}
 		else if (nodeType == MF_TOPOLOGY_TRANSFORM_NODE)
 		{

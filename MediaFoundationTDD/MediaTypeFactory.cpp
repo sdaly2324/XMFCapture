@@ -97,7 +97,7 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioEncodingMediaType()
 		
 		//DumpAvailableAACFormats(availableTypes);
 		
-		//DWORD formatIndexWeWantForOutput = 43;
+		DWORD formatIndexWeWantForOutput = 43;
 		//	Audio AAC Output(43) ATTR 000 MF_MT_AUDIO_AVG_BYTES_PER_SECOND                         24000
 		//	Audio AAC Output(43) ATTR 001 MF_MT_AVG_BITRATE                                        192000
 		//	Audio AAC Output(43) ATTR 002 MF_MT_AUDIO_BLOCK_ALIGNMENT                              1
@@ -113,7 +113,7 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioEncodingMediaType()
 		//	Audio AAC Output(43) ATTR 012 MF_MT_AAC_PAYLOAD_TYPE                                   1
 		//	Audio AAC Output(43) ATTR 013 MF_MT_AUDIO_BITS_PER_SAMPLE                              16
 		//	Audio AAC Output(43) ATTR 014 MF_MT_SUBTYPE                                            MFAudioFormat_AAC
-		DWORD formatIndexWeWantForOutput = 19;
+		//DWORD formatIndexWeWantForOutput = 19;
 		//	Audio AAC Output(19) ATTR 000 MF_MT_AUDIO_AVG_BYTES_PER_SECOND                         24000
 		//	Audio AAC Output(19) ATTR 001 MF_MT_AVG_BITRATE                                        192000
 		//	Audio AAC Output(19) ATTR 002 MF_MT_AUDIO_BLOCK_ALIGNMENT                              1
