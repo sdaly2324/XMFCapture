@@ -12,7 +12,7 @@
 class FileSinkRep : public MFUtils
 {
 public:
-	FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> mediaSource, std::shared_ptr<MediaSource> audioMediaSource);
+	FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> aggregateMediaSource);
 	~FileSinkRep();
 
 	HRESULT					GetLastHRESULT();
@@ -29,11 +29,11 @@ private:
 	DWORD mAudioStreamIndex = 0;
 	CComPtr<IMFStreamSink>	mAudioStreamSink = NULL;
 };
-FileSink::FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoMediaSource, std::shared_ptr<MediaSource> audioMediaSource)
+FileSink::FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> aggregateMediaSource)
 {
-	m_pRep = std::unique_ptr<FileSinkRep>(new FileSinkRep(fullFilePath, videoMediaSource, audioMediaSource));
+	m_pRep = std::unique_ptr<FileSinkRep>(new FileSinkRep(fullFilePath, aggregateMediaSource));
 }
-FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> videoMediaSource, std::shared_ptr<MediaSource> audioMediaSource)
+FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> aggregateMediaSource)
 {
 	AttributesFactory attributesFactory;
 	CComPtr<IMFAttributes> attributes = attributesFactory.CreateFileSinkAttrs();
@@ -45,26 +45,21 @@ FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> vide
 
 		MediaTypeFactory mediaTypeFactory;
 		DWORD newStreamIndex = 0;
-		if (videoMediaSource)
+
+		CComPtr<IMFAttributes> sourceVideoMediaAttrs = aggregateMediaSource->GetVideoMediaType();
+		if (sourceVideoMediaAttrs)
 		{
-			CComPtr<IMFAttributes> sourceVideoMediaAttrs = videoMediaSource->GetVideoMediaType();
-			if (sourceVideoMediaAttrs)
-			{
-				OnERR_return(mMediaSink->AddStreamSink(newStreamIndex, mediaTypeFactory.CreateVideoEncodingMediaType(sourceVideoMediaAttrs), &mVideoStreamSink));
-				mVideoStreamIndex = newStreamIndex;
-				newStreamIndex++;
-			}
+			OnERR_return(mMediaSink->AddStreamSink(newStreamIndex, mediaTypeFactory.CreateVideoEncodingMediaType(sourceVideoMediaAttrs), &mVideoStreamSink));
+			mVideoStreamIndex = newStreamIndex;
+			newStreamIndex++;
 		}
 
-		if (audioMediaSource)
+		CComPtr<IMFAttributes> sourceAudioMediaAttrs = aggregateMediaSource->GetAudioMediaType();
+		if (sourceAudioMediaAttrs)
 		{
-			CComPtr<IMFAttributes> sourceAudioMediaAttrs = audioMediaSource->GetAudioMediaType();
-			if (sourceAudioMediaAttrs)
-			{
-				OnERR_return(mMediaSink->AddStreamSink(newStreamIndex, mediaTypeFactory.CreateAudioEncodingMediaType(), &mAudioStreamSink));
-				mAudioStreamIndex = newStreamIndex;
-				newStreamIndex++;
-			}
+			OnERR_return(mMediaSink->AddStreamSink(newStreamIndex, mediaTypeFactory.CreateAudioEncodingMediaType(), &mAudioStreamSink));
+			mAudioStreamIndex = newStreamIndex;
+			newStreamIndex++;
 		}
 	}
 }

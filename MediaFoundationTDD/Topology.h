@@ -27,37 +27,13 @@ public:
 
 	HRESULT GetLastHRESULT();
 
-	void CreatePassthroughTopology
+	void CreateTopology
 	(
-		CComPtr<IMFMediaSource> mediaSource,
-		CComPtr<IMFActivate> videoRenderer,
-		CComPtr<IMFActivate> audioRenderer
-	);
-	void CreateCaptureAndPassthroughTopology
-	(
-		CComPtr<IMFMediaSource> mediaSource,
-		CComPtr<IMFActivate> videoRenderer,
-		CComPtr<IMFActivate> audioRenderer,
-		std::shared_ptr<FileSink> mediaSink
-	);
-	void CreateVideoOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
-	void CreateVideoOnlyCaptureAndPassthroughTopology
-	(
-		std::shared_ptr<MediaSource> mediaSource,
-		const std::wstring& fileToWrite,
-		CComPtr<IMFActivate> videoRendererDevice
-	);
-	void CreateVideoAndAudioCaptureAndPassthroughTopology
-	(
-		std::shared_ptr<MediaSource> videoMediaSource,
-		std::shared_ptr<MediaSource> audioMediaSource,
 		std::shared_ptr<MediaSource> aggregateMediaSource,
 		const std::wstring& fileToWrite,
 		CComPtr<IMFActivate> videoRendererDevice,
 		CComPtr<IMFActivate> audioRendererDevice
 	);
-
-	void CreateAudioOnlyCaptureTopology(std::shared_ptr<MediaSource> mediaSource, const std::wstring& fileToWrite);
 
 	void ResolveTopology();
 	void SetTopology(CComPtr<IMFMediaSession> mediaSession);

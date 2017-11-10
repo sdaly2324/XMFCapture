@@ -1,7 +1,6 @@
 #include "TopologyNode.h"
 #include "MFUtils.h"
 #include "PresentationDescriptor.h"
-#include "FileSink.h"
 
 #include <mfidl.h>
 #include <mfapi.h>
@@ -14,6 +13,7 @@ public:
 	TopologyNodeRep(std::wstring name, CComPtr<IMFTransform> transform);
 	TopologyNodeRep(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
 	TopologyNodeRep(std::wstring name, CComPtr<IMFTopologyNode> node);
+	TopologyNodeRep(std::wstring name, CComPtr<IMFStreamSink> streamSink);
 	TopologyNodeRep
 	(
 		std::wstring name,
@@ -22,7 +22,6 @@ public:
 		CComPtr<IMFStreamDescriptor> streamDescriptor,
 		CComPtr<IMFActivate> renderer
 	);
-	TopologyNodeRep(std::wstring name, std::shared_ptr<FileSink> mediaSink);
 	virtual ~TopologyNodeRep();
 
 	HRESULT								GetLastHRESULT();
@@ -107,6 +106,19 @@ TopologyNodeRep::TopologyNodeRep(std::wstring name) :
 	DumpFormats();
 }
 
+TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFStreamSink> streamSink)
+{
+	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, streamSink));
+}
+TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFStreamSink> streamSink) :
+	mName(name)
+{
+	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
+	OnERR_return(mTopologyNode->SetObject(streamSink));
+	//OnERR_return(mTopologyNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, TRUE));
+	DumpFormats();
+}
+
 TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFTopologyNode> node)
 {
 	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, node));
@@ -172,19 +184,6 @@ TopologyNodeRep::TopologyNodeRep
 		MFTIME mediastart = 0;
 		OnERR_return(mTopologyNode->SetUINT64(MF_TOPONODE_MEDIASTART, mediastart));
 	}
-	DumpFormats();
-}
-
-TopologyNode::TopologyNode(std::wstring name, std::shared_ptr<FileSink> mediaSink)
-{
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, mediaSink));
-}
-TopologyNodeRep::TopologyNodeRep(std::wstring name, std::shared_ptr<FileSink> mediaSink) :
-	mName(name)
-{
-	OnERR_return(MFCreateTopologyNode(MF_TOPOLOGY_OUTPUT_NODE, &mTopologyNode));
-	OnERR_return(mTopologyNode->SetObject(mediaSink->GetVideoStreamSink()));
-	OnERR_return(mTopologyNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, TRUE));
 	DumpFormats();
 }
 

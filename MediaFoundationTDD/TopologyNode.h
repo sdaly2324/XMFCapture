@@ -17,7 +17,7 @@ struct IMFPresentationDescriptor;
 struct IMFStreamDescriptor;
 struct IMFTransform;
 struct IMFMediaType;
-class FileSink;
+struct IMFStreamSink;
 class TopologyNodeRep;
 class MediaFoundationTDD_API TopologyNode
 {
@@ -26,6 +26,7 @@ public:
 	TopologyNode(std::wstring name, CComPtr<IMFTransform> transform);
 	TopologyNode(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice);
 	TopologyNode(std::wstring name, CComPtr<IMFTopologyNode> node);
+	TopologyNode(std::wstring name, CComPtr<IMFStreamSink> streamSink);
 	TopologyNode
 	(
 		std::wstring name,
@@ -34,7 +35,6 @@ public:
 		CComPtr<IMFStreamDescriptor> streamDescriptor,
 		CComPtr<IMFActivate> renderer
 	);
-	TopologyNode(std::wstring name, std::shared_ptr<FileSink> mediaSink);
 	~TopologyNode();
 
 	HRESULT								GetLastHRESULT();
