@@ -21,7 +21,7 @@ public:
 
 	HRESULT						GetLastHRESULT();
 
-	CComPtr<IMFActivate>		GetCaptureDeviceByName(std::wstring deviceName);
+	CComPtr<IMFActivate>		GetCaptureDeviceByName(std::wstring deviceNameToFind);
 	CComPtr<IMFActivate>		GetRenderer();
 
 private:

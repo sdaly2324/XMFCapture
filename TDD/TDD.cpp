@@ -35,9 +35,12 @@ namespace MediaFoundationTesing
 	TEST_CLASS(MediaFoundationCaptureTESTs)
 	{
 	private:
-		std::wstring	myVideoDeviceName = L"XI100DUSB-SDI Video";								//<-------------------Video device to test-----------------------------
-		std::wstring	myAudioDeviceName = L"Digital Audio Interface (XI100DUSB-SDI Audio)";	//<-------------------Audio device to test-----------------------------
-		std::wstring	myCaptureFilePath = L"C:\\";											//<-------------------Path to file captures----------------------------
+		std::wstring	myVideoDeviceName = L"XI100DUSB-SDI Video";		//<-------------------Video device to test-----------------------------
+		std::wstring	myAudioDeviceName = L"XI100DUSB-SDI Audio";		//<-------------------Audio device to test-----------------------------
+		//std::wstring	myVideoDeviceName = L"XI100DUSB-HDMI Video";	//<-------------------Video device to test-----------------------------
+		//std::wstring	myAudioDeviceName = L"XI100DUSB-HDMI Audio";	//<-------------------Audio device to test-----------------------------
+
+		std::wstring	myCaptureFilePath = L"C:\\";					//<-------------------Path to file captures----------------------------
 		HRESULT			mLastHR = S_OK;
 		std::unique_ptr<MediaSession>	mMediaSession = NULL;
 		std::unique_ptr<Topology>		mTopology = NULL;
