@@ -1,6 +1,5 @@
 #include "MediaSource.h"
 #include "MFUtils.h"
-#include "SourceReader.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
@@ -31,7 +30,6 @@ private:
 	CComPtr<IMFMediaSource>			mMediaSource = nullptr;
 	CComPtr<IMFActivate>			mVideoDevice = nullptr;
 	CComPtr<IMFActivate>			mAudioDevice = nullptr;
-	std::unique_ptr<SourceReader>	mSourceReader = nullptr;
 	CComPtr<IMFMediaTypeHandler>	mVideoMediaTypeHandler = nullptr;
 	CComPtr<IMFMediaTypeHandler>	mAudioMediaTypeHandler = nullptr;
 };

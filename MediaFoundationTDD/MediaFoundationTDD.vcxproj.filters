@@ -13,9 +13,6 @@
     <ClCompile Include="TopologyNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SourceReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PresentationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -49,18 +46,12 @@
     <ClCompile Include="FileSink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TranscodeProfileFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TopologyNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PresentationDescriptor.h">
@@ -95,9 +86,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileSink.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TranscodeProfileFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

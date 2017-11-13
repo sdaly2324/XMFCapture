@@ -174,11 +174,9 @@
     <ClInclude Include="MediaTypeFactory.h" />
     <ClInclude Include="PresentationDescriptor.h" />
     <ClInclude Include="FileSink.h" />
-    <ClInclude Include="SourceReader.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Topology.h" />
     <ClInclude Include="TopologyNode.h" />
-    <ClInclude Include="TranscodeProfileFactory.h" />
     <ClInclude Include="VideoDevices.h" />
     <ClInclude Include="VideoDisplayControl.h" />
   </ItemGroup>
@@ -194,10 +192,8 @@
     <ClCompile Include="MediaTypeFactory.cpp" />
     <ClCompile Include="PresentationDescriptor.cpp" />
     <ClCompile Include="FileSink.cpp" />
-    <ClCompile Include="SourceReader.cpp" />
     <ClCompile Include="Topology.cpp" />
     <ClCompile Include="TopologyNode.cpp" />
-    <ClCompile Include="TranscodeProfileFactory.cpp" />
     <ClCompile Include="VideoDevices.cpp" />
     <ClCompile Include="VideoDisplayControl.cpp" />
   </ItemGroup>

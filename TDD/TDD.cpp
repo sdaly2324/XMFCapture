@@ -92,34 +92,6 @@ namespace MediaFoundationTesing
 			Assert::AreEqual(audioDevices->GetLastHRESULT(), S_OK);
 			Assert::IsTrue(mAudioRenderer);
 		}
-		void ValidateVideoStreamDescriptor(CComPtr<IMFStreamDescriptor> videoStreamDescriptor)
-		{
-			return ValidateStreamDescriptor(videoStreamDescriptor, MFMediaType_Video);
-		}
-		void ValidateAudioStreamDescriptor(CComPtr<IMFStreamDescriptor> audioStreamDescriptor)
-		{
-			return ValidateStreamDescriptor(audioStreamDescriptor, MFMediaType_Audio);
-		}
-		void ValidateStreamDescriptor(CComPtr<IMFStreamDescriptor> streamDescriptor, GUID MAJOR_TYPE)
-		{
-			CComPtr<IMFMediaTypeHandler> mediaTypeHandler = NULL;
-			mLastHR = streamDescriptor->GetMediaTypeHandler(&mediaTypeHandler);
-			Assert::AreEqual(mLastHR, S_OK);
-			unsigned long mediaTypes = 0;
-			mLastHR = mediaTypeHandler->GetMediaTypeCount(&mediaTypes);
-			Assert::AreEqual(mLastHR, S_OK);
-			Assert::IsTrue(mediaTypes > 0);
-			for (unsigned int mediaType = 0; mediaType < mediaTypes; mediaType++)
-			{
-				CComPtr<IMFMediaType> mediaTypeAPI = NULL;
-				mLastHR = mediaTypeHandler->GetMediaTypeByIndex(mediaType, &mediaTypeAPI);
-				Assert::AreEqual(mLastHR, S_OK);
-				GUID guidValue = GUID_NULL;
-				mLastHR = mediaTypeAPI->GetGUID(MF_MT_MAJOR_TYPE, &guidValue);
-				Assert::AreEqual(mLastHR, S_OK);
-				Assert::IsTrue(guidValue == MAJOR_TYPE);
-			}
-		}
 		void InitMediaSession()
 		{
 			mVideoDisplayControl = std::make_shared<VideoDisplayControl>();
@@ -141,104 +113,6 @@ namespace MediaFoundationTesing
 			InitAudioDevices();
 			InitVideoDevices();
 		}
-		TEST_METHOD(AudioOnlyStreamDescriptorsVilidation)
-		{
-			// source
-			auto audioSource = std::make_unique<MediaSource>(mAudioCaptureDevice);
-			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
-
-			//// PresentationDescriptor
-			auto audioPresentationDescriptor = std::make_unique<PresentationDescriptor>(audioSource->GetMediaSource());
-			Assert::AreEqual(audioPresentationDescriptor->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(audioPresentationDescriptor->GetPresentationDescriptor());
-			unsigned int items = 0;
-			mLastHR = audioPresentationDescriptor->GetPresentationDescriptor()->GetCount(&items);
-			Assert::AreEqual(mLastHR, S_OK);
-			Assert::AreEqual(items, (unsigned int)0); // I have no idea why GetCount returns 0 when there is only 1 stream
-
-			CComPtr<IMFStreamDescriptor> audioStreamDescriptor = audioPresentationDescriptor->GetFirstAudioStreamDescriptor();
-			ValidateAudioStreamDescriptor(audioStreamDescriptor);
-		}
-		TEST_METHOD(VideoOnlyStreamDescriptorsVilidation)
-		{
-			// source
-			auto videoSource = std::make_unique<MediaSource>(mVideoCaptureDevice);
-			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
-
-			// PresentationDescriptor
-			auto videoPresentationDescriptor = std::make_unique<PresentationDescriptor>(videoSource->GetMediaSource());
-			Assert::AreEqual(videoPresentationDescriptor->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(videoPresentationDescriptor->GetPresentationDescriptor());
-			unsigned int items = 0;
-			mLastHR = videoPresentationDescriptor->GetPresentationDescriptor()->GetCount(&items);
-			Assert::AreEqual(mLastHR, S_OK);
-			Assert::AreEqual(items, (unsigned int)0); // I have no idea why GetCount returns 0 when there is only 1 stream
-
-			// StreamDescriptors
-			CComPtr<IMFStreamDescriptor> videoStreamDescriptor = videoPresentationDescriptor->GetFirstVideoStreamDescriptor();
-			ValidateVideoStreamDescriptor(videoStreamDescriptor);
-		}
-		TEST_METHOD(VideoAndAudioStreamDescriptorsVilidation)
-		{
-			// video source
-			auto videoSource = std::make_unique<MediaSource>(mVideoCaptureDevice);
-			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
-
-			// audio source
-			auto audioSource = std::make_unique<MediaSource>(mAudioCaptureDevice);
-			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
-
-			// aggregate source
-			auto aggregateSource = std::make_unique<MediaSource>(mVideoCaptureDevice, mAudioCaptureDevice);
-			Assert::AreEqual(aggregateSource->GetLastHRESULT(), S_OK);
-
-			// PresentationDescriptors
-			auto aggregatePresentationDescriptor = std::make_unique<PresentationDescriptor>(aggregateSource->GetMediaSource());
-			Assert::AreEqual(aggregatePresentationDescriptor->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(aggregatePresentationDescriptor->GetPresentationDescriptor());
-			unsigned int items = 0;
-			mLastHR = aggregatePresentationDescriptor->GetPresentationDescriptor()->GetCount(&items);
-			Assert::AreEqual(mLastHR, S_OK);
-			Assert::AreEqual(items, (unsigned int)2);
-
-			// StreamDescriptors
-			CComPtr<IMFStreamDescriptor> videoStreamDescriptor = aggregatePresentationDescriptor->GetFirstVideoStreamDescriptor();
-			ValidateVideoStreamDescriptor(videoStreamDescriptor);
-
-			CComPtr<IMFStreamDescriptor> audioStreamDescriptor = aggregatePresentationDescriptor->GetFirstAudioStreamDescriptor();
-			ValidateAudioStreamDescriptor(audioStreamDescriptor);
-		}
-		TEST_METHOD(TSFileSink)
-		{
-			// source
-			auto videoSource = std::make_shared<MediaSource>(mVideoCaptureDevice);
-			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
-
-			// file sink
-			std::wstring fileToWrite = myCaptureFilePath + L"TSFileSink.ts";
-			auto fileSink = std::make_unique<FileSink>(fileToWrite.c_str(), videoSource);
-			Assert::AreEqual(fileSink->GetLastHRESULT(), S_OK);
-			Assert::IsTrue(fileSink->GetMediaSink());
-		}
-		TEST_METHOD(AudioSourceReader)
-		{
-			// source
-			auto audioSource = std::make_unique<MediaSource>(mAudioCaptureDevice);
-			Assert::AreEqual(audioSource->GetLastHRESULT(), S_OK);
-
-			CComPtr<IMFMediaType> mediaType	= audioSource->GetAudioMediaType();
-			Assert::IsTrue(mediaType);
-		}
-		TEST_METHOD(VideoSourceReader)
-		{
-			// source
-			auto videoSource = std::make_unique<MediaSource>(mVideoCaptureDevice);
-			Assert::AreEqual(videoSource->GetLastHRESULT(), S_OK);
-
-			CComPtr<IMFMediaType> mediaType = videoSource->GetVideoMediaType();
-			Assert::IsTrue(mediaType);
-		}
-
 		TEST_METHOD(VideoAndAudioCaptureAndPassthrough)
 		{
 			//Sleep(5000);
