@@ -1,22 +1,7 @@
-
 #include "CppUnitTest.h"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-#include "TopologyNode.h"
-#include "PresentationDescriptor.h"
 #include "CaptureMediaSession.h"
-#include "AudioDevices.h"
-#include "VideoDevices.h"
-#include "MediaSource.h"
-#include "Topology.h"
-#include "VideoDisplayControl.h"
-#include "FileSink.h"
-
-#include <mfidl.h>
-#include <mfreadwrite.h>
-#include <mfapi.h>
-#include <evr.h>
-#include <memory>
 
 const WCHAR CLASS_NAME[] = L"CaptureTEST Window Class";
 const WCHAR WINDOW_NAME[] = L"CaptureTEST Sample Application";
@@ -43,12 +28,6 @@ namespace MediaFoundationTesing
 		std::wstring	myCaptureFilePath = L"C:\\";					//<-------------------Path to file captures----------------------------
 		HRESULT			mLastHR = S_OK;
 		std::unique_ptr<CaptureMediaSession>	mCaptureMediaSession = nullptr;
-		std::unique_ptr<Topology>		mTopology = nullptr;
-		std::shared_ptr<VideoDisplayControl> mVideoDisplayControl = nullptr;
-		CComPtr<IMFActivate> mAudioCaptureDevice = nullptr;
-		CComPtr<IMFActivate> mVideoCaptureDevice = nullptr;
-		CComPtr<IMFActivate> mAudioRenderer = nullptr;
-		CComPtr<IMFActivate> mVideoRenderer = nullptr;
 		HWND mVideoWindow = nullptr;
 
 		void InitializeWindow()
