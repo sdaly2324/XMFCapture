@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <atlcomcli.h>
 #include <memory>
+#include <string>
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -17,24 +18,22 @@ public:
 };
 
 class OnTopologyReadyCallback;
-class MediaSessionRep;
-class MediaFoundationTDD_API MediaSession
+class CaptureMediaSessionRep;
+class MediaFoundationTDD_API CaptureMediaSession
 {
 public:
-	MediaSession(std::shared_ptr<OnTopologyReadyCallback> onTopologyReadyCallback);
-	~MediaSession();
+	CaptureMediaSession(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath);
+	~CaptureMediaSession();
 
 	HRESULT								GetLastHRESULT();
 
+	void								InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName);
 	void								Start();
 	void								Stop();
 
-	CComPtr<IMFMediaSession>			GetMediaSession();
-
 private:
-	MediaSession();
 #pragma warning(push)
 #pragma warning(disable:4251)
-	std::unique_ptr<MediaSessionRep> m_pRep = 0;
+	std::unique_ptr<CaptureMediaSessionRep> m_pRep = 0;
 #pragma warning(pop)
 };

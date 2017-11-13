@@ -6,26 +6,24 @@
 class VideoDisplayControlRep : public MFUtils
 {
 public:
-	VideoDisplayControlRep();
+	VideoDisplayControlRep(HWND windowForVideo);
 	~VideoDisplayControlRep();
-	void SetIsParticipating(bool isParticipating);
-
-	void								OnTopologyReady(CComPtr<IMFMediaSession> mediaSession);
 
 	HRESULT								GetLastHRESULT();
 
-	CComPtr<IMFVideoDisplayControl>		GetVideoDisplayControl();
+	void								OnTopologyReady(CComPtr<IMFMediaSession> mediaSession);
 
 private:
-	CComPtr<IMFVideoDisplayControl>		mVideoDisplayControl = NULL;
-	bool mIsParticipating = true;
+	CComPtr<IMFVideoDisplayControl>		mVideoDisplayControl = nullptr;
+	HWND mWindowForVideo = nullptr;
 };
 
-VideoDisplayControl::VideoDisplayControl()
+VideoDisplayControl::VideoDisplayControl(HWND windowForVideo)
 {
-	m_pRep = std::unique_ptr<VideoDisplayControlRep>(new VideoDisplayControlRep());
+	m_pRep = std::unique_ptr<VideoDisplayControlRep>(new VideoDisplayControlRep(windowForVideo));
 }
-VideoDisplayControlRep::VideoDisplayControlRep()
+VideoDisplayControlRep::VideoDisplayControlRep(HWND windowForVideo) :
+	mWindowForVideo(windowForVideo)
 {
 }
 VideoDisplayControl::~VideoDisplayControl()
@@ -44,33 +42,16 @@ HRESULT VideoDisplayControlRep::GetLastHRESULT()
 	return MFUtils::GetLastHRESULT();
 }
 
-CComPtr<IMFVideoDisplayControl> VideoDisplayControl::GetVideoDisplayControl()
-{
-	return m_pRep->GetVideoDisplayControl();
-}
-CComPtr<IMFVideoDisplayControl> VideoDisplayControlRep::GetVideoDisplayControl()
-{
-	return mVideoDisplayControl;
-}
-
 void VideoDisplayControl::OnTopologyReady(CComPtr<IMFMediaSession> mediaSession)
 {
 	m_pRep->OnTopologyReady(mediaSession);
 }
 void VideoDisplayControlRep::OnTopologyReady(CComPtr<IMFMediaSession> mediaSession)
 {
-	if (mIsParticipating)
+	if (mWindowForVideo)
 	{
 		mVideoDisplayControl.Release();
 		OnERR_return(MFGetService(mediaSession, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl, (void**)&mVideoDisplayControl));
+		OnERR_return(mVideoDisplayControl->SetVideoWindow(mWindowForVideo));
 	}
-}
-
-void VideoDisplayControl::SetIsParticipating(bool isParticipating)
-{
-	m_pRep->SetIsParticipating(isParticipating);
-}
-void VideoDisplayControlRep::SetIsParticipating(bool isParticipating)
-{
-	mIsParticipating = isParticipating;
 }

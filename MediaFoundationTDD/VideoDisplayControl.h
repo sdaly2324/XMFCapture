@@ -4,7 +4,7 @@
 #include <atlcomcli.h>
 #include <memory>
 
-#include "MediaSession.h"
+#include "CaptureMediaSession.h"
 
 #ifdef MediaFoundationTDD_EXPORTS
 #define MediaFoundationTDD_API __declspec(dllexport)
@@ -18,16 +18,13 @@ class VideoDisplayControlRep;
 class MediaFoundationTDD_API VideoDisplayControl : public OnTopologyReadyCallback
 {
 public:
-	VideoDisplayControl();
+	VideoDisplayControl(HWND windowForVideo);
 	~VideoDisplayControl();
-
-	void SetIsParticipating(bool isParticipating);
 
 	//OnTopologyReadyCallback
 	virtual void						OnTopologyReady(CComPtr<IMFMediaSession> mediaSession);
 
 	HRESULT								GetLastHRESULT();
-	CComPtr<IMFVideoDisplayControl>		GetVideoDisplayControl();
 
 private:
 #pragma warning(push)

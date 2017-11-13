@@ -169,7 +169,7 @@
     <ClInclude Include="MFAttrToStrHelper.h" />
     <ClInclude Include="MFUtils.h" />
     <ClInclude Include="MediaFoundationTDD.h" />
-    <ClInclude Include="MediaSession.h" />
+    <ClInclude Include="CaptureMediaSession.h" />
     <ClInclude Include="MediaSource.h" />
     <ClInclude Include="MediaTypeFactory.h" />
     <ClInclude Include="PresentationDescriptor.h" />
@@ -187,7 +187,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MFAttrToStrHelper.cpp" />
     <ClCompile Include="MFUtils.cpp" />
-    <ClCompile Include="MediaSession.cpp" />
+    <ClCompile Include="CaptureMediaSession.cpp" />
     <ClCompile Include="MediaSource.cpp" />
     <ClCompile Include="MediaTypeFactory.cpp" />
     <ClCompile Include="PresentationDescriptor.cpp" />

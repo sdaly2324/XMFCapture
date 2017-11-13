@@ -16,9 +16,6 @@
     <ClCompile Include="PresentationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MediaSession.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AudioDevices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -46,6 +43,9 @@
     <ClCompile Include="FileSink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CaptureMediaSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -55,9 +55,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PresentationDescriptor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MediaSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioDevices.h">
@@ -86,6 +83,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileSink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CaptureMediaSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
