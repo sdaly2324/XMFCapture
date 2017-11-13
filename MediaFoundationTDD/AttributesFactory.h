@@ -3,15 +3,9 @@
 #include <atlcomcli.h>
 #include <memory>
 
-#ifdef MediaFoundationTDD_EXPORTS
-#define MediaFoundationTDD_API __declspec(dllexport)
-#else
-#define MediaFoundationTDD_API __declspec(dllimport)
-#endif
-
 struct IMFAttributes;
 class AttributesFactoryRep;
-class MediaFoundationTDD_API AttributesFactory
+class AttributesFactory
 {
 public:
 	AttributesFactory();

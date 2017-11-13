@@ -5,15 +5,9 @@
 #include <atlcomcli.h>
 #include <memory>
 
-#ifdef MediaFoundationTDD_EXPORTS
-#define MediaFoundationTDD_API __declspec(dllexport)
-#else
-#define MediaFoundationTDD_API __declspec(dllimport)
-#endif
-
 struct IMFActivate;
 class VideoDevicesRep;
-class MediaFoundationTDD_API VideoDevices
+class VideoDevices
 {
 public:
 	VideoDevices(HWND windowForVideo);

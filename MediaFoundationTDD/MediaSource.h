@@ -4,17 +4,11 @@
 #include <atlcomcli.h>
 #include <memory>
 
-#ifdef MediaFoundationTDD_EXPORTS
-#define MediaFoundationTDD_API __declspec(dllexport)
-#else
-#define MediaFoundationTDD_API __declspec(dllimport)
-#endif
-
 struct IMFActivate;
 struct IMFMediaSource;
 struct IMFMediaType;
 class MediaSourceRep;
-class MediaFoundationTDD_API MediaSource
+class MediaSource
 {
 public:
 	MediaSource(CComPtr<IMFActivate> singleDevice);

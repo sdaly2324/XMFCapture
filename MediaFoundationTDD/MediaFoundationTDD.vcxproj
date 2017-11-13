@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClInclude Include="AudioDevices.h" />
     <ClInclude Include="AttributesFactory.h" />
+    <ClInclude Include="CaptureHAL.h" />
     <ClInclude Include="Devices.h" />
     <ClInclude Include="MFAttrToStrHelper.h" />
     <ClInclude Include="MFUtils.h" />

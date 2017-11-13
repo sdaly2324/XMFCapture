@@ -4,16 +4,10 @@
 #include <atlcomcli.h>
 #include <memory>
 
-#ifdef MediaFoundationTDD_EXPORTS
-#define MediaFoundationTDD_API __declspec(dllexport)
-#else
-#define MediaFoundationTDD_API __declspec(dllimport)
-#endif
-
 struct IMFActivate;
 struct IMFAttributes;
 class DevicesRep;
-class MediaFoundationTDD_API Devices
+class Devices
 {
 public:
 	Devices(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer);

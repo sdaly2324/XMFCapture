@@ -4,12 +4,6 @@
 #include <string>
 #include <memory>
 
-#ifdef MediaFoundationTDD_EXPORTS
-#define MediaFoundationTDD_API __declspec(dllexport)
-#else
-#define MediaFoundationTDD_API __declspec(dllimport)
-#endif
-
 struct IMFMediaSource;
 struct IMFTopologyNode;
 struct IMFActivate;
@@ -19,7 +13,7 @@ struct IMFTransform;
 struct IMFMediaType;
 struct IMFStreamSink;
 class TopologyNodeRep;
-class MediaFoundationTDD_API TopologyNode
+class TopologyNode
 {
 public:
 	TopologyNode(std::wstring name);

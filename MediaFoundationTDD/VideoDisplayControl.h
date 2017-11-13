@@ -6,16 +6,10 @@
 
 #include "CaptureMediaSession.h"
 
-#ifdef MediaFoundationTDD_EXPORTS
-#define MediaFoundationTDD_API __declspec(dllexport)
-#else
-#define MediaFoundationTDD_API __declspec(dllimport)
-#endif
-
 struct IMFMediaSession;
 struct IMFVideoDisplayControl;
 class VideoDisplayControlRep;
-class MediaFoundationTDD_API VideoDisplayControl : public OnTopologyReadyCallback
+class VideoDisplayControl : public OnTopologyReadyCallback
 {
 public:
 	VideoDisplayControl(HWND windowForVideo);

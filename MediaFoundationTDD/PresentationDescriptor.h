@@ -3,17 +3,11 @@
 #include <atlcomcli.h>
 #include <memory>
 
-#ifdef MediaFoundationTDD_EXPORTS
-#define MediaFoundationTDD_API __declspec(dllexport)
-#else
-#define MediaFoundationTDD_API __declspec(dllimport)
-#endif
-
 struct IMFStreamDescriptor;
 struct IMFMediaSource;
 struct IMFPresentationDescriptor;
 class PresentationDescriptorRep;
-class MediaFoundationTDD_API PresentationDescriptor
+class PresentationDescriptor
 {
 public:
 	PresentationDescriptor(CComPtr<IMFMediaSource> mediaSource);

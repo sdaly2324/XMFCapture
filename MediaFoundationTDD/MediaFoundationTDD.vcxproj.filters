@@ -88,6 +88,9 @@
     <ClInclude Include="CaptureMediaSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CaptureHAL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
