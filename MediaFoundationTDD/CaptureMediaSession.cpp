@@ -182,21 +182,34 @@ void CaptureMediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent
 		SetLastHR_Fail();
 		return;
 	}
-	if (eventType == MESessionTopologyStatus)
+	switch (eventType)
 	{
+	case MESessionTopologyStatus:
 		OnERR_return(mediaEvent->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, (UINT32*)&TopoStatus));
 		if (TopoStatus == MF_TOPOSTATUS_READY && mOnTopologyReadyCallback)
 		{
 			mOnTopologyReadyCallback->OnTopologyReady(mMediaSession);
 		}
-	}
-	else if (eventType == MESessionStopped)
-	{
-		SetEvent(mStoppedEvent);
-	}
-	else if (eventType == MESessionStarted)
-	{
+		break;
+	case MESessionStarted:
 		SetEvent(mStartedEvent);
+		break;
+	case MF_TOPOSTATUS_STARTED_SOURCE:
+		OutputDebugStringW(L"MF_TOPOSTATUS_STARTED_SOURCE\n");
+		break;
+	case MESessionStopped:
+		OnERR_return(mMediaSession->Close());
+		break;
+	case MESessionClosed:
+		SetEvent(mStoppedEvent);
+		break;
+	case MESessionEnded:
+		OutputDebugStringW(L"MESessionEnded\n");
+		//OnERR_return(mMediaSession->Stop());
+		break;
+	default:
+		OutputDebugStringW(L"UKNOWN IMFMediaEvent!\n");
+		break;
 	}
 }
 

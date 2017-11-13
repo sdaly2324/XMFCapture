@@ -70,7 +70,7 @@ namespace MediaFoundationTesing
 		TEST_METHOD(CaptureAndPassthroughStartStop)
 		{
 			mCaptureMediaSession->InitCaptureAndPassthrough(mVideoWindow, L"CaptureAndPassthrough.ts");
-			StartAndStopFor(5000);
+			StartAndStopFor(1000);
 		}
 	};
 }
