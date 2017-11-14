@@ -648,8 +648,19 @@ CComPtr<IMFTransform> TopologyRep::GetAudioEncoder()
 
 CComPtr<IMFTransform> TopologyRep::GetVideoEncoder()
 {
-	//return GetEncoder(MFMediaType_Video, MFVideoFormat_H264, MFT_CATEGORY_VIDEO_ENCODER, L"H264", L"Encoder");
-	return GetEncoder(MFMediaType_Video, MFVideoFormat_H264, MFT_CATEGORY_VIDEO_ENCODER, L"264", L"Intel");
+	CComPtr<IMFTransform> retVal = GetEncoder(MFMediaType_Video, MFVideoFormat_H264, MFT_CATEGORY_VIDEO_ENCODER, L"264", L"Intel");
+	if (retVal)
+	{
+		CComPtr<ICodecAPI> codecApi;
+		OnERR_return_NULL(retVal->QueryInterface(&codecApi));
+
+		VARIANT GOPSize;
+		VariantInit(&GOPSize);
+		OnERR_return_NULL(codecApi->GetValue(&CODECAPI_AVEncMPVGOPSize, &GOPSize));
+		GOPSize.intVal = 30;
+		OnERR_return_NULL(codecApi->SetValue(&CODECAPI_AVEncMPVGOPSize, &GOPSize));
+	}
+	return retVal;
 }
 
 std::shared_ptr<TopologyNode> TopologyRep::CreateVideoSinkNode(std::shared_ptr<FileSink> aggregateSink)
