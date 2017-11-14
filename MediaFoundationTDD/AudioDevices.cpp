@@ -22,7 +22,7 @@ AudioDevices::AudioDevices()
 	if (SUCCEEDED(hr))
 	{
 		AttributesFactory attributesFactory;
-		m_pRep = std::unique_ptr<AudioDevicesRep>(new AudioDevicesRep(attributesFactory.CreateAudioDeviceAttrs(), renderer));
+		m_pRep = std::make_unique<AudioDevicesRep>(attributesFactory.CreateAudioDeviceAttrs(), renderer);
 	}
 }
 AudioDevicesRep::AudioDevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer) : Devices(attributesPtr, renderer)

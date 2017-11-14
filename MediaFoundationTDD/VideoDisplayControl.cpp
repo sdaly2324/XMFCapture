@@ -20,7 +20,7 @@ private:
 
 VideoDisplayControl::VideoDisplayControl(HWND windowForVideo)
 {
-	m_pRep = std::unique_ptr<VideoDisplayControlRep>(new VideoDisplayControlRep(windowForVideo));
+	m_pRep = std::make_unique<VideoDisplayControlRep>(windowForVideo);
 }
 VideoDisplayControlRep::VideoDisplayControlRep(HWND windowForVideo) :
 	mWindowForVideo(windowForVideo)

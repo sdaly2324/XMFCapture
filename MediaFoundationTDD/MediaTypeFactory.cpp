@@ -40,7 +40,7 @@ private:
 
 MediaTypeFactory::MediaTypeFactory()
 {
-	m_pRep = std::unique_ptr<MediaTypeFactoryRep>(new MediaTypeFactoryRep());
+	m_pRep = std::make_unique<MediaTypeFactoryRep>();
 }
 MediaTypeFactoryRep::MediaTypeFactoryRep()
 {

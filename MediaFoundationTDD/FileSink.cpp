@@ -31,7 +31,7 @@ private:
 };
 FileSink::FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> aggregateMediaSource)
 {
-	m_pRep = std::unique_ptr<FileSinkRep>(new FileSinkRep(fullFilePath, aggregateMediaSource));
+	m_pRep = std::make_unique<FileSinkRep>(fullFilePath, aggregateMediaSource);
 }
 FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> aggregateMediaSource)
 {

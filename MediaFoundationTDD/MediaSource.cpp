@@ -36,7 +36,7 @@ private:
 
 MediaSource::MediaSource(CComPtr<IMFActivate> singleDevice)
 {
-	m_pRep = std::unique_ptr<MediaSourceRep>(new MediaSourceRep(singleDevice));
+	m_pRep = std::make_unique<MediaSourceRep>(singleDevice);
 }
 MediaSourceRep::MediaSourceRep(CComPtr<IMFActivate> singleDevice)
 {
@@ -46,7 +46,7 @@ MediaSourceRep::MediaSourceRep(CComPtr<IMFActivate> singleDevice)
 }
 MediaSource::MediaSource(CComPtr<IMFActivate> videoDevice, CComPtr<IMFActivate> audioDevice)
 {
-	m_pRep = std::unique_ptr<MediaSourceRep>(new MediaSourceRep(videoDevice, audioDevice));
+	m_pRep = std::make_unique<MediaSourceRep>(videoDevice, audioDevice);
 }
 MediaSourceRep::MediaSourceRep(CComPtr<IMFActivate> videoDevice, CComPtr<IMFActivate> audioDevice)
 {

@@ -63,7 +63,7 @@ private:
 
 CaptureMediaSession::CaptureMediaSession(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath)
 {
-	m_pRep = std::unique_ptr<CaptureMediaSessionRep>(new CaptureMediaSessionRep(videoDeviceName, audioDeviceName, captureFilePath));
+	m_pRep = std::make_unique<CaptureMediaSessionRep>(videoDeviceName, audioDeviceName, captureFilePath);
 }
 CaptureMediaSessionRep::CaptureMediaSessionRep(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath):
 	mVideoDeviceName(videoDeviceName),

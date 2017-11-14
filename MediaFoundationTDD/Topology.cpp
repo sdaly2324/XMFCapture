@@ -96,7 +96,7 @@ private:
 
 Topology::Topology()
 {
-	m_pRep = std::unique_ptr<TopologyRep>(new TopologyRep());
+	m_pRep = std::make_unique<TopologyRep>();
 }
 TopologyRep::TopologyRep()
 {
@@ -110,7 +110,7 @@ TopologyRep::~TopologyRep()
 
 Topology::Topology(CComPtr<IMFMediaEvent> mediaEvent)
 {
-	m_pRep = std::unique_ptr<TopologyRep>(new TopologyRep(mediaEvent));
+	m_pRep = std::make_unique<TopologyRep>(mediaEvent);
 }
 TopologyRep::TopologyRep(CComPtr<IMFMediaEvent> mediaEvent)
 {

@@ -25,7 +25,7 @@ private:
 };
 Devices::Devices(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer)
 {
-	m_pRep = std::unique_ptr<DevicesRep>(new DevicesRep(attributesPtr, renderer));
+	m_pRep = std::make_unique<DevicesRep>(attributesPtr, renderer);
 }
 DevicesRep::DevicesRep(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer)
 {

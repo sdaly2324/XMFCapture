@@ -26,7 +26,7 @@ private:
 };
 AttributesFactory::AttributesFactory()
 {
-	m_pRep = std::unique_ptr<AttributesFactoryRep>(new AttributesFactoryRep());
+	m_pRep = std::make_unique<AttributesFactoryRep>();
 }
 AttributesFactoryRep::AttributesFactoryRep()
 {	

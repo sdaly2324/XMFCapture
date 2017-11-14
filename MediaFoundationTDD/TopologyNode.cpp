@@ -97,7 +97,7 @@ void TopologyNodeRep::DumpFormats()
 
 TopologyNode::TopologyNode(std::wstring name)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name));
+	m_pRep = std::make_unique<TopologyNodeRep>(name);
 }
 TopologyNodeRep::TopologyNodeRep(std::wstring name) :
 	mName(name)
@@ -108,7 +108,7 @@ TopologyNodeRep::TopologyNodeRep(std::wstring name) :
 
 TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFStreamSink> streamSink)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, streamSink));
+	m_pRep = std::make_unique<TopologyNodeRep>(name, streamSink);
 }
 TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFStreamSink> streamSink) :
 	mName(name)
@@ -121,7 +121,7 @@ TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFStreamSink> strea
 
 TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFTopologyNode> node)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, node));
+	m_pRep = std::make_unique<TopologyNodeRep>(name, node);
 }
 TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFTopologyNode> node) :
 	mName(name)
@@ -131,7 +131,7 @@ TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFTopologyNode> nod
 }
 TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFTransform> transform)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, transform));
+	m_pRep = std::make_unique<TopologyNodeRep>(name, transform);
 }
 TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFTransform> transform) :
 	mName(name)
@@ -143,7 +143,7 @@ TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFTransform> transf
 
 TopologyNode::TopologyNode(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice)
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, prefMediaType, renderDevice));
+	m_pRep = std::make_unique<TopologyNodeRep>(name, prefMediaType, renderDevice);
 }
 TopologyNodeRep::TopologyNodeRep(std::wstring name, CComPtr<IMFMediaType> prefMediaType, CComPtr<IMFActivate> renderDevice) :
 	mName(name)
@@ -162,7 +162,7 @@ TopologyNode::TopologyNode
 	CComPtr<IMFActivate> renderer
 )
 {
-	m_pRep = std::unique_ptr<TopologyNodeRep>(new TopologyNodeRep(name, mediaSource, presentationDescriptor, streamDescriptor, renderer));
+	m_pRep = std::make_unique<TopologyNodeRep>(name, mediaSource, presentationDescriptor, streamDescriptor, renderer);
 }
 TopologyNodeRep::TopologyNodeRep
 (
