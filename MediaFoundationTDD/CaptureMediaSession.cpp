@@ -9,6 +9,7 @@
 #include <mfapi.h>
 #include <atlbase.h>
 #include <mfidl.h>
+#include <Mferror.h>
 
 class CaptureMediaSessionRep : public IMFAsyncCallback, public MFUtils
 {
@@ -19,6 +20,7 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	void								InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName);
+	void								InitPassthrough(HWND videoWindow);
 	void								Start();
 	void								Stop();
 
@@ -81,7 +83,6 @@ CaptureMediaSessionRep::CaptureMediaSessionRep(std::wstring videoDeviceName, std
 	{
 		OnERR_return(HRESULT_FROM_WIN32(GetLastError()));
 	}
-	mTopology = std::make_unique<Topology>();
 }
 CaptureMediaSession::~CaptureMediaSession()
 {
@@ -102,19 +103,30 @@ HRESULT CaptureMediaSessionRep::GetLastHRESULT()
 
 HRESULT CaptureMediaSessionRep::Invoke(IMFAsyncResult* pAsyncResult)
 {
-	CComCritSecLock<CComAutoCriticalSection> lock(mCritSec);
-	if (!LastHR_OK())
+	if (mMediaSession)
 	{
-		return GetLastHRESULT();
+		CComCritSecLock<CComAutoCriticalSection> lock(mCritSec);
+		if (!LastHR_OK())
+		{
+			return GetLastHRESULT();
+		}
+		CComPtr<IMFMediaEvent> pEvent;
+		OnERR_return_HR(mMediaSession->EndGetEvent(pAsyncResult, &pEvent));
+		ProcessMediaEvent(pEvent);
+		if (!LastHR_OK())
+		{
+			return GetLastHRESULT();
+		}
+		HRESULT hr = mMediaSession->BeginGetEvent(this, nullptr);
+		if (!SUCCEEDED(hr) && hr != MF_E_SHUTDOWN)
+		{
+			return hr;
+		}
+		if (hr == MF_E_SHUTDOWN)
+		{
+			OutputDebugStringW(L"Invoke MF_E_SHUTDOWN\n");
+		}
 	}
-	CComPtr<IMFMediaEvent> pEvent;
-	OnERR_return_HR(mMediaSession->EndGetEvent(pAsyncResult, &pEvent));
-	ProcessMediaEvent(pEvent);
-	if (!LastHR_OK())
-	{
-		return GetLastHRESULT();
-	}
-	OnERR_return_HR(mMediaSession->BeginGetEvent(this, nullptr));
 	return S_OK;
 }
 
@@ -191,24 +203,33 @@ void CaptureMediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent
 			mOnTopologyReadyCallback->OnTopologyReady(mMediaSession);
 		}
 		break;
+	case MESessionTopologySet:
+		OutputDebugStringW(L"POOP MESessionTopologySet\n");
+		break;
+	case MESessionCapabilitiesChanged:
+		OutputDebugStringW(L"POOP MESessionCapabilitiesChanged\n");
+		break;
+	case MESessionNotifyPresentationTime:
+		OutputDebugStringW(L"POOP MESessionNotifyPresentationTime\n");
+		break;
 	case MESessionStarted:
+		OutputDebugStringW(L"POOP MESessionStarted\n");
 		SetEvent(mStartedEvent);
 		break;
-	case MF_TOPOSTATUS_STARTED_SOURCE:
-		OutputDebugStringW(L"MF_TOPOSTATUS_STARTED_SOURCE\n");
-		break;
 	case MESessionStopped:
+		OutputDebugStringW(L"POOP MESessionStopped\n");
 		OnERR_return(mMediaSession->Close());
 		break;
 	case MESessionClosed:
+		OutputDebugStringW(L"POOP MESessionClosed\n");
+		OnERR_return(mMediaSession->Shutdown());
 		SetEvent(mStoppedEvent);
 		break;
 	case MESessionEnded:
-		OutputDebugStringW(L"MESessionEnded\n");
-		//OnERR_return(mMediaSession->Stop());
+		OutputDebugStringW(L"POOP MESessionEnded\n");
 		break;
 	default:
-		OutputDebugStringW(L"UKNOWN IMFMediaEvent!\n");
+		OutputDebugStringW(L"POOP UKNOWN IMFMediaEvent!\n");
 		break;
 	}
 }
@@ -235,6 +256,9 @@ void CaptureMediaSessionRep::Stop()
 {
 	OnERR_return(mMediaSession->Stop());
 	DWORD res = WaitForSingleObject(mStoppedEvent, INFINITE);
+
+	mMediaSession.Release();
+	OnERR_return(MFCreateMediaSession(nullptr, &mMediaSession));
 }
 
 void CaptureMediaSessionRep::CreateCaptureSourceAndRenderers(HWND videoWindow)
@@ -255,7 +279,21 @@ void CaptureMediaSession::InitCaptureAndPassthrough(HWND videoWindow, std::wstri
 }
 void CaptureMediaSessionRep::InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName)
 {
+	mTopology.reset(nullptr);
+	mTopology = std::make_unique<Topology>();
 	CreateCaptureSourceAndRenderers(videoWindow);
 	std::wstring fileToWrite = mCaptureFilePath + captureFileName;
 	mTopology->CreateTopology(mCaptureSource, fileToWrite, mVideoRenderer, mAudioRenderer, mMediaSession);
+}
+
+void CaptureMediaSession::InitPassthrough(HWND videoWindow)
+{
+	m_pRep->InitPassthrough(videoWindow);
+}
+void CaptureMediaSessionRep::InitPassthrough(HWND videoWindow)
+{
+	mTopology.reset(nullptr);
+	mTopology = std::make_unique<Topology>();
+	CreateCaptureSourceAndRenderers(videoWindow);
+	mTopology->CreateTopology(mCaptureSource, L"", mVideoRenderer, mAudioRenderer, mMediaSession);
 }

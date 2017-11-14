@@ -20,17 +20,15 @@ namespace MediaFoundationTesing
 	TEST_CLASS(MediaFoundationCaptureTESTs)
 	{
 	private:
-		std::wstring	myVideoDeviceName = L"XI100DUSB-SDI Video";		//<-------------------Video device to test-----------------------------
-		std::wstring	myAudioDeviceName = L"XI100DUSB-SDI Audio";		//<-------------------Audio device to test-----------------------------
-		//std::wstring	myVideoDeviceName = L"XI100DUSB-HDMI Video";	//<-------------------Video device to test-----------------------------
-		//std::wstring	myAudioDeviceName = L"XI100DUSB-HDMI Audio";	//<-------------------Audio device to test-----------------------------
+		static std::wstring	myVideoDeviceName;
+		static std::wstring	myAudioDeviceName;
+		static std::wstring	myCaptureFilePath;
+		static std::unique_ptr<CaptureMediaSession>	mCaptureMediaSession;
+		static HWND mVideoWindow;
 
-		std::wstring	myCaptureFilePath = L"C:\\";					//<-------------------Path to file captures----------------------------
-		HRESULT			mLastHR = S_OK;
-		std::unique_ptr<CaptureMediaSession>	mCaptureMediaSession = nullptr;
-		HWND mVideoWindow = nullptr;
+		HRESULT mLastHR = S_OK;
 
-		void InitializeWindow()
+		static void InitializeWindow()
 		{
 			WNDCLASS wc = { 0 };
 			wc.lpfnWndProc = WindowProc;
@@ -42,10 +40,11 @@ namespace MediaFoundationTesing
 			mVideoWindow = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
 			Assert::IsTrue(mVideoWindow);
 
-			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
+			//ShowWindow(mVideoWindow, SW_SHOWDEFAULT); // this tends to crash pass through and mutiple tests
+			ShowWindow(mVideoWindow, SW_HIDE);
 			UpdateWindow(mVideoWindow);
 		}
-		void StartAndStopFor(DWORD milliseconds)
+		static void StartAndStopFor(DWORD milliseconds)
 		{
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 			mCaptureMediaSession->Start();
@@ -56,7 +55,7 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->Stop();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
-		void InitMediaSession()
+		static void InitMediaSession()
 		{
 			mCaptureMediaSession = std::make_unique<CaptureMediaSession>(myVideoDeviceName, myAudioDeviceName, myCaptureFilePath);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
@@ -64,13 +63,33 @@ namespace MediaFoundationTesing
 	public:
 		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
-			InitializeWindow();
-			InitMediaSession();
+			if (mVideoWindow == nullptr)
+			{
+				InitializeWindow();
+				InitMediaSession();
+			}
 		}
+		MediaFoundationCaptureTESTs::~MediaFoundationCaptureTESTs()
+		{
+			OutputDebugStringW(L"POOP MediaFoundationCaptureTESTs DESTROY\n");
+		}
+
 		TEST_METHOD(CaptureAndPassthroughStartStop)
 		{
 			mCaptureMediaSession->InitCaptureAndPassthrough(mVideoWindow, L"CaptureAndPassthrough.ts");
-			StartAndStopFor(1000);
+			StartAndStopFor(0);
+		}
+		TEST_METHOD(PassthroughStartStop)
+		{
+			mCaptureMediaSession->InitPassthrough(mVideoWindow);
+			StartAndStopFor(0);
 		}
 	};
+	std::wstring MediaFoundationCaptureTESTs::myVideoDeviceName = L"XI100DUSB-SDI Video";		//<-------------------Video device to test-----------------------------
+	std::wstring MediaFoundationCaptureTESTs::myAudioDeviceName = L"XI100DUSB-SDI Audio";		//<-------------------Audio device to test-----------------------------
+	//std::wstring MediaFoundationCaptureTESTs::myVideoDeviceName = L"XI100DUSB-HDMI Video";	//<-------------------Video device to test-----------------------------
+	//std::wstring MediaFoundationCaptureTESTs::myAudioDeviceName = L"XI100DUSB-HDMI Audio";	//<-------------------Audio device to test-----------------------------
+	std::wstring MediaFoundationCaptureTESTs::myCaptureFilePath = L"C:\\";						//<-------------------Path to file captures----------------------------
+	std::unique_ptr<CaptureMediaSession> MediaFoundationCaptureTESTs::mCaptureMediaSession = nullptr;
+	HWND MediaFoundationCaptureTESTs::mVideoWindow = nullptr;
 }

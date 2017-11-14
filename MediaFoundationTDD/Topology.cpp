@@ -407,50 +407,70 @@ void TopologyRep::CreateTopology
 	}
 
 	captureSource->SetCurrentMediaTypes(); // need to figure out how to set these depending on what is plugged in
-	auto aggregateSink = std::make_shared<FileSink>(fileToWrite.c_str(), captureSource);
 
+	std::shared_ptr<FileSink> aggregateSink = nullptr;
 	std::shared_ptr<TopologyNode> videoSinkNode = nullptr;
 	std::shared_ptr<TopologyNode> audioSinkNode = nullptr;
-	if (captureSource->GetVideoMediaType())
+	if (fileToWrite != L"")
 	{
-		videoSinkNode = CreateVideoSinkNode(aggregateSink);
-	}
-	if (captureSource->GetAudioMediaType())
-	{
-		audioSinkNode = CreateAudioSinkNode(aggregateSink);
+		aggregateSink = std::make_shared<FileSink>(fileToWrite.c_str(), captureSource);
+		if (captureSource->GetVideoMediaType())
+		{
+			videoSinkNode = CreateVideoSinkNode(aggregateSink);
+		}
+		if (captureSource->GetAudioMediaType())
+		{
+			audioSinkNode = CreateAudioSinkNode(aggregateSink);
+		}
 	}
 
 	MediaTypeFactory mediaTypeFactory;
+
+	// video
+	std::shared_ptr<PresentationDescriptor> videoMediaSourcePresentationDescriptor(new PresentationDescriptor(captureSource->GetMediaSource()));
+
+	std::shared_ptr<TopologyNode> videoSourceNode = CreateVideoSourceNode(captureSource->GetMediaSource(), videoMediaSourcePresentationDescriptor, videoRendererDevice);
+	std::shared_ptr<TopologyNode> videoRendererNode = CreateRendererNode(L"Video Renderer", videoSourceNode->GetOutputPrefType(), videoRendererDevice);
+	
 	if (videoSinkNode)
 	{
-		std::shared_ptr<PresentationDescriptor> videoMediaSourcePresentationDescriptor(new PresentationDescriptor(captureSource->GetMediaSource()));
-
-		std::shared_ptr<TopologyNode> videoSourceNode = CreateVideoSourceNode(captureSource->GetMediaSource(), videoMediaSourcePresentationDescriptor, videoRendererDevice);
-		std::shared_ptr<TopologyNode> videoRendererNode = CreateRendererNode(L"Video Renderer", videoSourceNode->GetOutputPrefType(), videoRendererDevice);
+		// encode and pass through
 		CComPtr<IMFAttributes> videoSourceAttrs = captureSource->GetVideoMediaType();
 		std::shared_ptr<TopologyNode> videoEncoderNode = CreateVideoEncoderTransformNode(videoRendererNode->GetInputPrefType(), mediaTypeFactory.CreateVideoEncodingMediaType(videoSourceAttrs));
 		std::shared_ptr<TopologyNode> videoTeeNode = CreateTeeNode(L"Video TEE");
-
 		OnERR_return(AddAndConnect2Nodes(videoSourceNode->GetNode(), 0, videoTeeNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(videoTeeNode->GetNode(), 0, videoRendererNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(videoTeeNode->GetNode(), 1, videoEncoderNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(videoEncoderNode->GetNode(), 0, videoSinkNode->GetNode(), 0));
-
 	}
+	else
+	{
+		// pass through only
+		OnERR_return(AddAndConnect2Nodes(videoSourceNode->GetNode(), 0, videoRendererNode->GetNode(), 0));
+	}
+
+	// audio
+	std::shared_ptr<PresentationDescriptor> audioMediaSourcePresentationDescriptor(new PresentationDescriptor(captureSource->GetMediaSource()));
+
+	std::shared_ptr<TopologyNode> audioSourceNode = CreateAudioSourceNode(captureSource->GetMediaSource(), audioMediaSourcePresentationDescriptor, audioRendererDevice);
+	std::shared_ptr<TopologyNode> audioRendererNode = CreateRendererNode(L"Audio Renderer", audioSourceNode->GetOutputPrefType(), audioRendererDevice);
+
 	if (audioSinkNode)
 	{
-		std::shared_ptr<PresentationDescriptor> audioMediaSourcePresentationDescriptor(new PresentationDescriptor(captureSource->GetMediaSource()));
-
-		std::shared_ptr<TopologyNode> audioSourceNode = CreateAudioSourceNode(captureSource->GetMediaSource(), audioMediaSourcePresentationDescriptor, audioRendererDevice);
-		std::shared_ptr<TopologyNode> audioRendererNode = CreateRendererNode(L"Audio Renderer", audioSourceNode->GetOutputPrefType(), audioRendererDevice);
+		// encode and pass through
 		std::shared_ptr<TopologyNode> audioEncoderNode = CreateAudioEncoderTransformNode(mediaTypeFactory.CreateAudioInputMediaType());
 		std::shared_ptr<TopologyNode> audioTeeNode = CreateTeeNode(L"Audio Tee");
-
 		OnERR_return(AddAndConnect2Nodes(audioSourceNode->GetNode(), 0, audioTeeNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(audioTeeNode->GetNode(), 0, audioRendererNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(audioTeeNode->GetNode(), 1, audioEncoderNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(audioEncoderNode->GetNode(), 0, audioSinkNode->GetNode(), 0));
 	}
+	else
+	{
+		// pass through only
+		OnERR_return(AddAndConnect2Nodes(audioSourceNode->GetNode(), 0, audioRendererNode->GetNode(), 0));
+	}
+
 	if (mediaSession)
 	{
 		ResolveTopology();

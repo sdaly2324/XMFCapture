@@ -21,7 +21,7 @@ private:
 	IMFActivate**				mCaptureDevices			= NULL;
 	unsigned int				mNumberOfCaptureDevices	= 0;
 	CComPtr<IMFActivate>		mRenderer				= NULL;
-	bool						m_DumpAtributes			= true;
+	bool						m_DumpAtributes			= false;
 };
 Devices::Devices(CComPtr<IMFAttributes> attributesPtr, CComPtr<IMFActivate> renderer)
 {

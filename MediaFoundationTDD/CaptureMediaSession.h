@@ -28,6 +28,7 @@ public:
 	HRESULT								GetLastHRESULT();
 
 	void								InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName);
+	void								InitPassthrough(HWND videoWindow);
 	void								Start();
 	void								Stop();
 
