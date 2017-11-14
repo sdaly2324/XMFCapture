@@ -25,24 +25,31 @@ namespace MediaFoundationTesing
 		static std::wstring	myCaptureFilePath;
 		static std::unique_ptr<CaptureMediaSession>	mCaptureMediaSession;
 		static HWND mVideoWindow;
+		static bool mVideoWindowClassIsRegistered;
 
 		HRESULT mLastHR = S_OK;
 
-		static void InitializeWindow()
+		static void ReInitializeWindow()
 		{
-			WNDCLASS wc = { 0 };
-			wc.lpfnWndProc = WindowProc;
-			wc.hInstance = GetModuleHandle(nullptr);
-			wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-			wc.lpszClassName = CLASS_NAME;
-			Assert::IsTrue(RegisterClass(&wc));
+			if (!mVideoWindow)
+			{
+				if (!mVideoWindowClassIsRegistered)
+				{
+					WNDCLASS wc = { 0 };
+					wc.lpfnWndProc = WindowProc;
+					wc.hInstance = GetModuleHandle(nullptr);
+					wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+					wc.lpszClassName = CLASS_NAME;
+					Assert::IsTrue(RegisterClass(&wc));
+					mVideoWindowClassIsRegistered = true;
+				}
 
-			mVideoWindow = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
-			Assert::IsTrue(mVideoWindow);
+				mVideoWindow = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+				Assert::IsTrue(mVideoWindow);
 
-			//ShowWindow(mVideoWindow, SW_SHOWDEFAULT); // this tends to crash pass through and mutiple tests
-			ShowWindow(mVideoWindow, SW_HIDE);
-			UpdateWindow(mVideoWindow);
+				ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
+				UpdateWindow(mVideoWindow);
+			}
 		}
 		static void StartAndStopFor(DWORD milliseconds)
 		{
@@ -63,25 +70,35 @@ namespace MediaFoundationTesing
 	public:
 		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
-			if (mVideoWindow == nullptr)
+			if (mCaptureMediaSession == nullptr)
 			{
-				InitializeWindow();
 				InitMediaSession();
 			}
 		}
 		MediaFoundationCaptureTESTs::~MediaFoundationCaptureTESTs()
 		{
+			if (mVideoWindow)
+			{
+				BOOL res = DestroyWindow(mVideoWindow);
+				if (res == FALSE)
+				{
+					OutputDebugStringW(L"Failed to DestroyWindow!");
+				}
+				mVideoWindow = nullptr;
+			}
 		}
 
 		TEST_METHOD(CaptureAndPassthroughStartStop)
 		{
+			ReInitializeWindow();
 			mCaptureMediaSession->InitCaptureAndPassthrough(mVideoWindow, L"CaptureAndPassthrough.ts");
-			StartAndStopFor(0);
+			StartAndStopFor(1000);
 		}
 		TEST_METHOD(PassthroughStartStop)
 		{
+			ReInitializeWindow();
 			mCaptureMediaSession->InitPassthrough(mVideoWindow);
-			StartAndStopFor(0);
+			StartAndStopFor(1000);
 		}
 	};
 	std::wstring MediaFoundationCaptureTESTs::myVideoDeviceName = L"XI100DUSB-SDI Video";		//<-------------------Video device to test-----------------------------
@@ -91,4 +108,5 @@ namespace MediaFoundationTesing
 	std::wstring MediaFoundationCaptureTESTs::myCaptureFilePath = L"C:\\";						//<-------------------Path to file captures----------------------------
 	std::unique_ptr<CaptureMediaSession> MediaFoundationCaptureTESTs::mCaptureMediaSession = nullptr;
 	HWND MediaFoundationCaptureTESTs::mVideoWindow = nullptr;
+	bool MediaFoundationCaptureTESTs::mVideoWindowClassIsRegistered = false;
 }
