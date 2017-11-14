@@ -29,27 +29,24 @@ namespace MediaFoundationTesing
 
 		HRESULT mLastHR = S_OK;
 
-		static void ReInitializeWindow()
+		static void InitializeWindow()
 		{
-			if (!mVideoWindow)
+			if (!mVideoWindowClassIsRegistered)
 			{
-				if (!mVideoWindowClassIsRegistered)
-				{
-					WNDCLASS wc = { 0 };
-					wc.lpfnWndProc = WindowProc;
-					wc.hInstance = GetModuleHandle(nullptr);
-					wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-					wc.lpszClassName = CLASS_NAME;
-					Assert::IsTrue(RegisterClass(&wc));
-					mVideoWindowClassIsRegistered = true;
-				}
-
-				mVideoWindow = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
-				Assert::IsTrue(mVideoWindow);
-
-				ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
-				UpdateWindow(mVideoWindow);
+				WNDCLASS wc = { 0 };
+				wc.lpfnWndProc = WindowProc;
+				wc.hInstance = GetModuleHandle(nullptr);
+				wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+				wc.lpszClassName = CLASS_NAME;
+				Assert::IsTrue(RegisterClass(&wc));
+				mVideoWindowClassIsRegistered = true;
 			}
+
+			mVideoWindow = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+			Assert::IsTrue(mVideoWindow);
+
+			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
+			UpdateWindow(mVideoWindow);
 		}
 		static void StartAndStopFor(DWORD milliseconds)
 		{
@@ -74,6 +71,10 @@ namespace MediaFoundationTesing
 			{
 				InitMediaSession();
 			}
+			if (mVideoWindow == nullptr)
+			{
+				InitializeWindow();
+			}
 		}
 		MediaFoundationCaptureTESTs::~MediaFoundationCaptureTESTs()
 		{
@@ -90,13 +91,11 @@ namespace MediaFoundationTesing
 
 		TEST_METHOD(CaptureAndPassthroughStartStop)
 		{
-			ReInitializeWindow();
 			mCaptureMediaSession->InitCaptureAndPassthrough(mVideoWindow, L"CaptureAndPassthrough.ts");
 			StartAndStopFor(1000);
 		}
 		TEST_METHOD(PassthroughStartStop)
 		{
-			ReInitializeWindow();
 			mCaptureMediaSession->InitPassthrough(mVideoWindow);
 			StartAndStopFor(1000);
 		}
