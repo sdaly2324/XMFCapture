@@ -17,6 +17,7 @@ public:
 	CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
 	CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
 	CComPtr<IMFAttributes>	CreateFileSinkAttrs();
+	CComPtr<IMFAttributes>	CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes);
 	CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes);
 	CComPtr<IMFAttributes>	CreateAudioOutAttrs();
 

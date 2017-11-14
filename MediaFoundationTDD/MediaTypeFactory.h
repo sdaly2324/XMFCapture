@@ -19,6 +19,7 @@ public:
 	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
 	CComPtr<IMFMediaType>				CreateAudioInputMediaType();
 	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
+	CComPtr<IMFMediaType>				CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs);
 
 private:
 #pragma warning(push)

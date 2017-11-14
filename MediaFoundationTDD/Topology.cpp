@@ -51,6 +51,8 @@ private:
 
 	std::shared_ptr<TopologyNode>		CreateTeeNode(std::wstring name);
 
+	std::shared_ptr<TopologyNode>		CreateColorConverterNode(CComPtr<IMFMediaType> inputType, CComPtr<IMFMediaType> outputType);
+
 	// input nodes
 	std::shared_ptr<TopologyNode>		CreateAudioSourceNode
 	(
@@ -436,9 +438,11 @@ void TopologyRep::CreateTopology
 	{
 		// encode and pass through
 		CComPtr<IMFAttributes> videoSourceAttrs = captureSource->GetVideoMediaType();
-		std::shared_ptr<TopologyNode> videoEncoderNode = CreateVideoEncoderTransformNode(videoRendererNode->GetInputPrefType(), mediaTypeFactory.CreateVideoEncodingMediaType(videoSourceAttrs));
+		std::shared_ptr<TopologyNode> colorConverterNode = CreateColorConverterNode(videoSourceNode->GetOutputPrefType(), mediaTypeFactory.CreateVideoNV12MediaType(videoSourceAttrs));
+		std::shared_ptr<TopologyNode> videoEncoderNode = CreateVideoEncoderTransformNode(mediaTypeFactory.CreateVideoNV12MediaType(videoSourceAttrs), mediaTypeFactory.CreateVideoEncodingMediaType(videoSourceAttrs));
 		std::shared_ptr<TopologyNode> videoTeeNode = CreateTeeNode(L"Video TEE");
-		OnERR_return(AddAndConnect2Nodes(videoSourceNode->GetNode(), 0, videoTeeNode->GetNode(), 0));
+		OnERR_return(AddAndConnect2Nodes(videoSourceNode->GetNode(), 0, colorConverterNode->GetNode(), 0));
+		OnERR_return(AddAndConnect2Nodes(colorConverterNode->GetNode(), 0, videoTeeNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(videoTeeNode->GetNode(), 0, videoRendererNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(videoTeeNode->GetNode(), 1, videoEncoderNode->GetNode(), 0));
 		OnERR_return(AddAndConnect2Nodes(videoEncoderNode->GetNode(), 0, videoSinkNode->GetNode(), 0));
@@ -644,7 +648,8 @@ CComPtr<IMFTransform> TopologyRep::GetAudioEncoder()
 
 CComPtr<IMFTransform> TopologyRep::GetVideoEncoder()
 {
-	return GetEncoder(MFMediaType_Video, MFVideoFormat_H264, MFT_CATEGORY_VIDEO_ENCODER, L"H264", L"Encoder");
+	//return GetEncoder(MFMediaType_Video, MFVideoFormat_H264, MFT_CATEGORY_VIDEO_ENCODER, L"H264", L"Encoder");
+	return GetEncoder(MFMediaType_Video, MFVideoFormat_H264, MFT_CATEGORY_VIDEO_ENCODER, L"264", L"Intel");
 }
 
 std::shared_ptr<TopologyNode> TopologyRep::CreateVideoSinkNode(std::shared_ptr<FileSink> aggregateSink)
@@ -654,4 +659,15 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateVideoSinkNode(std::shared_ptr<F
 std::shared_ptr<TopologyNode> TopologyRep::CreateAudioSinkNode(std::shared_ptr<FileSink> aggregateSink)
 {
 	return std::make_shared<TopologyNode>(L"Audio Stream Sink", aggregateSink->GetAudioStreamSink());
+}
+
+std::shared_ptr<TopologyNode>TopologyRep::CreateColorConverterNode(CComPtr<IMFMediaType> inputType, CComPtr<IMFMediaType> outputType)
+{
+	CComPtr<IMFTransform> transform = nullptr;
+	OnERR_return_NULL(CoCreateInstance(CLSID_CColorConvertDMO, nullptr, CLSCTX_INPROC, IID_IMFTransform, (void**)&transform));
+	OnERR_return_NULL(transform->SetInputType(0, inputType, 0));
+	OnERR_return_NULL(transform->SetOutputType(0, outputType, 0));
+
+	std::shared_ptr<TopologyNode> retVal(new TopologyNode(L"NV12 Color Converter", transform));
+	return retVal;
 }

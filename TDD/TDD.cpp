@@ -71,7 +71,6 @@ namespace MediaFoundationTesing
 		}
 		MediaFoundationCaptureTESTs::~MediaFoundationCaptureTESTs()
 		{
-			OutputDebugStringW(L"POOP MediaFoundationCaptureTESTs DESTROY\n");
 		}
 
 		TEST_METHOD(CaptureAndPassthroughStartStop)

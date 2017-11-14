@@ -204,32 +204,35 @@ void CaptureMediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent
 		}
 		break;
 	case MESessionTopologySet:
-		OutputDebugStringW(L"POOP MESessionTopologySet\n");
+		OutputDebugStringW(L"MESessionTopologySet\n");
 		break;
 	case MESessionCapabilitiesChanged:
-		OutputDebugStringW(L"POOP MESessionCapabilitiesChanged\n");
+		OutputDebugStringW(L"MESessionCapabilitiesChanged\n");
 		break;
 	case MESessionNotifyPresentationTime:
-		OutputDebugStringW(L"POOP MESessionNotifyPresentationTime\n");
+		OutputDebugStringW(L"MESessionNotifyPresentationTime\n");
 		break;
 	case MESessionStarted:
-		OutputDebugStringW(L"POOP MESessionStarted\n");
+		OutputDebugStringW(L"MESessionStarted\n");
 		SetEvent(mStartedEvent);
 		break;
 	case MESessionStopped:
-		OutputDebugStringW(L"POOP MESessionStopped\n");
+		OutputDebugStringW(L"MESessionStopped\n");
 		OnERR_return(mMediaSession->Close());
 		break;
 	case MESessionClosed:
-		OutputDebugStringW(L"POOP MESessionClosed\n");
+		OutputDebugStringW(L"MESessionClosed\n");
 		OnERR_return(mMediaSession->Shutdown());
 		SetEvent(mStoppedEvent);
 		break;
 	case MESessionEnded:
-		OutputDebugStringW(L"POOP MESessionEnded\n");
+		OutputDebugStringW(L"MESessionEnded\n");
+		break;
+	case MESessionStreamSinkFormatChanged:
+		OutputDebugStringW(L"MESessionStreamSinkFormatChanged\n");
 		break;
 	default:
-		OutputDebugStringW(L"POOP UKNOWN IMFMediaEvent!\n");
+		OutputDebugStringW(L"UKNOWN IMFMediaEvent!\n");
 		break;
 	}
 }

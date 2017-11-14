@@ -20,6 +20,7 @@ public:
 	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
 	CComPtr<IMFMediaType>				CreateAudioInputMediaType();
 	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
+	CComPtr<IMFMediaType>				CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs);
 
 private:
 	template <class T>
@@ -141,6 +142,25 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoEncodingMediaType(CComPtr<
 {
 	AttributesFactory attributesFactory;
 	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoEncodeAttrs(inAttrs);
+	if (!outAttrs)
+	{
+		SetLastHR_Fail();
+		return NULL;
+	}
+	CComPtr<IMFMediaType> retVal = NULL;
+	OnERR_return_NULL(MFCreateMediaType(&retVal));
+	OnERR_return_NULL(outAttrs->CopyAllItems(retVal));
+	return retVal;
+}
+
+CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs)
+{
+	return m_pRep->CreateVideoNV12MediaType(inAttrs);
+}
+CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs)
+{
+	AttributesFactory attributesFactory;
+	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoNV12Attrs(inAttrs);
 	if (!outAttrs)
 	{
 		SetLastHR_Fail();

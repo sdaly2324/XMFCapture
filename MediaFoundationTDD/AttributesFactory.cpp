@@ -17,7 +17,8 @@ public:
 	CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
 	CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
 	CComPtr<IMFAttributes>	CreateFileSinkAttrs();
-	CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> vInAttrs);
+	CComPtr<IMFAttributes>	CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes);
+	CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes);
 	CComPtr<IMFAttributes>	CreateAudioOutAttrs();
 
 private:
@@ -123,15 +124,15 @@ HRESULT AttributesFactoryRep::CopyAttribute(CComPtr<IMFAttributes> sourceAttribu
 	}
 	return hr;
 }
-CComPtr<IMFAttributes> AttributesFactory::CreateVideoEncodeAttrs(CComPtr<IMFAttributes> vInAttrs)
+CComPtr<IMFAttributes> AttributesFactory::CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes)
 {
-	return m_pRep->CreateVideoEncodeAttrs(vInAttrs);
+	return m_pRep->CreateVideoEncodeAttrs(videoInputAttributes);
 }
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoEncodeAttrs(CComPtr<IMFAttributes> vInAttrs)
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes)
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
-	if (!vInAttrs)
+	if (!videoInputAttributes)
 	{
 		// assume 720p5994
 		OnERR_return_NULL(retVal->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
@@ -142,7 +143,7 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoEncodeAttrs(CComPtr<IMFA
 	}
 	else
 	{
-		OnERR_return_NULL(vInAttrs->CopyAllItems(retVal));
+		OnERR_return_NULL(videoInputAttributes->CopyAllItems(retVal));
 	}
 
 	OnERR_return_NULL(retVal->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
@@ -151,5 +152,30 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoEncodeAttrs(CComPtr<IMFA
 	//OnERR_return_NULL(retVal->SetUINT32(MF_MT_MAX_KEYFRAME_SPACING, 30)); // FIXED IN XMFSinkWriterRep::BeginWriting // DOES NOT WORK WITH IMFCaptureEngine
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_AVG_BITRATE, 6000000)); // 6 megabits
 
+	return retVal;
+}
+
+CComPtr<IMFAttributes> AttributesFactory::CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes)
+{
+	return m_pRep->CreateVideoNV12Attrs(videoInputAttributes);
+}
+CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes)
+{
+	CComPtr<IMFAttributes> retVal = NULL;
+	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
+	if (!videoInputAttributes)
+	{
+		// assume 720p5994
+		OnERR_return_NULL(retVal->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_FRAME_SIZE, 5497558139600));
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_FRAME_RATE, 257698037761001));
+		OnERR_return_NULL(retVal->SetUINT64(MF_MT_PIXEL_ASPECT_RATIO, 4294967297));
+		OnERR_return_NULL(retVal->SetUINT32(MF_MT_INTERLACE_MODE, 2));
+	}
+	else
+	{
+		OnERR_return_NULL(videoInputAttributes->CopyAllItems(retVal));
+	}
+	OnERR_return_NULL(retVal->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_NV12));
 	return retVal;
 }
