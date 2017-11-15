@@ -116,18 +116,18 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartCapture(mVideoWindow, L"StartCaptureStopAndRestsartPassthroughStopAll.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(3000);
+			Sleep(1000);
 
 			mCaptureMediaSession->StopPreview();
 			ShowWindow(mVideoWindow, SW_HIDE);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(3000);
+			Sleep(1000);
 			mCaptureMediaSession->StartPreview(mVideoWindow);
 			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(3000);
+			Sleep(1000);
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
