@@ -22,12 +22,11 @@ public:
 	CComPtr<IMFStreamSink>	GetVideoStreamSink();
 
 private:
-	CComPtr<IMFSinkWriter>	mSinkWriter = NULL;
-	CComPtr<IMFMediaSink>	mMediaSink = NULL;
+	CComPtr<IMFMediaSink>	mMediaSink = nullptr;
 	DWORD mVideoStreamIndex = 0;
-	CComPtr<IMFStreamSink>	mVideoStreamSink = NULL;
+	CComPtr<IMFStreamSink>	mVideoStreamSink = nullptr;
 	DWORD mAudioStreamIndex = 0;
-	CComPtr<IMFStreamSink>	mAudioStreamSink = NULL;
+	CComPtr<IMFStreamSink>	mAudioStreamSink = nullptr;
 };
 FileSink::FileSink(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> aggregateMediaSource)
 {
@@ -39,7 +38,7 @@ FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> aggr
 	CComPtr<IMFAttributes> attributes = attributesFactory.CreateFileSinkAttrs();
 	if (attributes)
 	{
-		CComPtr<IMFByteStream> outputByteStream = NULL;
+		CComPtr<IMFByteStream> outputByteStream = nullptr;
 		OnERR_return(MFCreateFile(MF_ACCESSMODE_WRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NONE, fullFilePath, &outputByteStream));
 		OnERR_return(MFCreateMuxSink(MFStreamFormat_MPEG2Transport, attributes, outputByteStream, &mMediaSink));
 

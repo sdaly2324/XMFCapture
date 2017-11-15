@@ -210,7 +210,17 @@ void CaptureMediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent
 		{
 			DumpTopologyFailed(mediaEvent);
 		}
-		SetLastHR_Fail();
+		if (eventType == MEVideoCaptureDeviceRemoved)
+		{
+			if (hrStatus == MF_E_AUDIO_RECORDING_DEVICE_INVALIDATED)
+			{
+				OutputDebugStringW(L"Audio USB Device disconnect!\n");
+			}
+			else if (hrStatus == MF_E_VIDEO_RECORDING_DEVICE_INVALIDATED)
+			{
+				OutputDebugStringW(L"Video USB Device disconnect!\n");
+			}
+		}
 		return;
 	}
 	switch (eventType)

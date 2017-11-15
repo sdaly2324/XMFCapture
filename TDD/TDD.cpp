@@ -91,17 +91,17 @@ namespace MediaFoundationTesing
 			}
 		}
 
-		TEST_METHOD(CaptureAndPassthroughStartStop)
+		TEST_METHOD(Capture)
 		{
-			mCaptureMediaSession->StartCapture(mVideoWindow, L"CaptureAndPassthrough.ts");
+			mCaptureMediaSession->StartCapture(mVideoWindow, L"Capture.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(1000);
+			Sleep(10000);
 
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
-		TEST_METHOD(PassthroughStartStop)
+		TEST_METHOD(Preview)
 		{
 			mCaptureMediaSession->StartPreview(mVideoWindow);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
@@ -111,9 +111,9 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StopPreview();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
-		TEST_METHOD(StartCaptureStopAndRestsartPassthroughStopAll)
+		TEST_METHOD(TogglePreview)
 		{
-			mCaptureMediaSession->StartCapture(mVideoWindow, L"StartCaptureStopAndRestsartPassthroughStopAll.ts");
+			mCaptureMediaSession->StartCapture(mVideoWindow, L"TogglePreview.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
 			Sleep(1000);
@@ -131,9 +131,9 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
-		TEST_METHOD(CapturePauseCaptureStop)
+		TEST_METHOD(Pause)
 		{
-			mCaptureMediaSession->StartCapture(mVideoWindow, L"CapturePauseCaptureStop.ts");
+			mCaptureMediaSession->StartCapture(mVideoWindow, L"Pause.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
 			Sleep(1000);
