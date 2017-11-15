@@ -22,6 +22,8 @@ public:
 	void								StartPreview(HWND videoWindow);
 	void								StopPreview();
 	void								StartCapture(HWND videoWindow, std::wstring captureFileName);
+	void								PauseCapture();
+	void								ResumeCapture();
 	void								StopCapture();
 
 	// IMFAsyncCallback
@@ -62,6 +64,7 @@ private:
 	volatile long								mRefCount = 1;
 
 	HANDLE										mStartedEvent = INVALID_HANDLE_VALUE;
+	HANDLE										mPausedEvent = INVALID_HANDLE_VALUE;
 	HANDLE										mStoppedEvent = INVALID_HANDLE_VALUE;
 
 	bool										mCurrentlyPreviewing = false;
@@ -91,6 +94,11 @@ CaptureMediaSessionRep::CaptureMediaSessionRep(std::wstring videoDeviceName, std
 	}
 	mStartedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	if (mStartedEvent == INVALID_HANDLE_VALUE)
+	{
+		OnERR_return(HRESULT_FROM_WIN32(GetLastError()));
+	}
+	mPausedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	if (mPausedEvent == INVALID_HANDLE_VALUE)
 	{
 		OnERR_return(HRESULT_FROM_WIN32(GetLastError()));
 	}
@@ -242,6 +250,10 @@ void CaptureMediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent
 	case MESessionStreamSinkFormatChanged:
 		OutputDebugStringW(L"MESessionStreamSinkFormatChanged\n");
 		break;
+	case MESessionPaused:
+		OutputDebugStringW(L"MESessionPaused\n");
+		SetEvent(mPausedEvent);
+		break;
 	default:
 		OutputDebugStringW(L"UKNOWN IMFMediaEvent!\n");
 		break;
@@ -256,7 +268,6 @@ void CaptureMediaSessionRep::StartSession()
 	PropVariantInit(&varStart);
 	varStart.vt = VT_EMPTY;
 	OnERR_return(mMediaSession->Start(&GUID_NULL, &varStart));
-
 	DWORD res = WaitForSingleObject(mStartedEvent, INFINITE);
 }
 
@@ -278,7 +289,7 @@ void CaptureMediaSessionRep::StartPreview(HWND videoWindow)
 	{
 		if (mAudioVolumeControl)
 		{
-			mAudioVolumeControl->SetMute(FALSE);
+			OnERR_return(mAudioVolumeControl->SetMute(FALSE));
 		}
 	}
 	else
@@ -299,7 +310,7 @@ void CaptureMediaSessionRep::StopPreview()
 	{
 		if (mAudioVolumeControl)
 		{
-			mAudioVolumeControl->SetMute(TRUE);
+			OnERR_return(mAudioVolumeControl->SetMute(TRUE));
 		}
 	}
 	else
@@ -350,6 +361,35 @@ void CaptureMediaSessionRep::StopSession()
 	OnERR_return(MFCreateMediaSession(nullptr, &mMediaSession));
 }
 
+void CaptureMediaSession::PauseCapture()
+{
+	m_pRep->PauseCapture();
+}
+void CaptureMediaSessionRep::PauseCapture()
+{
+	if (mCurrentlyCapturing)
+	{
+		OnERR_return(mMediaSession->Pause());
+		DWORD res = WaitForSingleObject(mPausedEvent, INFINITE);
+	}
+}
+
+void CaptureMediaSession::ResumeCapture()
+{
+	m_pRep->ResumeCapture();
+}
+void CaptureMediaSessionRep::ResumeCapture()
+{
+	if (mCurrentlyCapturing)
+	{
+		PROPVARIANT varStart;
+		PropVariantInit(&varStart);
+		varStart.vt = VT_EMPTY;
+		OnERR_return(mMediaSession->Start(&GUID_NULL, &varStart));
+		DWORD res = WaitForSingleObject(mStartedEvent, INFINITE);
+	}
+}
+
 void CaptureMediaSessionRep::CreateCaptureSourceAndRenderers(HWND videoWindow)
 {
 	VideoDevices videoDevices(videoWindow);
@@ -372,5 +412,5 @@ void CaptureMediaSessionRep::OnTopologyReady()
 	}
 	mAudioVolumeControl.Release();
 	OnERR_return(MFGetService(mMediaSession, MR_POLICY_VOLUME_SERVICE, IID_IMFSimpleAudioVolume, (void**)&mAudioVolumeControl));
-	mAudioVolumeControl->SetMute(FALSE);
+	OnERR_return(mAudioVolumeControl->SetMute(FALSE));
 }

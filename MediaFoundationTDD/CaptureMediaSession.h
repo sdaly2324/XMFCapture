@@ -30,6 +30,8 @@ public:
 	void								StartPreview(HWND videoWindow);
 	void								StopPreview();
 	void								StartCapture(HWND videoWindow, std::wstring captureFileName);
+	void								PauseCapture();
+	void								ResumeCapture();
 	void								StopCapture();
 
 private:

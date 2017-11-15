@@ -131,6 +131,26 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
+		TEST_METHOD(CapturePauseCaptureStop)
+		{
+			mCaptureMediaSession->StartCapture(mVideoWindow, L"CapturePauseCaptureStop.ts");
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+
+			Sleep(1000);
+
+			mCaptureMediaSession->PauseCapture();
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+
+			Sleep(1000);
+
+			mCaptureMediaSession->ResumeCapture();
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+
+			Sleep(3000);
+
+			mCaptureMediaSession->StopCapture();
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+		}
 	};
 	std::wstring MediaFoundationCaptureTESTs::myVideoDeviceName = L"XI100DUSB-SDI Video";		//<-------------------Video device to test-----------------------------
 	std::wstring MediaFoundationCaptureTESTs::myAudioDeviceName = L"XI100DUSB-SDI Audio";		//<-------------------Audio device to test-----------------------------
