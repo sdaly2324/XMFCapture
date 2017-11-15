@@ -56,17 +56,6 @@ namespace MediaFoundationTesing
 			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
 			UpdateWindow(mVideoWindow);
 		}
-		static void StartAndStopFor(DWORD milliseconds)
-		{
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
-			mCaptureMediaSession->Start();
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
-
-			::Sleep(milliseconds);
-
-			mCaptureMediaSession->Stop();
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
-		}
 		static void InitMediaSession()
 		{
 			mCaptureMediaSession = std::make_unique<CaptureMediaSession>(myVideoDeviceName, myAudioDeviceName, myCaptureFilePath);
@@ -104,13 +93,43 @@ namespace MediaFoundationTesing
 
 		TEST_METHOD(CaptureAndPassthroughStartStop)
 		{
-			mCaptureMediaSession->InitCaptureAndPassthrough(mVideoWindow, L"CaptureAndPassthrough.ts");
-			StartAndStopFor(1000);
+			mCaptureMediaSession->StartCapture(mVideoWindow, L"CaptureAndPassthrough.ts");
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+
+			Sleep(1000);
+
+			mCaptureMediaSession->StopCapture();
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
 		TEST_METHOD(PassthroughStartStop)
 		{
-			mCaptureMediaSession->InitPassthrough(mVideoWindow);
-			StartAndStopFor(1000);
+			mCaptureMediaSession->StartPreview(mVideoWindow);
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+
+			Sleep(1000);
+
+			mCaptureMediaSession->StopPreview();
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+		}
+		TEST_METHOD(StartCaptureStopAndRestsartPassthroughStopAll)
+		{
+			mCaptureMediaSession->StartCapture(mVideoWindow, L"StartCaptureStopAndRestsartPassthroughStopAll.ts");
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+
+			Sleep(3000);
+
+			mCaptureMediaSession->StopPreview();
+			ShowWindow(mVideoWindow, SW_HIDE);
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+
+			Sleep(3000);
+			mCaptureMediaSession->StartPreview(mVideoWindow);
+			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+
+			Sleep(3000);
+			mCaptureMediaSession->StopCapture();
+			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
 	};
 	std::wstring MediaFoundationCaptureTESTs::myVideoDeviceName = L"XI100DUSB-SDI Video";		//<-------------------Video device to test-----------------------------

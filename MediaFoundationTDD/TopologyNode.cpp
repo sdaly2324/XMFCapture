@@ -196,23 +196,9 @@ void TopologyNodeRep::CreateRendereNode(CComPtr<IMFMediaType> prefMediaType, CCo
 
 
 	CComPtr<IMFMediaTypeHandler> mediaTypeHandler = GetMediaTypeHandler(mRendererNode);
-
-	//if (mediaTypeHandler)
-	//{
-	//	DWORD count = 0;
-	//	mediaTypeHandler->GetMediaTypeCount(&count);
-	//	for (DWORD index = 0; index < count; index++)
-	//	{
-	//		CComPtr<IMFMediaType> mediaType = nullptr;
-	//		OnERR_return(mediaTypeHandler->GetMediaTypeByIndex(index, &mediaType));
-	//		DumpAttr(mediaType, L"CreateRendereNode", std::to_wstring(index));
-	//	}
-	//}
-
 	if (prefMediaType)
 	{
 		OnERR_return(mRendererNode->SetInputPrefType(0, prefMediaType));
-		//CComPtr<IMFMediaTypeHandler> mediaTypeHandler = GetMediaTypeHandler(mRendererNode);
 		if (mediaTypeHandler)
 		{
 			OnERR_return(mediaTypeHandler->SetCurrentMediaType(prefMediaType));

@@ -179,7 +179,6 @@
     <ClInclude Include="Topology.h" />
     <ClInclude Include="TopologyNode.h" />
     <ClInclude Include="VideoDevices.h" />
-    <ClInclude Include="VideoDisplayControl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AttributesFactory.cpp" />
@@ -196,7 +195,6 @@
     <ClCompile Include="Topology.cpp" />
     <ClCompile Include="TopologyNode.cpp" />
     <ClCompile Include="VideoDevices.cpp" />
-    <ClCompile Include="VideoDisplayControl.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

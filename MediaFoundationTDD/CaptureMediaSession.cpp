@@ -1,7 +1,6 @@
 #include "CaptureMediaSession.h"
 #include "MFUtils.h"
 #include "Topology.h"
-#include "VideoDisplayControl.h"
 #include "VideoDevices.h"
 #include "AudioDevices.h"
 #include "MediaSource.h"
@@ -10,6 +9,7 @@
 #include <atlbase.h>
 #include <mfidl.h>
 #include <Mferror.h>
+#include <evr.h>
 
 class CaptureMediaSessionRep : public IMFAsyncCallback, public MFUtils
 {
@@ -19,10 +19,10 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	void								InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName);
-	void								InitPassthrough(HWND videoWindow);
-	void								Start();
-	void								Stop();
+	void								StartPreview(HWND videoWindow);
+	void								StopPreview();
+	void								StartCapture(HWND videoWindow, std::wstring captureFileName);
+	void								StopCapture();
 
 	// IMFAsyncCallback
 	STDMETHODIMP						GetParameters(DWORD* /*pdwFlags*/, DWORD* /*pdwQueue*/) { return E_NOTIMPL; }
@@ -34,6 +34,12 @@ public:
 	STDMETHODIMP_(ULONG)				Release();
 
 private:
+	void								InitPassthrough(HWND videoWindow);
+	void								InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName);
+	void								StartSession();
+	void								StopSession();
+	void								OnTopologyReady();
+
 	void								CreateCaptureSourceAndRenderers(HWND videoWindow);
 
 	void								ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent);
@@ -47,18 +53,23 @@ private:
 	std::shared_ptr<MediaSource>				mCaptureSource = nullptr;
 	CComPtr<IMFActivate>						mVideoRenderer = nullptr;
 	CComPtr<IMFActivate>						mAudioRenderer = nullptr;
-	std::shared_ptr<VideoDisplayControl>		mVideoDisplayControl = nullptr;
-	std::shared_ptr<OnTopologyReadyCallback>	mOnTopologyReadyCallback = nullptr;
 
 	std::unique_ptr<Topology>					mTopology = nullptr;
 		
 	CComPtr<IMFMediaSession>					mMediaSession = nullptr;
 
 	CComAutoCriticalSection						mCritSec;
-	volatile long								mRefCount					= 1;
+	volatile long								mRefCount = 1;
 
-	HANDLE										mStartedEvent				= INVALID_HANDLE_VALUE;
-	HANDLE										mStoppedEvent				= INVALID_HANDLE_VALUE;
+	HANDLE										mStartedEvent = INVALID_HANDLE_VALUE;
+	HANDLE										mStoppedEvent = INVALID_HANDLE_VALUE;
+
+	bool										mCurrentlyPreviewing = false;
+	bool										mCurrentlyCapturing = false;
+
+	HWND										mVideoWindow = nullptr;
+	CComPtr<IMFVideoDisplayControl>				mVideoDisplayControl = nullptr;
+	CComPtr<IMFSimpleAudioVolume>				mAudioVolumeControl = nullptr;
 };
 
 CaptureMediaSession::CaptureMediaSession(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath)
@@ -198,9 +209,9 @@ void CaptureMediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent
 	{
 	case MESessionTopologyStatus:
 		OnERR_return(mediaEvent->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, (UINT32*)&TopoStatus));
-		if (TopoStatus == MF_TOPOSTATUS_READY && mOnTopologyReadyCallback)
+		if (TopoStatus == MF_TOPOSTATUS_READY)
 		{
-			mOnTopologyReadyCallback->OnTopologyReady(mMediaSession);
+			OnTopologyReady();
 		}
 		break;
 	case MESessionTopologySet:
@@ -237,25 +248,100 @@ void CaptureMediaSessionRep::ProcessMediaEvent(CComPtr<IMFMediaEvent> mediaEvent
 	}
 }
 
-void CaptureMediaSession::Start()
-{
-	m_pRep->Start();
-}
-void CaptureMediaSessionRep::Start()
+void CaptureMediaSessionRep::StartSession()
 {
 	OnERR_return(mMediaSession->BeginGetEvent((IMFAsyncCallback*)this, nullptr));
+
 	PROPVARIANT varStart;
 	PropVariantInit(&varStart);
 	varStart.vt = VT_EMPTY;
 	OnERR_return(mMediaSession->Start(&GUID_NULL, &varStart));
+
 	DWORD res = WaitForSingleObject(mStartedEvent, INFINITE);
 }
 
-void CaptureMediaSession::Stop()
+void CaptureMediaSessionRep::InitPassthrough(HWND videoWindow)
 {
-	m_pRep->Stop();
+	mTopology.reset(nullptr);
+	mTopology = std::make_unique<Topology>();
+	CreateCaptureSourceAndRenderers(videoWindow);
+	mTopology->CreateTopology(mCaptureSource, L"", mVideoRenderer, mAudioRenderer, mMediaSession);
 }
-void CaptureMediaSessionRep::Stop()
+
+void CaptureMediaSession::StartPreview(HWND videoWindow)
+{
+	m_pRep->StartPreview(videoWindow);
+}
+void CaptureMediaSessionRep::StartPreview(HWND videoWindow)
+{
+	if (mCurrentlyCapturing)
+	{
+		if (mAudioVolumeControl)
+		{
+			mAudioVolumeControl->SetMute(FALSE);
+		}
+	}
+	else
+	{
+		InitPassthrough(videoWindow);
+		StartSession();
+	}
+	mCurrentlyPreviewing = true;
+}
+
+void CaptureMediaSession::StopPreview()
+{
+	m_pRep->StopPreview();
+}
+void CaptureMediaSessionRep::StopPreview()
+{
+	if (mCurrentlyCapturing)
+	{
+		if (mAudioVolumeControl)
+		{
+			mAudioVolumeControl->SetMute(TRUE);
+		}
+	}
+	else
+	{
+		StopSession();
+	}
+	mCurrentlyPreviewing = false;
+}
+
+void CaptureMediaSessionRep::InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName)
+{
+	mTopology.reset(nullptr);
+	mTopology = std::make_unique<Topology>();
+	CreateCaptureSourceAndRenderers(videoWindow);
+	std::wstring fileToWrite = mCaptureFilePath + captureFileName;
+	mTopology->CreateTopology(mCaptureSource, fileToWrite, mVideoRenderer, mAudioRenderer, mMediaSession);
+}
+
+void CaptureMediaSession::StartCapture(HWND videoWindow, std::wstring captureFileName)
+{
+	m_pRep->StartCapture(videoWindow, captureFileName);
+}
+void CaptureMediaSessionRep::StartCapture(HWND videoWindow, std::wstring captureFileName)
+{
+	InitCaptureAndPassthrough(videoWindow, captureFileName);
+	StartSession();
+	mCurrentlyPreviewing = true;
+	mCurrentlyCapturing = true;
+}
+
+void CaptureMediaSession::StopCapture()
+{
+	m_pRep->StopCapture();
+}
+void CaptureMediaSessionRep::StopCapture()
+{
+	StopSession();
+	mCurrentlyPreviewing = false;
+	mCurrentlyCapturing = false;
+}
+
+void CaptureMediaSessionRep::StopSession()
 {
 	OnERR_return(mMediaSession->Stop());
 	DWORD res = WaitForSingleObject(mStoppedEvent, INFINITE);
@@ -267,7 +353,7 @@ void CaptureMediaSessionRep::Stop()
 void CaptureMediaSessionRep::CreateCaptureSourceAndRenderers(HWND videoWindow)
 {
 	VideoDevices videoDevices(videoWindow);
-	mVideoDisplayControl = std::make_shared<VideoDisplayControl>(videoWindow);
+	mVideoWindow = videoWindow;
 	mVideoRenderer = videoDevices.GetVideoRenderer();
 
 	AudioDevices audioDevices;
@@ -276,27 +362,15 @@ void CaptureMediaSessionRep::CreateCaptureSourceAndRenderers(HWND videoWindow)
 	mCaptureSource = std::make_shared<MediaSource>(videoDevices.GetCaptureVideoDevice(mVideoDeviceName), audioDevices.GetCaptureAudioDevice(mAudioDeviceName));
 }
 
-void CaptureMediaSession::InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName)
+void CaptureMediaSessionRep::OnTopologyReady()
 {
-	m_pRep->InitCaptureAndPassthrough(videoWindow, captureFileName);
-}
-void CaptureMediaSessionRep::InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName)
-{
-	mTopology.reset(nullptr);
-	mTopology = std::make_unique<Topology>();
-	CreateCaptureSourceAndRenderers(videoWindow);
-	std::wstring fileToWrite = mCaptureFilePath + captureFileName;
-	mTopology->CreateTopology(mCaptureSource, fileToWrite, mVideoRenderer, mAudioRenderer, mMediaSession);
-}
-
-void CaptureMediaSession::InitPassthrough(HWND videoWindow)
-{
-	m_pRep->InitPassthrough(videoWindow);
-}
-void CaptureMediaSessionRep::InitPassthrough(HWND videoWindow)
-{
-	mTopology.reset(nullptr);
-	mTopology = std::make_unique<Topology>();
-	CreateCaptureSourceAndRenderers(videoWindow);
-	mTopology->CreateTopology(mCaptureSource, L"", mVideoRenderer, mAudioRenderer, mMediaSession);
+	if (mVideoWindow)
+	{
+		mVideoDisplayControl.Release();
+		OnERR_return(MFGetService(mMediaSession, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl, (void**)&mVideoDisplayControl));
+		OnERR_return(mVideoDisplayControl->SetVideoWindow(mVideoWindow));
+	}
+	mAudioVolumeControl.Release();
+	OnERR_return(MFGetService(mMediaSession, MR_POLICY_VOLUME_SERVICE, IID_IMFSimpleAudioVolume, (void**)&mAudioVolumeControl));
+	mAudioVolumeControl->SetMute(FALSE);
 }

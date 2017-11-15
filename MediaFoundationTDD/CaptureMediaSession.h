@@ -27,10 +27,10 @@ public:
 
 	HRESULT								GetLastHRESULT();
 
-	void								InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName);
-	void								InitPassthrough(HWND videoWindow);
-	void								Start();
-	void								Stop();
+	void								StartPreview(HWND videoWindow);
+	void								StopPreview();
+	void								StartCapture(HWND videoWindow, std::wstring captureFileName);
+	void								StopCapture();
 
 private:
 #pragma warning(push)
