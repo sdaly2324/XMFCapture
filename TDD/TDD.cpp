@@ -25,21 +25,29 @@ namespace MediaFoundationTesing
 		static std::wstring	myCaptureFilePath;
 		static std::unique_ptr<CaptureMediaSession>	mCaptureMediaSession;
 		static HWND mVideoWindow;
-		static bool mVideoWindowClassIsRegistered;
-
 		HRESULT mLastHR = S_OK;
 
 		static void InitializeWindow()
 		{
-			if (!mVideoWindowClassIsRegistered)
+			WNDCLASS wc = { 0 };
+			wc.lpfnWndProc = WindowProc;
+			wc.hInstance = GetModuleHandle(nullptr);
+			wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+			wc.lpszClassName = CLASS_NAME;
+			ATOM atom = RegisterClass(&wc);
+			if (atom == 0)
 			{
-				WNDCLASS wc = { 0 };
-				wc.lpfnWndProc = WindowProc;
-				wc.hInstance = GetModuleHandle(nullptr);
-				wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-				wc.lpszClassName = CLASS_NAME;
-				Assert::IsTrue(RegisterClass(&wc));
-				mVideoWindowClassIsRegistered = true;
+				DWORD err = GetLastError();
+				LPVOID lpMsgBuf;
+				FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, nullptr);
+				WCHAR mess[1024];
+				swprintf_s(mess, 1024, L"InitializeWindow RegisterClass FAILED - %s\n", (LPTSTR)lpMsgBuf);
+				OutputDebugStringW(mess);
+				LocalFree(lpMsgBuf);
+			}
+			else
+			{
+				OutputDebugStringW(L"InitializeWindow RegisterClass SUCCEEDED\n");
 			}
 
 			mVideoWindow = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
@@ -86,6 +94,11 @@ namespace MediaFoundationTesing
 					OutputDebugStringW(L"Failed to DestroyWindow!");
 				}
 				mVideoWindow = nullptr;
+				res = UnregisterClass(CLASS_NAME, nullptr);
+				if (res == FALSE)
+				{
+					OutputDebugStringW(L"Failed to DestroyWindow!");
+				}
 			}
 		}
 
@@ -107,5 +120,4 @@ namespace MediaFoundationTesing
 	std::wstring MediaFoundationCaptureTESTs::myCaptureFilePath = L"C:\\";						//<-------------------Path to file captures----------------------------
 	std::unique_ptr<CaptureMediaSession> MediaFoundationCaptureTESTs::mCaptureMediaSession = nullptr;
 	HWND MediaFoundationCaptureTESTs::mVideoWindow = nullptr;
-	bool MediaFoundationCaptureTESTs::mVideoWindowClassIsRegistered = false;
 }
