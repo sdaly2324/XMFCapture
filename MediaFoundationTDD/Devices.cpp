@@ -1,5 +1,6 @@
 #include "Devices.h"
 #include "MFUtils.h"
+#include "MFAttrToStrHelper.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
@@ -17,6 +18,7 @@ public:
 
 private:
 	std::vector<std::wstring>	GetCaptureDeviceNames();
+	void						DumpFormats(CComPtr<IMFActivate> device, WCHAR* devicename);
 
 	IMFActivate**				mCaptureDevices			= NULL;
 	unsigned int				mNumberOfCaptureDevices	= 0;
@@ -48,6 +50,57 @@ HRESULT DevicesRep::GetLastHRESULT()
 	return MFUtils::GetLastHRESULT();
 }
 
+void DevicesRep::DumpFormats(CComPtr<IMFActivate> device, WCHAR* devicename)
+{
+	CComPtr<IMFMediaSource> mediaSource = nullptr;
+	OnERR_return(device->ActivateObject(IID_IMFMediaSource, (void**)&mediaSource));
+	CComPtr<IMFPresentationDescriptor>	presentationDescriptor = nullptr;
+	OnERR_return(mediaSource->CreatePresentationDescriptor(&presentationDescriptor));
+	DWORD presentationDescriptorCount = 0;
+	OnERR_return(presentationDescriptor->GetStreamDescriptorCount(&presentationDescriptorCount));
+	for (DWORD s = 0; s < presentationDescriptorCount; s++)
+	{
+		BOOL selected = FALSE;
+		CComPtr<IMFStreamDescriptor> streamDescriptor = nullptr;
+		OnERR_return(presentationDescriptor->GetStreamDescriptorByIndex(s, &selected, &streamDescriptor));
+
+		// stream header
+		wchar_t  mess[1024];
+		swprintf_s(mess, 1024, L"%s stream(%d)\n", devicename, s);
+		OutputDebugStringW(mess);
+
+		CComPtr<IMFMediaTypeHandler> mediaTypeHandler = nullptr;
+		OnERR_return(streamDescriptor->GetMediaTypeHandler(&mediaTypeHandler));
+		DWORD mediaTypeCount = 0;
+		OnERR_return(mediaTypeHandler->GetMediaTypeCount(&mediaTypeCount));
+		for (DWORD m = 0; m < mediaTypeCount; m++)
+		{
+			CComPtr<IMFMediaType> mediaType = nullptr;
+			OnERR_return(mediaTypeHandler->GetMediaTypeByIndex(m, &mediaType));
+			UINT32 attributeCount = 0;
+			OnERR_return(mediaType->GetCount(&attributeCount));
+
+			// formats header
+			swprintf_s(mess, 1024, L"%s stream(%d) format(%d)\n", devicename, s, m);
+			OutputDebugStringW(mess);
+
+			for (unsigned int a = 0; a < attributeCount; a++)
+			{
+				GUID guidKey;
+				PROPVARIANT value;
+				OnERR_return(mediaType->GetItemByIndex(a, &guidKey, &value));
+
+				std::wstring attrName = MFAttrToStrHelper::GUIDToAttrName(guidKey);
+				std::wstring attrVal = MFAttrToStrHelper::PropToValue(mediaType, guidKey, value);
+
+				wchar_t  mess[1024];
+				swprintf_s(mess, 1024, L"%s stream(%d) format(%d) ATTR %.3d %-56s %s\n", devicename, s, m, a, attrName.c_str(), attrVal.c_str());
+				OutputDebugStringW(mess);
+			}
+		}
+	}
+}
+
 std::vector<std::wstring> DevicesRep::GetCaptureDeviceNames()
 {
 	std::vector<std::wstring> retVal;
@@ -64,6 +117,7 @@ std::vector<std::wstring> DevicesRep::GetCaptureDeviceNames()
 				OutputDebugStringW(mess);
 				CComPtr<IMFAttributes> deviceAttrs = mCaptureDevices[i];
 				DumpAttr(deviceAttrs, devicename, L"");
+				DumpFormats(mCaptureDevices[i], devicename);
 			}
 			retVal.push_back(devicename);
 		}
