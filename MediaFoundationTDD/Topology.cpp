@@ -366,6 +366,10 @@ bool TopologyRep::IsOutputConnected(CComPtr<IMFTopologyNode> node)
 			{
 				return true;
 			}
+			else
+			{
+				DumpNode(node, outputNumber);
+			}
 		}
 	}
 	return false;
