@@ -35,10 +35,10 @@ enum CaptureInputMode // from DeckLinkAPI_h.h
 struct IMFCollection;
 struct IMFMediaType;
 struct IMFAttributes;
-class MediaTypeFactory : public MFUtils
+class MediaTypeUtils : public MFUtils
 {
 public:
-	MediaTypeFactory();
+	MediaTypeUtils();
 	static HRESULT					GetLastHRESULT();
 
 	static CComPtr<IMFMediaType>	CreateAudioEncodingMediaType();

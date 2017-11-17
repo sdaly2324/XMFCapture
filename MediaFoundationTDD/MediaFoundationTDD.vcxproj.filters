@@ -28,9 +28,6 @@
     <ClCompile Include="Topology.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MediaTypeFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MFUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -41,6 +38,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CaptureMediaSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaTypeUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,9 +69,6 @@
     <ClInclude Include="Topology.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MediaTypeFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MFUtils.h" />
     <ClInclude Include="MFAttrToStrHelper.h">
       <Filter>Header Files</Filter>
@@ -83,6 +80,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CaptureHAL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTypeUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

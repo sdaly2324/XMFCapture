@@ -1,7 +1,7 @@
 #include "FileSink.h"
 #include "MFUtils.h"
 #include "AttributesFactory.h"
-#include "MediaTypeFactory.h"
+#include "MediaTypeUtils.h"
 #include "MediaSource.h"
 #include "PresentationDescriptor.h"
 
@@ -42,7 +42,7 @@ FileSinkRep::FileSinkRep(LPCWSTR fullFilePath, std::shared_ptr<MediaSource> aggr
 		OnERR_return(MFCreateFile(MF_ACCESSMODE_WRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NONE, fullFilePath, &outputByteStream));
 		OnERR_return(MFCreateMuxSink(MFStreamFormat_MPEG2Transport, attributes, outputByteStream, &mMediaSink));
 
-		MediaTypeFactory mediaTypeFactory;
+		MediaTypeUtils mediaTypeFactory;
 		DWORD newStreamIndex = 0;
 
 		CComPtr<IMFAttributes> sourceVideoMediaAttrs = aggregateMediaSource->GetVideoMediaType();

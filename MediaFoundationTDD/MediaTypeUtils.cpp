@@ -1,4 +1,4 @@
-#include "MediaTypeFactory.h"
+#include "MediaTypeUtils.h"
 #include "AttributesFactory.h"
 
 #include <mfapi.h>
@@ -8,11 +8,11 @@
 #include <d3d9.h>
 #include <Dxva2api.h>
 
-MediaTypeFactory::MediaTypeFactory()
+MediaTypeUtils::MediaTypeUtils()
 {
 
 }
-void MediaTypeFactory::DumpAvailableAACFormats(CComPtr<IMFCollection> availableTypes)
+void MediaTypeUtils::DumpAvailableAACFormats(CComPtr<IMFCollection> availableTypes)
 {
 	// DUMP available AAC formats
 	DWORD count = 0;
@@ -28,12 +28,12 @@ void MediaTypeFactory::DumpAvailableAACFormats(CComPtr<IMFCollection> availableT
 	}
 }
 
-HRESULT MediaTypeFactory::GetLastHRESULT()
+HRESULT MediaTypeUtils::GetLastHRESULT()
 {
 	return MFUtils::GetLastHRESULT();
 }
 
-CComPtr<IMFMediaType> MediaTypeFactory::CreateAudioInputMediaType()
+CComPtr<IMFMediaType> MediaTypeUtils::CreateAudioInputMediaType()
 {
 	CComPtr<IMFAttributes> attributes = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
@@ -49,7 +49,7 @@ CComPtr<IMFMediaType> MediaTypeFactory::CreateAudioInputMediaType()
 	return retVal;
 }
 
-CComPtr<IMFMediaType> MediaTypeFactory::CreateAudioEncodingMediaType()
+CComPtr<IMFMediaType> MediaTypeUtils::CreateAudioEncodingMediaType()
 {
 	CComPtr<IMFMediaType> retVal = NULL;
 	AttributesFactory attributesFactory;
@@ -82,7 +82,7 @@ CComPtr<IMFMediaType> MediaTypeFactory::CreateAudioEncodingMediaType()
 	return retVal;
 }
 
-CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs)
+CComPtr<IMFMediaType> MediaTypeUtils::CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs)
 {
 	AttributesFactory attributesFactory;
 	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoEncodeAttrs(inAttrs);
@@ -97,7 +97,7 @@ CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoEncodingMediaType(CComPtr<IMF
 	return retVal;
 }
 
-CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs)
+CComPtr<IMFMediaType> MediaTypeUtils::CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs)
 {
 	AttributesFactory attributesFactory;
 	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoNV12Attrs(inAttrs);
@@ -112,7 +112,7 @@ CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoNV12MediaType(CComPtr<IMFAttr
 	return retVal;
 }
 
-CaptureInputMode MediaTypeFactory::ConvertMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType)
+CaptureInputMode MediaTypeUtils::ConvertMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType)
 {
 	return captureInputModeUnknown;
 }

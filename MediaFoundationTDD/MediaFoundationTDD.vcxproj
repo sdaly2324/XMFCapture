@@ -172,7 +172,7 @@
     <ClInclude Include="MediaFoundationTDD.h" />
     <ClInclude Include="CaptureMediaSession.h" />
     <ClInclude Include="MediaSource.h" />
-    <ClInclude Include="MediaTypeFactory.h" />
+    <ClInclude Include="MediaTypeUtils.h" />
     <ClInclude Include="PresentationDescriptor.h" />
     <ClInclude Include="FileSink.h" />
     <ClInclude Include="targetver.h" />
@@ -189,7 +189,7 @@
     <ClCompile Include="MFUtils.cpp" />
     <ClCompile Include="CaptureMediaSession.cpp" />
     <ClCompile Include="MediaSource.cpp" />
-    <ClCompile Include="MediaTypeFactory.cpp" />
+    <ClCompile Include="MediaTypeUtils.cpp" />
     <ClCompile Include="PresentationDescriptor.cpp" />
     <ClCompile Include="FileSink.cpp" />
     <ClCompile Include="Topology.cpp" />

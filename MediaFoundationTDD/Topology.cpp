@@ -3,7 +3,7 @@
 #include "MediaSource.h"
 #include "PresentationDescriptor.h"
 #include "MFUtils.h"
-#include "MediaTypeFactory.h"
+#include "MediaTypeUtils.h"
 #include "FileSink.h"
 
 #include <mfapi.h>
@@ -430,7 +430,7 @@ void TopologyRep::CreateTopology
 		}
 	}
 
-	MediaTypeFactory mediaTypeFactory;
+	MediaTypeUtils mediaTypeFactory;
 
 	// video
 	std::shared_ptr<PresentationDescriptor> videoMediaSourcePresentationDescriptor(new PresentationDescriptor(captureSource->GetMediaSource()));
@@ -497,7 +497,7 @@ std::shared_ptr<TopologyNode> TopologyRep::CreateAudioEncoderTransformNode(CComP
 	//CComPtr<IMFMediaType> outputMediaType = nullptr;
 	//OnERR_return_NULL(transform->GetOutputAvailableType(0, formatIndexWeWantForOutput, &outputMediaType));
 
-	MediaTypeFactory mediaTypeFactory;
+	MediaTypeUtils mediaTypeFactory;
 	OnERR_return_NULL(transform->SetOutputType(0, mediaTypeFactory.CreateAudioEncodingMediaType(), 0));
 	OnERR_return_NULL(transform->SetInputType(0, inputType, 0));
 
