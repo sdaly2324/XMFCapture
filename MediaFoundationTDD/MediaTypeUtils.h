@@ -45,7 +45,7 @@ public:
 	static CComPtr<IMFMediaType>	CreateAudioInputMediaType();
 	static CComPtr<IMFMediaType>	CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
 	static CComPtr<IMFMediaType>	CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs);
-	static CaptureInputMode			ConvertMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType);
+	static CaptureInputMode			ConvertVideoMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType);
 private:
 	void DumpAvailableAACFormats(CComPtr<IMFCollection> availableTypes);
 	template <class T>

@@ -112,7 +112,116 @@ CComPtr<IMFMediaType> MediaTypeUtils::CreateVideoNV12MediaType(CComPtr<IMFAttrib
 	return retVal;
 }
 
-CaptureInputMode MediaTypeUtils::ConvertMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType)
+CaptureInputMode MediaTypeUtils::ConvertVideoMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType)
 {
+	GUID guidValue;
+	mediaType->GetGUID(MF_MT_MAJOR_TYPE, &guidValue);
+	if (guidValue != MFMediaType_Video)
+	{
+		return captureInputModeUnknown;
+	}
+
+	UINT32 width = 0;
+	UINT32 height = 0;
+	if (IsHRError(MFGetAttributeRatio(mediaType, MF_MT_FRAME_SIZE, &width, &height)))
+	{
+		return captureInputModeUnknown;
+	}
+
+	UINT32 frameRatenumerator = 0;
+	UINT32 frameRateDenominator = 0;
+	if (IsHRError(MFGetAttributeRatio(mediaType, MF_MT_FRAME_RATE, &frameRatenumerator, &frameRateDenominator)))
+	{
+		return captureInputModeUnknown;
+	}
+
+	UINT32 interLacedMode;
+	bool progressive = false;
+	if (IsHRError(mediaType->GetUINT32(MF_MT_INTERLACE_MODE, &interLacedMode)))
+	{
+		return captureInputModeUnknown;
+	}
+	if (interLacedMode == 2)
+	{
+		progressive = true;
+	}
+
+	if (frameRatenumerator == 60000 && frameRateDenominator == 1001)
+	{// 59.94
+		if (width == 1280 && height == 720)
+		{// 720
+			return captureInputModeHD720p5994;
+		}
+		else if (width == 1920 && height == 1080)
+		{// 1080
+			if (progressive)
+			{
+				return captureInputModeHD1080p5994;
+			}
+			else
+			{
+				return captureInputModeHD1080i5994;
+			}
+		}
+	}
+	if (frameRatenumerator == 60 && frameRateDenominator == 1)
+	{// 60
+		if (width == 1280 && height == 720)
+		{// 720
+			return captureInputModeHD720p60;
+		}
+		else if (width == 1920 && height == 1080)
+		{// 1080
+			if (progressive)
+			{
+				return captureInputModeHD1080p6000;
+			}
+			else
+			{
+				return captureInputModeHD1080i6000;
+			}
+		}
+	}
+	if (frameRatenumerator == 50 && frameRateDenominator == 1)
+	{// 50
+		if (width == 1280 && height == 720)
+		{// 720
+			return captureInputModeHD720p50;
+		}
+		else if (width == 1920 && height == 1080)
+		{// 1080
+			if (progressive)
+			{
+				return captureInputModeHD1080p50;
+			}
+			else
+			{
+				return captureInputModeHD1080i50;
+			}
+		}
+	}
+	if (frameRatenumerator == 30000 && frameRateDenominator == 1001)
+	{// 29.976
+		if (progressive)
+		{
+			return captureInputModeNTSCp;
+		}
+		else
+		{
+			return captureInputModeNTSC;
+		}
+	}
+	if (frameRatenumerator == 25 && frameRateDenominator == 1)
+	{// 25
+		if (progressive)
+		{
+			return captureInputModePALp;
+		}
+		else
+		{
+			return captureInputModePAL;
+		}
+	}
+
 	return captureInputModeUnknown;
 }

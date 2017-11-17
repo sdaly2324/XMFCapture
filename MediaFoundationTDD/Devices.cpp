@@ -1,6 +1,7 @@
 #include "Devices.h"
 #include "MFUtils.h"
 #include "MFAttrToStrHelper.h"
+#include "MediaTypeUtils.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
@@ -81,7 +82,7 @@ void DevicesRep::DumpFormats(CComPtr<IMFActivate> device, WCHAR* devicename)
 			OnERR_return(mediaType->GetCount(&attributeCount));
 
 			// formats header
-			swprintf_s(mess, 1024, L"%s stream(%d) format(%d)\n", devicename, s, m);
+			swprintf_s(mess, 1024, L"%s stream(%d) format(%d) mode(0x%x)\n", devicename, s, m, MediaTypeUtils::ConvertVideoMediaTypeToCaptureInputMode(mediaType));
 			OutputDebugStringW(mess);
 
 			for (unsigned int a = 0; a < attributeCount; a++)

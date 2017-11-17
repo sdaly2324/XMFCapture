@@ -110,7 +110,7 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartCapture(mVideoWindow, L"Capture.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			LogTime(L"Capture", 10);
+			LogTime(L"Capture", 2);
 
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
@@ -120,7 +120,7 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartPreview(mVideoWindow);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			LogTime(L"Preview", 10);
+			LogTime(L"Preview", 2);
 
 			mCaptureMediaSession->StopPreview();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
@@ -130,19 +130,19 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartCapture(mVideoWindow, L"TogglePreview.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			LogTime(L"TogglePreview StartCapture", 5);
+			LogTime(L"TogglePreview StartCapture", 2);
 
 			mCaptureMediaSession->StopPreview();
 			ShowWindow(mVideoWindow, SW_HIDE);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			LogTime(L"TogglePreview StopPreview", 5);
+			LogTime(L"TogglePreview StopPreview", 2);
 
 			mCaptureMediaSession->StartPreview(mVideoWindow);
 			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			LogTime(L"TogglePreview StartPreview", 5);
+			LogTime(L"TogglePreview StartPreview", 2);
 
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
@@ -152,17 +152,17 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartCapture(mVideoWindow, L"Pause.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			LogTime(L"Pause StartCapture", 5);
+			LogTime(L"Pause StartCapture", 2);
 
 			mCaptureMediaSession->PauseCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			LogTime(L"Pause PauseCapture", 5);
+			LogTime(L"Pause PauseCapture", 2);
 
 			mCaptureMediaSession->ResumeCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			LogTime(L"Pause ResumeCapture", 5);
+			LogTime(L"Pause ResumeCapture", 2);
 
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
