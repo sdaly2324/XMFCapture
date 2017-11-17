@@ -9,9 +9,13 @@ std::wstring ConvertCharToWString(char* stringToConvert)
 	std::string sstr(stringToConvert);
 	return std::wstring(sstr.begin(), sstr.end());
 }
-MFUtils::MFUtils() : mLastHR(S_OK)
+
+HRESULT MFUtils::mLastHR = S_OK;
+MFUtils::MFUtils()
 {
+
 }
+
 HRESULT MFUtils::HRESULTLogErr(HRESULT hr, char* function, char* file, int line)
 {
 	if (FAILED(hr))

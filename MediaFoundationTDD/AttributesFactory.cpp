@@ -1,57 +1,23 @@
 #include "AttributesFactory.h"
-#include "MFUtils.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
 
-class AttributesFactoryRep : public MFUtils
-{
-public:
-	AttributesFactoryRep();
-	~AttributesFactoryRep();
 
-	HRESULT GetLastHRESULT();
-
-	CComPtr<IMFAttributes>	CreateVideoDeviceAttrs();
-	CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
-	CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
-	CComPtr<IMFAttributes>	CreateFileSinkAttrs();
-	CComPtr<IMFAttributes>	CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes);
-	CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes);
-	CComPtr<IMFAttributes>	CreateAudioOutAttrs();
-
-private:
-	HRESULT					CopyAttribute(CComPtr<IMFAttributes> sourceAttribute, CComPtr<IMFAttributes> destinationAttribute, const GUID& attributeGUID);
-};
 AttributesFactory::AttributesFactory()
-{
-	m_pRep = std::make_unique<AttributesFactoryRep>();
-}
-AttributesFactoryRep::AttributesFactoryRep()
 {	
 }
 AttributesFactory::~AttributesFactory()
 {
 }
-AttributesFactoryRep::~AttributesFactoryRep()
-{
-}
 
 HRESULT AttributesFactory::GetLastHRESULT()
-{
-	return m_pRep->GetLastHRESULT();
-}
-HRESULT AttributesFactoryRep::GetLastHRESULT()
 {
 	return MFUtils::GetLastHRESULT();
 }
 
 CComPtr<IMFAttributes> AttributesFactory::CreateVideoDeviceAttrs()
-{
-	return m_pRep->CreateVideoDeviceAttrs();
-}
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoDeviceAttrs()
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
@@ -61,10 +27,6 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoDeviceAttrs()
 
 CComPtr<IMFAttributes> AttributesFactory::CreateAudioDeviceAttrs()
 {
-	return m_pRep->CreateAudioDeviceAttrs();
-}
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioDeviceAttrs()
-{
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
 	OnERR_return_NULL(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_AUDCAP_GUID));
@@ -72,10 +34,6 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioDeviceAttrs()
 }
 
 CComPtr<IMFAttributes> AttributesFactory::CreateSInkReaderCbAttrs(IUnknown* callBack)
-{
-	return m_pRep->CreateSInkReaderCbAttrs(callBack);
-}
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateSInkReaderCbAttrs(IUnknown* callBack)
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
@@ -85,10 +43,6 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateSInkReaderCbAttrs(IUnknown* c
 }
 
 CComPtr<IMFAttributes> AttributesFactory::CreateFileSinkAttrs()
-{
-	return m_pRep->CreateFileSinkAttrs();
-}
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateFileSinkAttrs()
 {
 	CComPtr<IMFAttributes> attributes = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
@@ -102,17 +56,13 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateFileSinkAttrs()
 
 CComPtr<IMFAttributes> AttributesFactory::CreateAudioOutAttrs()
 {
-	return m_pRep->CreateAudioOutAttrs();
-}
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateAudioOutAttrs()
-{
 	CComPtr<IMFAttributes> attributes = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
 	OnERR_return_NULL(attributes->SetUINT32(MF_LOW_LATENCY, TRUE));
 	return attributes;
 }
 
-HRESULT AttributesFactoryRep::CopyAttribute(CComPtr<IMFAttributes> sourceAttribute, CComPtr<IMFAttributes> destinationAttribute, const GUID& attributeGUID)
+HRESULT AttributesFactory::CopyAttribute(CComPtr<IMFAttributes> sourceAttribute, CComPtr<IMFAttributes> destinationAttribute, const GUID& attributeGUID)
 {
 	PROPVARIANT var;
 	PropVariantInit(&var);
@@ -124,11 +74,9 @@ HRESULT AttributesFactoryRep::CopyAttribute(CComPtr<IMFAttributes> sourceAttribu
 	}
 	return hr;
 }
+
+
 CComPtr<IMFAttributes> AttributesFactory::CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes)
-{
-	return m_pRep->CreateVideoEncodeAttrs(videoInputAttributes);
-}
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes)
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
@@ -156,10 +104,6 @@ CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoEncodeAttrs(CComPtr<IMFA
 }
 
 CComPtr<IMFAttributes> AttributesFactory::CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes)
-{
-	return m_pRep->CreateVideoNV12Attrs(videoInputAttributes);
-}
-CComPtr<IMFAttributes> AttributesFactoryRep::CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes)
 {
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));

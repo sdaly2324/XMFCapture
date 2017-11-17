@@ -8,13 +8,13 @@ class MFUtils
 {
 public:
 	MFUtils();
-	HRESULT HRESULTLogErr(HRESULT hr, char* function, char* file, int line);
-	HRESULT GetLastHRESULT();
-	bool LastHR_OK();
-	bool LastHR_FAIL();
-	void SetLastHR_Fail();
+	static HRESULT HRESULTLogErr(HRESULT hr, char* function, char* file, int line);
+	static HRESULT GetLastHRESULT();
+	static bool LastHR_OK();
+	static bool LastHR_FAIL();
+	static void SetLastHR_Fail();
 
-	void DumpAttrImp(CComPtr<IMFAttributes> attrs, const std::wstring& typeName, const std::wstring& name);
+	static void DumpAttrImp(CComPtr<IMFAttributes> attrs, const std::wstring& typeName, const std::wstring& name);
 	template <class T> void DumpAttr(CComPtr<T> pComType, const std::wstring& typeName, const std::wstring& name)
 	{
 		if (pComType == NULL)
@@ -35,10 +35,10 @@ public:
 		}
 	}
 private:
-	HRESULT mLastHR;
+	static HRESULT mLastHR;
 };
-#define OnERR_return(hr)		HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__); if(!LastHR_OK()) return;
-#define OnERR_return_NULL(hr)	HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__); if(!LastHR_OK()) return NULL;
-#define OnERR_return_HR(hr)		HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__); if(!LastHR_OK()) return hr;
-#define OnERR_return_false(hr)	HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__); if(!LastHR_OK()) return false;
-#define IsHRError(hr)			(HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__) != S_OK)
+#define OnERR_return(hr)		MFUtils::HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__); if(!LastHR_OK()) return;
+#define OnERR_return_NULL(hr)	MFUtils::HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__); if(!LastHR_OK()) return NULL;
+#define OnERR_return_HR(hr)		MFUtils::HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__); if(!LastHR_OK()) return hr;
+#define OnERR_return_false(hr)	MFUtils::HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__); if(!LastHR_OK()) return false;
+#define IsHRError(hr)			(MFUtils::HRESULTLogErr(hr, __FUNCTION__, __FILE__, __LINE__) != S_OK)

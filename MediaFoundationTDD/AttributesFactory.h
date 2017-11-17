@@ -1,29 +1,28 @@
 #pragma once
+
+#include "MFUtils.h"
+
 #include <windows.h>
 #include <atlcomcli.h>
 #include <memory>
 
 struct IMFAttributes;
 class AttributesFactoryRep;
-class AttributesFactory
+class AttributesFactory : public MFUtils
 {
 public:
 	AttributesFactory();
 	~AttributesFactory();
 
-	HRESULT GetLastHRESULT();
+	static HRESULT GetLastHRESULT();
 
-	CComPtr<IMFAttributes>	CreateVideoDeviceAttrs();
-	CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
-	CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
-	CComPtr<IMFAttributes>	CreateFileSinkAttrs();
-	CComPtr<IMFAttributes>	CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes);
-	CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes);
-	CComPtr<IMFAttributes>	CreateAudioOutAttrs();
-
+	static CComPtr<IMFAttributes>	CreateVideoDeviceAttrs();
+	static CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
+	static CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
+	static CComPtr<IMFAttributes>	CreateFileSinkAttrs();
+	static CComPtr<IMFAttributes>	CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes);
+	static CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes);
+	static CComPtr<IMFAttributes>	CreateAudioOutAttrs();
 private:
-#pragma warning(push)
-#pragma warning(disable:4251)
-	std::unique_ptr<AttributesFactoryRep> m_pRep = 0;
-#pragma warning(pop)
+	static HRESULT CopyAttribute(CComPtr<IMFAttributes> sourceAttribute, CComPtr<IMFAttributes> destinationAttribute, const GUID& attributeGUID);
 };

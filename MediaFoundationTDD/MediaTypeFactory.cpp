@@ -1,5 +1,4 @@
 #include "MediaTypeFactory.h"
-#include "MFUtils.h"
 #include "AttributesFactory.h"
 
 #include <mfapi.h>
@@ -9,64 +8,32 @@
 #include <d3d9.h>
 #include <Dxva2api.h>
 
-class MediaTypeFactoryRep : public MFUtils
-{
-public:
-	MediaTypeFactoryRep();
-	virtual ~MediaTypeFactoryRep();
-
-	HRESULT								GetLastHRESULT();
-
-	CComPtr<IMFMediaType>				CreateAudioEncodingMediaType();
-	CComPtr<IMFMediaType>				CreateAudioInputMediaType();
-	CComPtr<IMFMediaType>				CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
-	CComPtr<IMFMediaType>				CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs);
-
-private:
-	template <class T>
-	HRESULT GetCollectionObject(CComPtr<IMFCollection> collection, DWORD index, T **object)
-	{
-		CComPtr<IUnknown> unknown;
-		HRESULT hr = collection->GetElement(index, &unknown);
-		if (SUCCEEDED(hr))
-		{
-			hr = unknown->QueryInterface(IID_PPV_ARGS(object));
-		}
-		return hr;
-	}
-	void DumpAvailableAACFormats(CComPtr<IMFCollection> availableTypes);
-};
-
-
 MediaTypeFactory::MediaTypeFactory()
 {
-	m_pRep = std::make_unique<MediaTypeFactoryRep>();
-}
-MediaTypeFactoryRep::MediaTypeFactoryRep()
-{
 
 }
-MediaTypeFactory::~MediaTypeFactory()
+void MediaTypeFactory::DumpAvailableAACFormats(CComPtr<IMFCollection> availableTypes)
 {
-}
-MediaTypeFactoryRep::~MediaTypeFactoryRep()
-{
+	// DUMP available AAC formats
+	DWORD count = 0;
+	HRESULT hr = availableTypes->GetElementCount(&count);
+	for (DWORD i = 0; i < count; i++)
+	{
+		CComPtr<IMFMediaType> pMediaType = NULL;
+		hr = GetCollectionObject(availableTypes, i, &pMediaType);
+		WCHAR count[1024];
+		swprintf_s(count, 1024, L"%d", i);
+		MFUtils::DumpAttr(pMediaType, L"AUDIO AAC", count);
+		OutputDebugStringW(L"\n");
+	}
 }
 
 HRESULT MediaTypeFactory::GetLastHRESULT()
-{
-	return m_pRep->GetLastHRESULT();
-}
-HRESULT MediaTypeFactoryRep::GetLastHRESULT()
 {
 	return MFUtils::GetLastHRESULT();
 }
 
 CComPtr<IMFMediaType> MediaTypeFactory::CreateAudioInputMediaType()
-{
-	return m_pRep->CreateAudioInputMediaType();
-}
-CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioInputMediaType()
 {
 	CComPtr<IMFAttributes> attributes = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
@@ -83,10 +50,6 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioInputMediaType()
 }
 
 CComPtr<IMFMediaType> MediaTypeFactory::CreateAudioEncodingMediaType()
-{
-	return m_pRep->CreateAudioEncodingMediaType();
-}
-CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioEncodingMediaType()
 {
 	CComPtr<IMFMediaType> retVal = NULL;
 	AttributesFactory attributesFactory;
@@ -118,27 +81,8 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateAudioEncodingMediaType()
 	}
 	return retVal;
 }
-void MediaTypeFactoryRep::DumpAvailableAACFormats(CComPtr<IMFCollection> availableTypes)
-{
-	// DUMP available AAC formats
-	DWORD count = 0;
-	HRESULT hr = availableTypes->GetElementCount(&count);
-	for (DWORD i = 0; i < count; i++)
-	{
-		CComPtr<IMFMediaType> pMediaType = NULL;
-		hr = GetCollectionObject(availableTypes, i, &pMediaType);
-		WCHAR count[1024];
-		swprintf_s(count, 1024, L"%d", i);
-		DumpAttr(pMediaType, L"AUDIO AAC", count);
-		OutputDebugStringW(L"\n");
-	}
-}
 
 CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs)
-{
-	return m_pRep->CreateVideoEncodingMediaType(inAttrs);
-}
-CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs)
 {
 	AttributesFactory attributesFactory;
 	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoEncodeAttrs(inAttrs);
@@ -155,10 +99,6 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoEncodingMediaType(CComPtr<
 
 CComPtr<IMFMediaType> MediaTypeFactory::CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs)
 {
-	return m_pRep->CreateVideoNV12MediaType(inAttrs);
-}
-CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs)
-{
 	AttributesFactory attributesFactory;
 	CComPtr<IMFAttributes> outAttrs = attributesFactory.CreateVideoNV12Attrs(inAttrs);
 	if (!outAttrs)
@@ -170,4 +110,9 @@ CComPtr<IMFMediaType> MediaTypeFactoryRep::CreateVideoNV12MediaType(CComPtr<IMFA
 	OnERR_return_NULL(MFCreateMediaType(&retVal));
 	OnERR_return_NULL(outAttrs->CopyAllItems(retVal));
 	return retVal;
+}
+
+CaptureInputMode MediaTypeFactory::ConvertMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType)
+{
+	return captureInputModeUnknown;
 }
