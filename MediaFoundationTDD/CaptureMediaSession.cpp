@@ -26,6 +26,8 @@ public:
 	void								ResumeCapture();
 	void								StopCapture();
 
+	long long							GetTime();
+
 	// IMFAsyncCallback
 	STDMETHODIMP						GetParameters(DWORD* /*pdwFlags*/, DWORD* /*pdwQueue*/) { return E_NOTIMPL; }
 	STDMETHODIMP						Invoke(IMFAsyncResult* pAsyncResult);
@@ -423,4 +425,24 @@ void CaptureMediaSessionRep::OnTopologyReady()
 	mAudioVolumeControl.Release();
 	OnERR_return(MFGetService(mMediaSession, MR_POLICY_VOLUME_SERVICE, IID_IMFSimpleAudioVolume, (void**)&mAudioVolumeControl));
 	OnERR_return(mAudioVolumeControl->SetMute(FALSE));
+}
+
+long long CaptureMediaSession::GetTime()
+{
+	return m_pRep->GetTime();
+}
+long long CaptureMediaSessionRep::GetTime()
+{
+	CComPtr<IMFClock> clock = nullptr;
+	if (IsHRError(mMediaSession->GetClock(&clock)))
+	{
+		return 0;
+	}
+	long long clockTime = 0;
+	long long systemTime = 0;
+	if (IsHRError(clock->GetCorrelatedTime(0, &clockTime, &systemTime)))
+	{
+		return 0;
+	}
+	return clockTime;
 }

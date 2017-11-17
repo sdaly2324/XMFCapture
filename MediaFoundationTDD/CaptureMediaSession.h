@@ -33,6 +33,7 @@ public:
 	void								PauseCapture();
 	void								ResumeCapture();
 	void								StopCapture();
+	long long							GetTime();
 
 private:
 #pragma warning(push)

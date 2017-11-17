@@ -61,6 +61,20 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession = std::make_unique<CaptureMediaSession>(myVideoDeviceName, myAudioDeviceName, myCaptureFilePath);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
+		static void LogTime(std::wstring label, unsigned int durationInSeconds)
+		{
+			long long prevTime = 0;
+			for (unsigned int x = 0; x < durationInSeconds; x++)
+			{
+				Sleep(1000);
+				WCHAR mess[1024];
+				long long currentTime = mCaptureMediaSession->GetTime();
+				double deltaTimeInMiliSeconds = (((double)currentTime - (double)prevTime) / 10000);
+				swprintf_s(mess, 1024, L"POOP %s deltaTimeInMiliSeconds(%f) currentTime(%I64d)\n", label.c_str(), deltaTimeInMiliSeconds, currentTime);
+				OutputDebugStringW(mess);
+				prevTime = currentTime;
+			}
+		}
 	public:
 		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
@@ -96,7 +110,7 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartCapture(mVideoWindow, L"Capture.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(10000);
+			LogTime(L"Capture", 10);
 
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
@@ -106,7 +120,7 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartPreview(mVideoWindow);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(1000);
+			LogTime(L"Preview", 10);
 
 			mCaptureMediaSession->StopPreview();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
@@ -116,18 +130,20 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartCapture(mVideoWindow, L"TogglePreview.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(1000);
+			LogTime(L"TogglePreview StartCapture", 5);
 
 			mCaptureMediaSession->StopPreview();
 			ShowWindow(mVideoWindow, SW_HIDE);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(1000);
+			LogTime(L"TogglePreview StopPreview", 5);
+
 			mCaptureMediaSession->StartPreview(mVideoWindow);
 			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(1000);
+			LogTime(L"TogglePreview StartPreview", 5);
+
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
@@ -136,17 +152,17 @@ namespace MediaFoundationTesing
 			mCaptureMediaSession->StartCapture(mVideoWindow, L"Pause.ts");
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(1000);
+			LogTime(L"Pause StartCapture", 5);
 
 			mCaptureMediaSession->PauseCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(1000);
+			LogTime(L"Pause PauseCapture", 5);
 
 			mCaptureMediaSession->ResumeCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
-			Sleep(3000);
+			LogTime(L"Pause ResumeCapture", 5);
 
 			mCaptureMediaSession->StopCapture();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
