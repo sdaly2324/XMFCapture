@@ -15,7 +15,7 @@ class CaptureMediaSessionRep : public IMFAsyncCallback, public MFUtils
 {
 public:
 	CaptureMediaSessionRep(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath);
-	~CaptureMediaSessionRep();
+	virtual ~CaptureMediaSessionRep();
 
 	HRESULT								GetLastHRESULT();
 
@@ -24,7 +24,7 @@ public:
 	void								StartCapture(HWND videoWindow, std::wstring captureFileName);
 	void								PauseCapture();
 	void								ResumeCapture();
-	void								StopCapture();
+	void								StopCaptureImp();
 
 	long long							GetTime();
 
@@ -36,6 +36,29 @@ public:
 	STDMETHODIMP						QueryInterface(REFIID iid, void** ppv);
 	STDMETHODIMP_(ULONG)				AddRef();
 	STDMETHODIMP_(ULONG)				Release();
+
+	//HRESULT	InitializeCapturer();
+	//HRESULT	SetVideoWindow(long windowHandle, long left, long top, long right, long bottom);
+	//HRESULT	put_VideoWindow(long left, long top, long right, long bottom);
+	//HRESULT	StartCapture(int64_t durationInFrames, std::wstring captureFileFullPathNoExt);
+	//HRESULT	StopCapture();
+	//HRESULT	get_FramesCaptured(unsigned long* pVal);
+	//HRESULT	get_FPSForCapture(long* pVal);
+	//HRESULT	get_CaptureTimeRemaining(long* pVal);
+	//HRESULT	PauseCapture(bool needToRestartPassthrough);
+	//HRESULT	ResumeCapture(bool needToRestartPassthrough);
+	//HRESULT	AbortCapture();
+	//HRESULT	Shutdown();
+	//HRESULT	get_ReceivingVideoSamples(bool* pVal);
+	//HRESULT	SetPreviewOutputOn(bool inVal);
+	//HRESULT	get_CaptureInputMode(long* pVal);
+	//HRESULT	get_DeviceActive(bool* pVal);
+	//HRESULT	get_PreviewIsOn(bool* pVal);
+	//HRESULT	GetCaptureProgress(long* framesCaptured, long* durationFrames);
+	//int64_t GetBytesWritten();
+	//bool Is1080i();
+	//bool GetForcedStop();
+	//std::wstring GetName();
 
 private:
 	void								InitPassthrough(HWND videoWindow);
@@ -353,11 +376,11 @@ void CaptureMediaSessionRep::StartCapture(HWND videoWindow, std::wstring capture
 	mCurrentlyCapturing = true;
 }
 
-void CaptureMediaSession::StopCapture()
+void CaptureMediaSession::StopCaptureImp()
 {
-	m_pRep->StopCapture();
+	m_pRep->StopCaptureImp();
 }
-void CaptureMediaSessionRep::StopCapture()
+void CaptureMediaSessionRep::StopCaptureImp()
 {
 	StopSession();
 	mCurrentlyPreviewing = false;
@@ -445,4 +468,93 @@ long long CaptureMediaSessionRep::GetTime()
 		return 0;
 	}
 	return clockTime;
+}
+
+HRESULT	CaptureMediaSession::InitializeCapturer()
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::SetVideoWindow(long windowHandle, long left, long top, long right, long bottom)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::put_VideoWindow(long left, long top, long right, long bottom)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::StartCapture(int64_t durationInFrames, std::wstring captureFileFullPathNoExt)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::StopCapture()
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::get_FramesCaptured(unsigned long* pVal)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::get_FPSForCapture(long* pVal)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::get_CaptureTimeRemaining(long* pVal)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::PauseCapture(bool needToRestartPassthrough)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::ResumeCapture(bool needToRestartPassthrough)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::AbortCapture()
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::Shutdown()
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::get_ReceivingVideoSamples(bool* pVal)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::SetPreviewOutputOn(bool inVal)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::get_CaptureInputMode(long* pVal)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::get_DeviceActive(bool* pVal)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::get_PreviewIsOn(bool* pVal)
+{
+	return E_FAIL;
+}
+HRESULT	CaptureMediaSession::GetCaptureProgress(long* framesCaptured, long* durationFrames)
+{
+	return E_FAIL;
+}
+int64_t CaptureMediaSession::GetBytesWritten()
+{
+	return 0;
+}
+bool CaptureMediaSession::Is1080i()
+{
+	return false;
+}
+bool CaptureMediaSession::GetForcedStop()
+{
+	return false;
+}
+std::wstring CaptureMediaSession::GetName()
+{
+	return L"";
 }

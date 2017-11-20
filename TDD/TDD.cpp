@@ -112,7 +112,7 @@ namespace MediaFoundationTesing
 
 			LogTime(L"Capture", 2);
 
-			mCaptureMediaSession->StopCapture();
+			mCaptureMediaSession->StopCaptureImp();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
 		TEST_METHOD(Preview)
@@ -144,7 +144,7 @@ namespace MediaFoundationTesing
 
 			LogTime(L"TogglePreview StartPreview", 2);
 
-			mCaptureMediaSession->StopCapture();
+			mCaptureMediaSession->StopCaptureImp();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
 		TEST_METHOD(Pause)
@@ -164,7 +164,7 @@ namespace MediaFoundationTesing
 
 			LogTime(L"Pause ResumeCapture", 2);
 
-			mCaptureMediaSession->StopCapture();
+			mCaptureMediaSession->StopCaptureImp();
 			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 		}
 	};

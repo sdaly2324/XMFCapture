@@ -26,5 +26,4 @@ public:
 	virtual bool Is1080i() = 0;
 	virtual bool GetForcedStop() = 0;
 	virtual std::wstring GetName() = 0;
-	virtual ~CaptureHAL() = 0;
 };
