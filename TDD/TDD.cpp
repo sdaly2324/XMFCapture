@@ -58,19 +58,21 @@ namespace MediaFoundationTesing
 		}
 		static void InitMediaSession()
 		{
-			mCaptureMediaSession = std::make_unique<CaptureMediaSession>(myVideoDeviceName, myAudioDeviceName, myCaptureFilePath);
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			mCaptureMediaSession = std::make_unique<CaptureMediaSession>();
+			Assert::AreEqual(mCaptureMediaSession->InitializeCapturer(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->SetVideoWindow((LONG)mVideoWindow, 0, 0, 640, 480 ), S_OK);
 		}
 		static void LogTime(std::wstring label, unsigned int durationInSeconds)
 		{
+			WCHAR mess[1024];
 			long long prevTime = 0;
 			for (unsigned int x = 0; x < durationInSeconds; x++)
 			{
 				Sleep(1000);
-				WCHAR mess[1024];
-				long long currentTime = mCaptureMediaSession->GetTime();
+				unsigned long framesCaptured = 0;
+				long long currentTime = mCaptureMediaSession->get_FramesCaptured(&framesCaptured);
 				double deltaTimeInMiliSeconds = (((double)currentTime - (double)prevTime) / 10000);
-				swprintf_s(mess, 1024, L"POOP %s deltaTimeInMiliSeconds(%f) currentTime(%I64d)\n", label.c_str(), deltaTimeInMiliSeconds, currentTime);
+				swprintf_s(mess, 1024, L"POOP %s framesCaptured(%d)\n", label.c_str(), framesCaptured);
 				OutputDebugStringW(mess);
 				prevTime = currentTime;
 			}
@@ -78,13 +80,13 @@ namespace MediaFoundationTesing
 	public:
 		MediaFoundationCaptureTESTs::MediaFoundationCaptureTESTs()
 		{
-			if (mCaptureMediaSession == nullptr)
-			{
-				InitMediaSession();
-			}
 			if (mVideoWindow == nullptr)
 			{
 				InitializeWindow();
+			}
+			if (mCaptureMediaSession == nullptr)
+			{
+				InitMediaSession();
 			}
 		}
 		MediaFoundationCaptureTESTs::~MediaFoundationCaptureTESTs()
@@ -103,76 +105,63 @@ namespace MediaFoundationTesing
 					OutputDebugStringW(L"Failed to DestroyWindow!");
 				}
 			}
+			if (mCaptureMediaSession)
+			{
+				mCaptureMediaSession.release();
+			}
 		}
 
 		TEST_METHOD(Capture)
 		{
-			mCaptureMediaSession->StartCapture(mVideoWindow, L"Capture.ts");
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->StartCapture(_I64_MAX, L"C:\\Capture"), S_OK);
 
 			LogTime(L"Capture", 2);
 
-			mCaptureMediaSession->StopCaptureImp();
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->StopCapture(), S_OK);
 		}
 		TEST_METHOD(Preview)
 		{
-			mCaptureMediaSession->StartPreview(mVideoWindow);
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->SetPreviewOutputOn(true), S_OK);
 
 			LogTime(L"Preview", 2);
 
-			mCaptureMediaSession->StopPreview();
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->SetPreviewOutputOn(false), S_OK);
 		}
 		TEST_METHOD(TogglePreview)
 		{
-			mCaptureMediaSession->StartCapture(mVideoWindow, L"TogglePreview.ts");
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->StartCapture(_I64_MAX, L"C:\\TogglePreview"), S_OK);
 
 			LogTime(L"TogglePreview StartCapture", 2);
 
-			mCaptureMediaSession->StopPreview();
+			Assert::AreEqual(mCaptureMediaSession->SetPreviewOutputOn(false), S_OK);
 			ShowWindow(mVideoWindow, SW_HIDE);
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
 			LogTime(L"TogglePreview StopPreview", 2);
 
-			mCaptureMediaSession->StartPreview(mVideoWindow);
+			Assert::AreEqual(mCaptureMediaSession->SetPreviewOutputOn(true), S_OK);
 			ShowWindow(mVideoWindow, SW_SHOWDEFAULT);
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
 
 			LogTime(L"TogglePreview StartPreview", 2);
 
-			mCaptureMediaSession->StopCaptureImp();
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->StopCapture(), S_OK);
 		}
 		TEST_METHOD(Pause)
 		{
-			mCaptureMediaSession->StartCapture(mVideoWindow, L"Pause.ts");
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->StartCapture(_I64_MAX, L"C:\\Pause"), S_OK);
 
 			LogTime(L"Pause StartCapture", 2);
 
-			mCaptureMediaSession->PauseCapture();
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->PauseCapture(false), S_OK);
 
 			LogTime(L"Pause PauseCapture", 2);
 
-			mCaptureMediaSession->ResumeCapture();
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->ResumeCapture(false), S_OK);
 
-			LogTime(L"Pause ResumeCapture", 2);
+			LogTime(L"Pause ResumeCapture", 3);
 
-			mCaptureMediaSession->StopCaptureImp();
-			Assert::AreEqual(mCaptureMediaSession->GetLastHRESULT(), S_OK);
+			Assert::AreEqual(mCaptureMediaSession->StopCapture(), S_OK);
 		}
 	};
-	std::wstring MediaFoundationCaptureTESTs::myVideoDeviceName = L"XI100DUSB-SDI Video";		//<-------------------Video device to test-----------------------------
-	std::wstring MediaFoundationCaptureTESTs::myAudioDeviceName = L"XI100DUSB-SDI Audio";		//<-------------------Audio device to test-----------------------------
-	//std::wstring MediaFoundationCaptureTESTs::myVideoDeviceName = L"XI100DUSB-HDMI Video";	//<-------------------Video device to test-----------------------------
-	//std::wstring MediaFoundationCaptureTESTs::myAudioDeviceName = L"XI100DUSB-HDMI Audio";	//<-------------------Audio device to test-----------------------------
-	std::wstring MediaFoundationCaptureTESTs::myCaptureFilePath = L"C:\\";						//<-------------------Path to file captures----------------------------
 	std::unique_ptr<CaptureMediaSession> MediaFoundationCaptureTESTs::mCaptureMediaSession = nullptr;
 	HWND MediaFoundationCaptureTESTs::mVideoWindow = nullptr;
 }

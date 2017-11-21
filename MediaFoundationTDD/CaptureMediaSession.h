@@ -25,19 +25,8 @@ class CaptureMediaSessionRep;
 class MediaFoundationTDD_API CaptureMediaSession : public CaptureHAL
 {
 public:
-	CaptureMediaSession(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath);
+	CaptureMediaSession();
 	~CaptureMediaSession();
-
-	HRESULT								GetLastHRESULT();
-
-	void								StartPreview(HWND videoWindow);
-	void								StopPreview();
-	void								StartCapture(HWND videoWindow, std::wstring captureFileName);
-	void								PauseCapture();
-	void								ResumeCapture();
-	void								StopCaptureImp();
-	long long							GetTime();
-
 
 	HRESULT	InitializeCapturer();
 	HRESULT	SetVideoWindow(long windowHandle, long left, long top, long right, long bottom);

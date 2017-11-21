@@ -11,20 +11,28 @@
 #include <Mferror.h>
 #include <evr.h>
 
+const std::wstring gVideoDeviceName = L"XI100DUSB-SDI Video";		//<-------------------Video device to test-----------------------------
+const std::wstring gAudioDeviceName = L"XI100DUSB-SDI Audio";		//<-------------------Audio device to test-----------------------------
+//const std::wstring myVideoDeviceName = L"XI100DUSB-HDMI Video";	//<-------------------Video device to test-----------------------------
+//const std::wstring myAudioDeviceName = L"XI100DUSB-HDMI Audio";	//<-------------------Audio device to test-----------------------------
+
+
 class CaptureMediaSessionRep : public IMFAsyncCallback, public MFUtils
 {
 public:
-	CaptureMediaSessionRep(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath);
+	CaptureMediaSessionRep(std::wstring videoDeviceName, std::wstring audioDeviceName);
 	virtual ~CaptureMediaSessionRep();
 
 	HRESULT								GetLastHRESULT();
-
-	void								StartPreview(HWND videoWindow);
-	void								StopPreview();
-	void								StartCapture(HWND videoWindow, std::wstring captureFileName);
-	void								PauseCapture();
-	void								ResumeCapture();
-	void								StopCaptureImp();
+	
+	HRESULT								StartCapture(int64_t durationInFrames, std::wstring captureFileFullPathNoExt);
+	HRESULT								PauseCapture(bool needToRestartPassthrough);
+	HRESULT								ResumeCapture();
+	HRESULT								StopCapture();
+	HRESULT								SetPreviewOutputOn(bool inVal);
+	HRESULT								get_PreviewIsOn(bool* pVal);
+	HRESULT								get_FPSForCapture(long* pVal);
+	HRESULT								get_FramesCaptured(unsigned long* pVal);
 
 	long long							GetTime();
 
@@ -37,32 +45,14 @@ public:
 	STDMETHODIMP_(ULONG)				AddRef();
 	STDMETHODIMP_(ULONG)				Release();
 
-	//HRESULT	InitializeCapturer();
-	//HRESULT	SetVideoWindow(long windowHandle, long left, long top, long right, long bottom);
-	//HRESULT	put_VideoWindow(long left, long top, long right, long bottom);
-	//HRESULT	StartCapture(int64_t durationInFrames, std::wstring captureFileFullPathNoExt);
-	//HRESULT	StopCapture();
-	//HRESULT	get_FramesCaptured(unsigned long* pVal);
-	//HRESULT	get_FPSForCapture(long* pVal);
-	//HRESULT	get_CaptureTimeRemaining(long* pVal);
-	//HRESULT	PauseCapture(bool needToRestartPassthrough);
-	//HRESULT	ResumeCapture(bool needToRestartPassthrough);
-	//HRESULT	AbortCapture();
-	//HRESULT	Shutdown();
-	//HRESULT	get_ReceivingVideoSamples(bool* pVal);
-	//HRESULT	SetPreviewOutputOn(bool inVal);
-	//HRESULT	get_CaptureInputMode(long* pVal);
-	//HRESULT	get_DeviceActive(bool* pVal);
-	//HRESULT	get_PreviewIsOn(bool* pVal);
-	//HRESULT	GetCaptureProgress(long* framesCaptured, long* durationFrames);
-	//int64_t GetBytesWritten();
-	//bool Is1080i();
-	//bool GetForcedStop();
-	//std::wstring GetName();
+	HRESULT	SetVideoWindow(long windowHandle, long left, long top, long right, long bottom);
 
 private:
+	double								GetCurrrentVideoFormatFPS();
+	void								StartPreview(HWND videoWindow);
+	void								StopPreview();
 	void								InitPassthrough(HWND videoWindow);
-	void								InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName);
+	void								InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileFullPath);
 	void								StartSession();
 	void								StopSession();
 	void								OnTopologyReady();
@@ -98,16 +88,24 @@ private:
 	HWND										mVideoWindow = nullptr;
 	CComPtr<IMFVideoDisplayControl>				mVideoDisplayControl = nullptr;
 	CComPtr<IMFSimpleAudioVolume>				mAudioVolumeControl = nullptr;
+
+	int64_t										mDurationInFrames = 0;
+	double										mFPSForCapture = 0;
 };
 
-CaptureMediaSession::CaptureMediaSession(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath)
+CaptureMediaSession::CaptureMediaSession()
 {
-	m_pRep = std::make_unique<CaptureMediaSessionRep>(videoDeviceName, audioDeviceName, captureFilePath);
+
 }
-CaptureMediaSessionRep::CaptureMediaSessionRep(std::wstring videoDeviceName, std::wstring audioDeviceName, std::wstring captureFilePath):
+
+HRESULT	CaptureMediaSession::InitializeCapturer()
+{
+	m_pRep = std::make_unique<CaptureMediaSessionRep>(gVideoDeviceName, gAudioDeviceName);
+	return S_OK;
+}
+CaptureMediaSessionRep::CaptureMediaSessionRep(std::wstring videoDeviceName, std::wstring audioDeviceName):
 	mVideoDeviceName(videoDeviceName),
-	mAudioDeviceName(audioDeviceName),
-	mCaptureFilePath(captureFilePath)
+	mAudioDeviceName(audioDeviceName)
 {
 	OnERR_return(MFStartup(MF_VERSION));
 	OnERR_return(MFCreateMediaSession(nullptr, &mMediaSession));
@@ -136,10 +134,6 @@ CaptureMediaSessionRep::~CaptureMediaSessionRep()
 	OnERR_return(MFShutdown());
 }
 
-HRESULT CaptureMediaSession::GetLastHRESULT()
-{
-	return m_pRep->GetLastHRESULT();
-}
 HRESULT CaptureMediaSessionRep::GetLastHRESULT()
 {
 	return MFUtils::GetLastHRESULT();
@@ -314,10 +308,6 @@ void CaptureMediaSessionRep::InitPassthrough(HWND videoWindow)
 	mTopology->CreateTopology(mCaptureSource, L"", mVideoRenderer, mAudioRenderer, mMediaSession);
 }
 
-void CaptureMediaSession::StartPreview(HWND videoWindow)
-{
-	m_pRep->StartPreview(videoWindow);
-}
 void CaptureMediaSessionRep::StartPreview(HWND videoWindow)
 {
 	if (mCurrentlyCapturing)
@@ -335,10 +325,6 @@ void CaptureMediaSessionRep::StartPreview(HWND videoWindow)
 	mCurrentlyPreviewing = true;
 }
 
-void CaptureMediaSession::StopPreview()
-{
-	m_pRep->StopPreview();
-}
 void CaptureMediaSessionRep::StopPreview()
 {
 	if (mCurrentlyCapturing)
@@ -355,36 +341,12 @@ void CaptureMediaSessionRep::StopPreview()
 	mCurrentlyPreviewing = false;
 }
 
-void CaptureMediaSessionRep::InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileName)
+void CaptureMediaSessionRep::InitCaptureAndPassthrough(HWND videoWindow, std::wstring captureFileFullPath)
 {
 	mTopology.reset(nullptr);
 	mTopology = std::make_unique<Topology>();
 	CreateCaptureSourceAndRenderers(videoWindow);
-	std::wstring fileToWrite = mCaptureFilePath + captureFileName;
-	mTopology->CreateTopology(mCaptureSource, fileToWrite, mVideoRenderer, mAudioRenderer, mMediaSession);
-}
-
-void CaptureMediaSession::StartCapture(HWND videoWindow, std::wstring captureFileName)
-{
-	m_pRep->StartCapture(videoWindow, captureFileName);
-}
-void CaptureMediaSessionRep::StartCapture(HWND videoWindow, std::wstring captureFileName)
-{
-	InitCaptureAndPassthrough(videoWindow, captureFileName);
-	StartSession();
-	mCurrentlyPreviewing = true;
-	mCurrentlyCapturing = true;
-}
-
-void CaptureMediaSession::StopCaptureImp()
-{
-	m_pRep->StopCaptureImp();
-}
-void CaptureMediaSessionRep::StopCaptureImp()
-{
-	StopSession();
-	mCurrentlyPreviewing = false;
-	mCurrentlyCapturing = false;
+	mTopology->CreateTopology(mCaptureSource, captureFileFullPath, mVideoRenderer, mAudioRenderer, mMediaSession);
 }
 
 void CaptureMediaSessionRep::StopSession()
@@ -394,35 +356,6 @@ void CaptureMediaSessionRep::StopSession()
 
 	mMediaSession.Release();
 	OnERR_return(MFCreateMediaSession(nullptr, &mMediaSession));
-}
-
-void CaptureMediaSession::PauseCapture()
-{
-	m_pRep->PauseCapture();
-}
-void CaptureMediaSessionRep::PauseCapture()
-{
-	if (mCurrentlyCapturing)
-	{
-		OnERR_return(mMediaSession->Pause());
-		DWORD res = WaitForSingleObject(mPausedEvent, INFINITE);
-	}
-}
-
-void CaptureMediaSession::ResumeCapture()
-{
-	m_pRep->ResumeCapture();
-}
-void CaptureMediaSessionRep::ResumeCapture()
-{
-	if (mCurrentlyCapturing)
-	{
-		PROPVARIANT varStart;
-		PropVariantInit(&varStart);
-		varStart.vt = VT_EMPTY;
-		OnERR_return(mMediaSession->Start(&GUID_NULL, &varStart));
-		DWORD res = WaitForSingleObject(mStartedEvent, INFINITE);
-	}
 }
 
 void CaptureMediaSessionRep::CreateCaptureSourceAndRenderers(HWND videoWindow)
@@ -450,10 +383,6 @@ void CaptureMediaSessionRep::OnTopologyReady()
 	OnERR_return(mAudioVolumeControl->SetMute(FALSE));
 }
 
-long long CaptureMediaSession::GetTime()
-{
-	return m_pRep->GetTime();
-}
 long long CaptureMediaSessionRep::GetTime()
 {
 	CComPtr<IMFClock> clock = nullptr;
@@ -470,62 +399,180 @@ long long CaptureMediaSessionRep::GetTime()
 	return clockTime;
 }
 
-HRESULT	CaptureMediaSession::InitializeCapturer()
-{
-	return E_FAIL;
-}
+
 HRESULT	CaptureMediaSession::SetVideoWindow(long windowHandle, long left, long top, long right, long bottom)
 {
-	return E_FAIL;
+	return m_pRep->SetVideoWindow(windowHandle, left, top, right, bottom);
 }
+HRESULT	CaptureMediaSessionRep::SetVideoWindow(long windowHandle, long left, long top, long right, long bottom)
+{
+	mVideoWindow = (HWND)windowHandle;
+	return S_OK;
+}
+
 HRESULT	CaptureMediaSession::put_VideoWindow(long left, long top, long right, long bottom)
 {
-	return E_FAIL;
+	return S_OK;
 }
+
 HRESULT	CaptureMediaSession::StartCapture(int64_t durationInFrames, std::wstring captureFileFullPathNoExt)
 {
-	return E_FAIL;
+	return m_pRep->StartCapture(durationInFrames, captureFileFullPathNoExt);
 }
+HRESULT CaptureMediaSessionRep::StartCapture(int64_t durationInFrames, std::wstring captureFileFullPathNoExt)
+{
+	std::wstring captureFileFullPath = captureFileFullPathNoExt + L".ts";
+	InitCaptureAndPassthrough(mVideoWindow, captureFileFullPath);
+	StartSession();
+	mCurrentlyPreviewing = true;
+	mCurrentlyCapturing = true;
+	return GetLastHRESULT();
+}
+
 HRESULT	CaptureMediaSession::StopCapture()
 {
-	return E_FAIL;
+	return m_pRep->StopCapture();
 }
+HRESULT CaptureMediaSessionRep::StopCapture()
+{
+	StopSession();
+	mCurrentlyPreviewing = false;
+	mCurrentlyCapturing = false;
+	return GetLastHRESULT();
+}
+
 HRESULT	CaptureMediaSession::get_FramesCaptured(unsigned long* pVal)
 {
-	return E_FAIL;
+	return m_pRep->get_FramesCaptured(pVal);
 }
+HRESULT	CaptureMediaSessionRep::get_FramesCaptured(unsigned long* pVal)
+{
+	if (!pVal)
+	{
+		return E_INVALIDARG;
+	}
+	double curTimeInSeconds = (double)GetTime() / 10000000;
+	double fps = GetCurrrentVideoFormatFPS();
+	*pVal = (unsigned long)(curTimeInSeconds * fps);
+	return GetLastHRESULT();
+}
+
 HRESULT	CaptureMediaSession::get_FPSForCapture(long* pVal)
 {
-	return E_FAIL;
+	return m_pRep->get_FPSForCapture(pVal);
 }
+HRESULT	CaptureMediaSessionRep::get_FPSForCapture(long* pVal)
+{
+	if (!pVal)
+	{
+		return E_INVALIDARG;
+	}
+	if (mFPSForCapture)
+	{
+		*pVal = (long)mFPSForCapture;
+		return S_OK;
+	}
+	mFPSForCapture = GetCurrrentVideoFormatFPS();
+	*pVal = (long)mFPSForCapture; //?????? CHECK ME ??????
+	return GetLastHRESULT();
+}
+
+double CaptureMediaSessionRep::GetCurrrentVideoFormatFPS()
+{
+	if (mFPSForCapture)
+	{
+		return mFPSForCapture;
+	}
+	if (!mCaptureSource)
+	{
+		SetLastHR_Fail();
+		return 0;
+	}
+	CComPtr<IMFMediaType> mediaType = mCaptureSource->GetVideoMediaType();
+	if (!mediaType)
+	{
+		SetLastHR_Fail();
+		return 0;
+	}
+	UINT32 frameRatenumerator = 0;
+	UINT32 frameRateDenominator = 0;
+	if (IsHRError(MFGetAttributeRatio(mediaType, MF_MT_FRAME_RATE, &frameRatenumerator, &frameRateDenominator)))
+	{
+		SetLastHR_Fail();
+		return 0;
+	}
+	return (double)frameRatenumerator / (double)frameRateDenominator;
+}
+
 HRESULT	CaptureMediaSession::get_CaptureTimeRemaining(long* pVal)
 {
 	return E_FAIL;
 }
+
 HRESULT	CaptureMediaSession::PauseCapture(bool needToRestartPassthrough)
 {
-	return E_FAIL;
+	return m_pRep->PauseCapture(needToRestartPassthrough);
 }
+HRESULT CaptureMediaSessionRep::PauseCapture(bool needToRestartPassthrough)
+{
+	if (mCurrentlyCapturing)
+	{
+		OnERR_return_HR(mMediaSession->Pause());
+		DWORD res = WaitForSingleObject(mPausedEvent, INFINITE);
+		if (needToRestartPassthrough)
+		{
+			StartPreview(mVideoWindow);
+		}
+	}
+	return GetLastHRESULT();
+}
+
 HRESULT	CaptureMediaSession::ResumeCapture(bool needToRestartPassthrough)
 {
-	return E_FAIL;
+	return m_pRep->ResumeCapture();
+}
+HRESULT CaptureMediaSessionRep::ResumeCapture()
+{
+	if (mCurrentlyCapturing)
+	{
+		PROPVARIANT varStart;
+		PropVariantInit(&varStart);
+		varStart.vt = VT_EMPTY;
+		OnERR_return_HR(mMediaSession->Start(&GUID_NULL, &varStart));
+		DWORD res = WaitForSingleObject(mStartedEvent, INFINITE);
+	}
+	return GetLastHRESULT();
 }
 HRESULT	CaptureMediaSession::AbortCapture()
 {
-	return E_FAIL;
+	return m_pRep->StopCapture();
 }
 HRESULT	CaptureMediaSession::Shutdown()
 {
-	return E_FAIL;
+	return m_pRep->StopCapture();
 }
 HRESULT	CaptureMediaSession::get_ReceivingVideoSamples(bool* pVal)
 {
 	return E_FAIL;
 }
+
 HRESULT	CaptureMediaSession::SetPreviewOutputOn(bool inVal)
 {
-	return E_FAIL;
+	return m_pRep->SetPreviewOutputOn(inVal);
 }
+HRESULT CaptureMediaSessionRep::SetPreviewOutputOn(bool inVal)
+{
+	if (inVal)
+	{
+		StartPreview(mVideoWindow);
+	}
+	else
+	{
+		StopPreview();
+	}
+	return GetLastHRESULT();
+}
+
 HRESULT	CaptureMediaSession::get_CaptureInputMode(long* pVal)
 {
 	return E_FAIL;
@@ -534,10 +581,21 @@ HRESULT	CaptureMediaSession::get_DeviceActive(bool* pVal)
 {
 	return E_FAIL;
 }
+
 HRESULT	CaptureMediaSession::get_PreviewIsOn(bool* pVal)
 {
-	return E_FAIL;
+	return m_pRep->get_PreviewIsOn(pVal);
 }
+HRESULT	CaptureMediaSessionRep::get_PreviewIsOn(bool* pVal)
+{
+	if (!pVal)
+	{
+		return E_INVALIDARG;
+	}
+	*pVal = mCurrentlyPreviewing;
+	return S_OK;
+}
+
 HRESULT	CaptureMediaSession::GetCaptureProgress(long* framesCaptured, long* durationFrames)
 {
 	return E_FAIL;
@@ -556,5 +614,5 @@ bool CaptureMediaSession::GetForcedStop()
 }
 std::wstring CaptureMediaSession::GetName()
 {
-	return L"";
+	return L"CaptureMediaSession";
 }
