@@ -46,6 +46,10 @@ public:
 	static CComPtr<IMFMediaType>	CreateVideoEncodingMediaType(CComPtr<IMFAttributes> inAttrs);
 	static CComPtr<IMFMediaType>	CreateVideoNV12MediaType(CComPtr<IMFAttributes> inAttrs);
 	static CaptureInputMode			ConvertVideoMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType);
+	static std::wstring				ConvertCaptureInputModeToString(CaptureInputMode mode);
+	static bool						Is720(CComPtr<IMFMediaType> mediaType);
+	static bool						IsYUY2(CComPtr<IMFMediaType> mediaType);
+	static bool						Is5994(CComPtr<IMFMediaType> mediaType);
 private:
 	void DumpAvailableAACFormats(CComPtr<IMFCollection> availableTypes);
 	template <class T>

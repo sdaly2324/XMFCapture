@@ -82,7 +82,7 @@ void DevicesRep::DumpFormats(CComPtr<IMFActivate> device, WCHAR* devicename)
 			OnERR_return(mediaType->GetCount(&attributeCount));
 
 			// formats header
-			swprintf_s(mess, 1024, L"%s stream(%d) format(%d) mode(0x%x)\n", devicename, s, m, MediaTypeUtils::ConvertVideoMediaTypeToCaptureInputMode(mediaType));
+			swprintf_s(mess, 1024, L"%s stream(%d) format(%d) mode(%s)\n", devicename, s, m, MediaTypeUtils::ConvertCaptureInputModeToString(MediaTypeUtils::ConvertVideoMediaTypeToCaptureInputMode(mediaType)).c_str());
 			OutputDebugStringW(mess);
 
 			for (unsigned int a = 0; a < attributeCount; a++)

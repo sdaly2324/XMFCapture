@@ -112,6 +112,102 @@ CComPtr<IMFMediaType> MediaTypeUtils::CreateVideoNV12MediaType(CComPtr<IMFAttrib
 	return retVal;
 }
 
+bool MediaTypeUtils::Is720(CComPtr<IMFMediaType> mediaType)
+{
+	UINT32 width = 0;
+	UINT32 height = 0;
+	if (IsHRError(MFGetAttributeRatio(mediaType, MF_MT_FRAME_SIZE, &width, &height)))
+	{
+		return false;
+	}
+	if (height == 720)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool MediaTypeUtils::IsYUY2(CComPtr<IMFMediaType> mediaType)
+{
+	GUID subType = GUID_NULL;
+	if (IsHRError(mediaType->GetGUID(MF_MT_SUBTYPE, &subType)))
+	{
+		return false;
+	}
+	if (subType == MFVideoFormat_YUY2)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool MediaTypeUtils::Is5994(CComPtr<IMFMediaType> mediaType)
+{
+	UINT32 frameRatenumerator = 0;
+	UINT32 frameRateDenominator = 0;
+	if (IsHRError(MFGetAttributeRatio(mediaType, MF_MT_FRAME_RATE, &frameRatenumerator, &frameRateDenominator)))
+	{
+		return false;
+	}
+	if (frameRatenumerator == 60000 && frameRateDenominator == 1001)
+	{
+		return true;
+	}
+	return false;
+}
+
+std::wstring MediaTypeUtils::ConvertCaptureInputModeToString(CaptureInputMode mode)
+{
+	switch (mode)
+	{
+	case captureInputModeNTSC:
+		return L"captureInputModeNTSC";
+	case captureInputModeNTSC2398:
+		return L"captureInputModeNTSC2398";
+	case captureInputModePAL:
+		return L"captureInputModePAL";
+	case captureInputModeNTSCp:
+		return L"captureInputModeNTSCp";
+	case captureInputModePALp:
+		return L"captureInputModePALp";
+	case captureInputModeHD1080p2398:
+		return L"captureInputModeHD1080p2398";
+	case captureInputModeHD1080p24:
+		return L"captureInputModeHD1080p24";
+	case captureInputModeHD1080p25:
+		return L"captureInputModeHD1080p25";
+	case captureInputModeHD1080p2997:
+		return L"captureInputModeHD1080p2997";
+	case captureInputModeHD1080p30:
+		return L"captureInputModeHD1080p30";
+	case captureInputModeHD1080i50:
+		return L"captureInputModeHD1080i50";
+	case captureInputModeHD1080i5994:
+		return L"captureInputModeHD1080i5994";
+	case captureInputModeHD1080i6000:
+		return L"captureInputModeHD1080i6000";
+	case captureInputModeHD1080p50:
+		return L"captureInputModeHD1080p50";
+	case captureInputModeHD1080p5994:
+		return L"captureInputModeHD1080p5994";
+	case captureInputModeHD1080p6000:
+		return L"captureInputModeHD1080p6000";
+	case captureInputModeHD720p50:
+		return L"captureInputModeHD720p50";
+	case captureInputModeHD720p5994:
+		return L"captureInputModeHD720p5994";
+	case captureInputModeHD720p60:
+		return L"captureInputModeHD720p60";
+	case captureInputMode2k2398:
+		return L"captureInputMode2k2398";
+	case captureInputMode2k24:
+		return L"captureInputMode2k24";
+	case captureInputMode2k25:
+		return L"captureInputMode2k25";
+	}
+	return L"captureInputModeUnknown";
+}
+
 CaptureInputMode MediaTypeUtils::ConvertVideoMediaTypeToCaptureInputMode(CComPtr<IMFMediaType> mediaType)
 {
 	GUID guidValue;

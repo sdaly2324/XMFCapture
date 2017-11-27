@@ -18,7 +18,6 @@ public:
 
 	static CComPtr<IMFAttributes>	CreateVideoDeviceAttrs();
 	static CComPtr<IMFAttributes>	CreateAudioDeviceAttrs();
-	static CComPtr<IMFAttributes>	CreateSInkReaderCbAttrs(IUnknown* callBack);
 	static CComPtr<IMFAttributes>	CreateFileSinkAttrs();
 	static CComPtr<IMFAttributes>	CreateVideoNV12Attrs(CComPtr<IMFAttributes> videoInputAttributes);
 	static CComPtr<IMFAttributes>	CreateVideoEncodeAttrs(CComPtr<IMFAttributes> videoInputAttributes);

@@ -22,6 +22,7 @@ CComPtr<IMFAttributes> AttributesFactory::CreateVideoDeviceAttrs()
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
 	OnERR_return_NULL(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID));
+	OnERR_return_NULL(retVal->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
 	return retVal;
 }
 
@@ -30,36 +31,30 @@ CComPtr<IMFAttributes> AttributesFactory::CreateAudioDeviceAttrs()
 	CComPtr<IMFAttributes> retVal = NULL;
 	OnERR_return_NULL(MFCreateAttributes(&retVal, 1));
 	OnERR_return_NULL(retVal->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_AUDCAP_GUID));
-	return retVal;
-}
-
-CComPtr<IMFAttributes> AttributesFactory::CreateSInkReaderCbAttrs(IUnknown* callBack)
-{
-	CComPtr<IMFAttributes> retVal = NULL;
-	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
-		// for some reason SetUnknown does not count towards the IMFAttributes count
-	OnERR_return_NULL(retVal->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, callBack));
+	OnERR_return_NULL(retVal->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
 	return retVal;
 }
 
 CComPtr<IMFAttributes> AttributesFactory::CreateFileSinkAttrs()
 {
-	CComPtr<IMFAttributes> attributes = NULL;
-	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
+	CComPtr<IMFAttributes> retVal = NULL;
+	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
 	//OnERR_return_NULL(attributes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
 	//OnERR_return_NULL(attributes->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Stream));
 	//OnERR_return_NULL(attributes->SetGUID(MF_MT_SUBTYPE, MFStreamFormat_MPEG2Transport));
-	OnERR_return_NULL(attributes->SetGUID(MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_MPEG2));
-	OnERR_return_NULL(attributes->SetUINT32(MF_TRANSCODE_ADJUST_PROFILE, MF_TRANSCODE_ADJUST_PROFILE_DEFAULT));
-	return attributes;
+	OnERR_return_NULL(retVal->SetGUID(MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_MPEG2));
+	OnERR_return_NULL(retVal->SetUINT32(MF_TRANSCODE_ADJUST_PROFILE, MF_TRANSCODE_ADJUST_PROFILE_DEFAULT));
+	OnERR_return_NULL(retVal->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
+	return retVal;
 }
 
 CComPtr<IMFAttributes> AttributesFactory::CreateAudioOutAttrs()
 {
-	CComPtr<IMFAttributes> attributes = NULL;
-	OnERR_return_NULL(MFCreateAttributes(&attributes, 0));
-	OnERR_return_NULL(attributes->SetUINT32(MF_LOW_LATENCY, TRUE));
-	return attributes;
+	CComPtr<IMFAttributes> retVal = NULL;
+	OnERR_return_NULL(MFCreateAttributes(&retVal, 0));
+	OnERR_return_NULL(retVal->SetUINT32(MF_LOW_LATENCY, TRUE));
+	OnERR_return_NULL(retVal->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
+	return retVal;
 }
 
 HRESULT AttributesFactory::CopyAttribute(CComPtr<IMFAttributes> sourceAttribute, CComPtr<IMFAttributes> destinationAttribute, const GUID& attributeGUID)
@@ -99,6 +94,7 @@ CComPtr<IMFAttributes> AttributesFactory::CreateVideoEncodeAttrs(CComPtr<IMFAttr
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_VIDEO_LEVEL, 41));
 	//OnERR_return_NULL(retVal->SetUINT32(MF_MT_MAX_KEYFRAME_SPACING, 30)); // FIXED IN XMFSinkWriterRep::BeginWriting // DOES NOT WORK WITH IMFCaptureEngine
 	OnERR_return_NULL(retVal->SetUINT32(MF_MT_AVG_BITRATE, 6000000)); // 6 megabits
+	OnERR_return_NULL(retVal->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE));
 
 	return retVal;
 }

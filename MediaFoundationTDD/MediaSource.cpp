@@ -1,5 +1,6 @@
 #include "MediaSource.h"
 #include "MFUtils.h"
+#include "MediaTypeUtils.h"
 
 #include <mfapi.h>
 #include <mfidl.h>
@@ -20,6 +21,7 @@ public:
 	void								SetCurrentMediaTypes();
 
 private:
+	DWORD							Get720p5994Index();
 	void							SetCurrentVideoMediaType();
 	void							SetCurrentAudioMediaType();
 	CComPtr<IMFMediaTypeHandler>	GetMediaTypeHandler(GUID mediaTypeGUIDWeWant);
@@ -174,15 +176,42 @@ void MediaSourceRep::SetCurrentMediaTypes()
 	SetCurrentAudioMediaType();
 }
 
+DWORD MediaSourceRep::Get720p5994Index()
+{
+	if (!mVideoMediaTypeHandler)
+	{
+		return 0;
+	}
+	DWORD typeCount = 0;
+	if (IsHRError(mVideoMediaTypeHandler->GetMediaTypeCount(&typeCount)))
+	{
+		return 0;
+	}
+	for (DWORD x = 0; x < typeCount; x++)
+	{
+		CComPtr<IMFMediaType> mediaType = nullptr;
+		if (IsHRError(mVideoMediaTypeHandler->GetMediaTypeByIndex(x, &mediaType)))
+		{
+			return 0;
+		}
+		if (MediaTypeUtils::Is720(mediaType) && MediaTypeUtils::IsYUY2(mediaType) && MediaTypeUtils::Is5994(mediaType))
+		{
+			return x;
+		}
+	}
+	return 0;
+}
+
 void MediaSourceRep::SetCurrentVideoMediaType()
 {
 	if (!mVideoMediaTypeHandler)
 	{
 		return;
 	}
+	DWORD formatWeWant = Get720p5994Index();
 	CComPtr<IMFMediaType> mediaType = nullptr;
-	DWORD formatWeWant = 64;	// MXL is 64 for 720p 5994 YUY2
 	OnERR_return(mVideoMediaTypeHandler->GetMediaTypeByIndex(formatWeWant, &mediaType));
+	DumpAttr(mediaType, L"Video", L"In Format");
 	OnERR_return(mVideoMediaTypeHandler->SetCurrentMediaType(mediaType));
 }
 void MediaSourceRep::SetCurrentAudioMediaType()
